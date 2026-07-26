@@ -26,7 +26,12 @@ const ensure = async <T>(label: string, fn: () => Promise<T>): Promise<T | null>
     return r
   } catch (e: unknown) {
     const name = (e as { name?: string }).name ?? ""
-    if (name === "AlreadyExistsException" || name === "ConflictException") {
+    const message = (e as { message?: string }).message ?? ""
+    if (
+      name === "AlreadyExistsException" ||
+      name === "ConflictException" ||
+      message.includes("maximum of 1 Lists")
+    ) {
       console.log(`exists  ${label}`)
       return null
     }
