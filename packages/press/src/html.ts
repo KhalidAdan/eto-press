@@ -107,12 +107,25 @@ const MONO_QUIET = `${MONO} text-neutral-950/70 dark:text-white/60`
 const ACCENT = "text-red-900 dark:text-red-300/90"
 const HAIRLINE = "border-neutral-950/15 dark:border-white/15"
 
+const LINK_STYLE =
+  "underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25"
+
+export const longDate = (runId: string): string =>
+  new Date(`${runId}T12:00:00`).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  })
+
 const sourceAnchor = (s: SourceLink): string =>
   s.href === null
     ? esc(s.name)
     : `<a href="${esc(s.href)}" target="_blank" rel="noopener" class="underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25">${esc(s.name)}</a>`
 
-const storySection = (story: HtmlStory): string => {
+export const storyAnchor = (index: number): string => `s${index}`
+
+const storySection = (story: HtmlStory, index: number): string => {
   const body = story.bodyParagraphs
     .map((p) => `        <p class="${PROSE}">${esc(p)}</p>`)
     .join("\n")
@@ -131,7 +144,7 @@ const storySection = (story: HtmlStory): string => {
       ? ""
       : `\n          <p class="${MONO} ${ACCENT}">${esc(story.balanceNote)}</p>`
 
-  return `      <article class="flex flex-col gap-5 py-12">
+  return `      <article id="${storyAnchor(index)}" class="flex flex-col gap-5 py-12 scroll-mt-6">
         <h2 class="text-pretty text-2xl font-semibold tracking-tight sm:text-3xl">${esc(story.headline)}</h2>
 ${body}
         <h3 class="${MONO} font-medium uppercase tracking-wide ${ACCENT}">Where the accounts differ</h3>
@@ -140,6 +153,81 @@ ${differ}
           <p class="${MONO_QUIET}">Sources&ensp;${story.sources.map(sourceAnchor).join(" · ")}</p>${balance}
         </footer>
       </article>`
+}
+
+/** The home page at eto.news: the North Star stated briefly for readers,
+ * today's stories, past editions, and the sources page. It ends too. */
+export const renderHomePage = (opts: {
+  readonly latestRunId: string
+  readonly headlines: ReadonlyArray<{
+    readonly title: string
+    readonly anchor: string
+    readonly fold: boolean
+  }>
+  readonly editions: ReadonlyArray<string>
+}): string => {
+  const latest = `./${opts.latestRunId}.html`
+  const headlineList = opts.headlines
+    .map(
+      (h) => `        <li class="flex flex-col gap-1">
+          <a href="${latest}#${h.anchor}" class="text-pretty text-lg/8 sm:text-base/7 ${LINK_STYLE}">${esc(h.title)}</a>${h.fold ? `\n          <span class="${MONO} ${ACCENT}">below the fold — the model's one nomination</span>` : ""}
+        </li>`
+    )
+    .join("\n")
+
+  const editionList = opts.editions
+    .map((e) => `<a href="./${e}.html" class="${LINK_STYLE}">${esc(longDate(e))}</a>`)
+    .join(" · ")
+
+  return `<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eto — one story, every side, then it ends</title>
+<meta name="description" content="A daily news brief that takes a single event, gathers the accounts of outlets that disagree, and writes one piece of prose that holds all of them. Every source named. Then it ends.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./brief.css">
+</head>
+<body class="bg-white font-serif text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
+<main class="isolate px-6 py-10 sm:py-14">
+  <div class="mx-auto max-w-[68ch]">
+
+    <nav class="flex justify-end pb-6">
+      <a href="./sources.html" class="${MONO_QUIET} ${LINK_STYLE}">How we choose our sources</a>
+    </nav>
+
+    <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
+      <h1 class="text-6xl font-medium tracking-tight">eto</h1>
+      <p class="${MONO} text-neutral-950/60 dark:text-white/55">One story. Every side. Then it ends.</p>
+    </header>
+
+    <div class="flex flex-col gap-5 py-12">
+      <p class="${PROSE}">eto takes a single event, gathers the accounts of it published by outlets that disagree, and writes one piece of prose that holds all of them. It names every source it used. Then it stops.</p>
+      <p class="${PROSE}">Where the accounts conflict, the story says so — in the body, in plain words, with each side named. Consensus manufactured by deleting the contradiction is not neutrality; it is a quieter kind of lying. And when only one side of the aisle covered a story, the brief tells you that too, because a measurement you are entitled to should never be quietly corrected.</p>
+      <p class="${PROSE}">There is no feed here. No recommendations, no related stories, nothing trained on what kept you reading. The brief ends today the way it ended yesterday, and you leave.</p>
+    </div>
+
+    <section class="flex flex-col gap-5 border-t ${HAIRLINE} py-10">
+      <h2 class="${MONO} font-medium uppercase tracking-wide">Today — ${esc(longDate(opts.latestRunId))}</h2>
+      <ul role="list" class="flex flex-col gap-4">
+${headlineList}
+      </ul>
+    </section>
+
+    <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
+      <h2 class="${MONO} font-medium uppercase tracking-wide">Past editions</h2>
+      <p class="${MONO_QUIET}">${editionList}</p>
+      <p class="pt-6 text-center text-lg/8 sm:text-base/7 italic text-neutral-950/60 dark:text-white/55">A newspaper whose sources you can read — in both senses.</p>
+    </footer>
+
+  </div>
+</main>
+</body>
+</html>
+`
 }
 
 /** The "How we choose our sources" page — the masthead explained to a
@@ -208,12 +296,7 @@ export const renderEditionHtml = (opts: {
   readonly stories: ReadonlyArray<HtmlStory>
   readonly report: HtmlReport
 }): string => {
-  const longDate = new Date(`${opts.runId}T12:00:00`).toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  })
+  const date = longDate(opts.runId)
 
   const dropped = opts.report.droppedLines
     .map((d) => `        <p>${esc(d)}</p>`)
@@ -224,7 +307,7 @@ export const renderEditionHtml = (opts: {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eto — ${esc(longDate)}</title>
+<title>eto — ${esc(date)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -234,28 +317,32 @@ export const renderEditionHtml = (opts: {
 <main class="isolate px-6 py-10 sm:py-14">
   <div class="mx-auto max-w-[68ch]">
 
-    <nav class="flex justify-end pb-6">
-      <a href="./sources.html" class="${MONO_QUIET} underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25">How we choose our sources</a>
+    <nav class="flex justify-between gap-4 pb-6">
+      <a href="./index.html" class="${MONO_QUIET} ${LINK_STYLE}">eto.news</a>
+      <a href="./sources.html" class="${MONO_QUIET} ${LINK_STYLE}">How we choose our sources</a>
     </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
       <h1 class="text-6xl font-medium tracking-tight">eto</h1>
       <p class="${MONO} text-neutral-950/60 dark:text-white/55">One story. Every side. Then it ends.</p>
-      <p class="${MONO} uppercase tracking-wide">${esc(longDate)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
+      <p class="${MONO} uppercase tracking-wide">${esc(date)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
     </header>
 
     <div class="flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10">
-${opts.stories.filter((s) => s.foldReason === null).map(storySection).join("\n\n")}
+${opts.stories
+    .filter((s) => s.foldReason === null)
+    .map((s, i) => storySection(s, i + 1))
+    .join("\n\n")}
     </div>
 ${opts.stories
     .filter((s) => s.foldReason !== null)
     .map(
-      (s) => `
+      (s, i) => `
     <section class="flex flex-col gap-3 border-t ${HAIRLINE} pt-10">
       <h2 class="${MONO} font-medium uppercase tracking-wide ${ACCENT}">Below the fold</h2>
       <p class="${MONO_QUIET}">One nomination from outside the front page. The model's printed reason — judge it:</p>
       <p class="${MONO_QUIET} italic">${esc(s.foldReason!)}</p>
-${storySection(s)}
+${storySection(s, opts.stories.filter((x) => x.foldReason === null).length + i + 1)}
     </section>`
     )
     .join("\n")}
