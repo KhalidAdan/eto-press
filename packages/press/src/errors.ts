@@ -75,6 +75,13 @@ export class VerdictUnparseable extends Data.TaggedError("VerdictUnparseable")<{
   readonly raw: string
 }> {}
 
+// -- Stage 8: composite (story-level: the story drops, never the run) -------
+
+export class DraftMalformed extends Data.TaggedError("DraftMalformed")<{
+  readonly clusterHash: string
+  readonly raw: string
+}> {}
+
 // -- Stage 4: distribution tripwire (fatal) ----------------------------------
 
 export class VerdictsSuspicious extends Data.TaggedError("VerdictsSuspicious")<{

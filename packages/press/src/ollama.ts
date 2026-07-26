@@ -22,14 +22,22 @@ export class Ollama extends Effect.Service<Ollama>()("Ollama", {
     const http = yield* HttpClient.HttpClient
 
     /** One prompt in, the raw completion text out. Temperature 0. */
-    const chat = (model: string, prompt: string, unit: string) =>
+    const chat = (
+      model: string,
+      prompt: string,
+      unit: string,
+      opts?: { readonly numCtx?: number }
+    ) =>
       Effect.gen(function* () {
         const request = HttpClientRequest.post(`${OLLAMA_URL}/api/chat`).pipe(
           HttpClientRequest.bodyUnsafeJson({
             model,
             messages: [{ role: "user", content: prompt }],
             stream: false,
-            options: { temperature: 0 }
+            options: {
+              temperature: 0,
+              ...(opts?.numCtx ? { num_ctx: opts.numCtx } : {})
+            }
           })
         )
         const response = yield* http.execute(request).pipe(

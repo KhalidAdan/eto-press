@@ -70,6 +70,27 @@ const TABLES = [
     reason       TEXT,                   -- why dropped, for the run report
     PRIMARY KEY (run_id, cluster_hash)
   )`,
+  `CREATE TABLE IF NOT EXISTS drafts (
+    cluster_hash TEXT NOT NULL,
+    model        TEXT NOT NULL,
+    prompt_hash  TEXT NOT NULL,
+    attempt      INTEGER NOT NULL,       -- 0 first pass, 1 after revision notes
+    headline     TEXT NOT NULL,
+    body         TEXT NOT NULL,
+    differ       TEXT NOT NULL,
+    sources_line TEXT NOT NULL,
+    raw          TEXT NOT NULL,
+    created_at   TEXT NOT NULL,
+    PRIMARY KEY (cluster_hash, model, prompt_hash, attempt)
+  )`,
+  `CREATE TABLE IF NOT EXISTS verifications (
+    cluster_hash TEXT NOT NULL,
+    attempt      INTEGER NOT NULL,
+    "check"      TEXT NOT NULL,
+    result       TEXT NOT NULL,          -- pass | violation | advisory
+    detail       TEXT,
+    verified_at  TEXT NOT NULL
+  )`,
   // Stage 4+ tables are declared now so the journal's shape is complete:
   `CREATE TABLE IF NOT EXISTS verdicts (
     item_a      INTEGER NOT NULL,
