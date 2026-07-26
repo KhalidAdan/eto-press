@@ -17,6 +17,9 @@ export type Source = typeof SourceSchema.Type
 export const MastheadSchema = Schema.Struct({
   /** Stage 6b kill switch — the editor's, not the model's. Absent = on. */
   below_the_fold: Schema.optional(Schema.Boolean),
+  /** Morning email delivery. Absent = off; the editor flips it on when the
+   * mail domain is verified and production access is granted. */
+  email_edition: Schema.optional(Schema.Boolean),
   source: Schema.NonEmptyArray(SourceSchema)
 })
 export type Masthead = typeof MastheadSchema.Type

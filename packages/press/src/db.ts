@@ -91,6 +91,12 @@ const TABLES = [
     detail       TEXT,
     verified_at  TEXT NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS email_sends (
+    run_id     TEXT PRIMARY KEY,        -- one delivery per edition, ever
+    sent_at    TEXT NOT NULL,
+    recipients INTEGER NOT NULL,
+    failures   INTEGER NOT NULL
+  )`,
   // Stage 4+ tables are declared now so the journal's shape is complete:
   `CREATE TABLE IF NOT EXISTS verdicts (
     item_a      INTEGER NOT NULL,
