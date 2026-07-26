@@ -6,6 +6,9 @@ import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
 import { fetchArticlesForStories, type StoryWithAccounts } from "./articles.js"
 import { buildClusters, persistClusters } from "./cluster.js"
+import { compositeStory } from "./composite.js"
+import { archiveBrief, renderBrief, type PublishedStory } from "./render.js"
+import { editorNotes, persistVerifications, verifyDraft } from "./verify.js"
 import { MATCH_MODEL } from "./config.js"
 import { ensureSchema } from "./db.js"
 import { FunnelAnomalous, ModelMissing } from "./errors.js"
@@ -138,9 +141,78 @@ export const nightly = Effect.gen(function* () {
   }
   yield* Effect.logInfo(`stage 7: ${composable.length} stories ready to composite`)
 
-  // -- Stage 8+: composite, verify, render -------------------------------------
-  // Not yet built. The walk ends here, on purpose, until they are.
-  yield* Effect.logInfo("stages 8+ not yet implemented — run ends")
+  // -- Stages 8-9: composite, then verify — the model writes, the code checks
+  const published: Array<PublishedStory> = []
+  for (const swa of composable) {
+    const hash = swa.story.cluster.hash
+    const first = yield* compositeStory(swa).pipe(Effect.either)
+    if (first._tag === "Left") {
+      yield* markStory(runId, hash, "dropped", "draft malformed after two attempts")
+      yield* Effect.logWarning(`  story #${swa.story.rank} dropped: draft malformed`)
+      continue
+    }
+    let draft = first.right
+    let verdict = verifyDraft(draft, swa.accounts)
+    yield* persistVerifications(hash, draft.attempt, verdict)
+
+    if (verdict.violations.length > 0) {
+      yield* Effect.logWarning(
+        `  story #${swa.story.rank}: ${verdict.violations.length} violation(s), one revision pass`
+      )
+      const revised = yield* compositeStory(swa, editorNotes(verdict)).pipe(Effect.either)
+      if (revised._tag === "Right") {
+        draft = revised.right
+        verdict = verifyDraft(draft, swa.accounts)
+        yield* persistVerifications(hash, draft.attempt, verdict)
+      }
+    }
+
+    if (verdict.violations.length > 0) {
+      yield* markStory(
+        runId,
+        hash,
+        "dropped",
+        `failed verification: ${verdict.violations.join("; ").slice(0, 200)}`
+      )
+      yield* Effect.logWarning(`  story #${swa.story.rank} dropped: failed verification`)
+      continue
+    }
+
+    yield* markStory(runId, hash, "published", null)
+    published.push({ story: swa.story, draft, advisories: verdict.advisories })
+    yield* Effect.logInfo(
+      `  story #${swa.story.rank} verified: ${draft.headline.slice(0, 70)}` +
+        (verdict.advisories.length > 0 ? ` (${verdict.advisories.length} advisories)` : "")
+    )
+  }
+
+  // -- Stages 10-11: render, archive, report ----------------------------------
+  const droppedRows = yield* sql<{ rank: number; reason: string }>`
+    SELECT rank, reason FROM stories
+    WHERE run_id = ${runId} AND status = 'dropped' ORDER BY rank
+  `
+  const content = renderBrief(runId, published, {
+    feedOutcomes: outcomes,
+    funnel: {
+      items: items.length,
+      news: news.length,
+      candidates: pairs.length,
+      matches: matches.length,
+      clusters: clusters.length,
+      selected: stories.length,
+      published: published.length
+    },
+    dropped: droppedRows.map((d) => ({ rank: d.rank, reason: d.reason }))
+  })
+  const briefPath = yield* archiveBrief(runId, content)
+  yield* sql`
+    UPDATE runs SET finished_at = ${new Date().toISOString()},
+      notes = ${`${published.length} published, ${droppedRows.length} dropped`}
+    WHERE run_id = ${runId}
+  `
+  yield* Effect.logInfo(
+    `the ${runId} edition: ${published.length} stories -> ${briefPath}. It ends.`
+  )
 
   return {
     runId,

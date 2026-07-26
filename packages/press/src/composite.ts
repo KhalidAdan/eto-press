@@ -6,7 +6,7 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
-import type { StoryWithAccounts } from "./articles.js"
+import type { Account, StoryWithAccounts } from "./articles.js"
 import { COMPOSITE_MODEL, COMPOSITE_NUM_CTX } from "./config.js"
 import { DraftMalformed } from "./errors.js"
 import { Ollama } from "./ollama.js"
@@ -48,6 +48,25 @@ export const parseDraft = (raw: string, attempt: number): Draft | null => {
   // SOURCES is the last line; anything substantial after it violates "it ends".
   if (sourcesLine.split("\n").length > 2) return null
   return { headline, body, differ, sourcesLine, raw, attempt }
+}
+
+/** The context window is finite; a 9-account cluster is not. One account
+ * per outlet first (longest text wins), then extras by length, capped. */
+export const MAX_PROMPT_ACCOUNTS = 6
+
+export const selectAccountsForPrompt = (
+  accounts: ReadonlyArray<Account>
+): ReadonlyArray<Account> => {
+  const byOutlet = new Map<string, Account>()
+  for (const a of accounts) {
+    const cur = byOutlet.get(a.item.outlet)
+    if (!cur || a.text.length > cur.text.length) byOutlet.set(a.item.outlet, a)
+  }
+  const primary = [...byOutlet.values()]
+  const rest = accounts
+    .filter((a) => !primary.includes(a))
+    .sort((a, b) => b.text.length - a.text.length)
+  return [...primary, ...rest].slice(0, MAX_PROMPT_ACCOUNTS)
 }
 
 const loadCachedDraft = (clusterHash: string) =>
@@ -116,7 +135,7 @@ export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
     }
 
     const basePrompt = compositePrompt(
-      swa.accounts.map((a) => ({
+      selectAccountsForPrompt(swa.accounts).map((a) => ({
         outlet: a.item.outlet,
         title: a.item.title,
         text: a.text
