@@ -108,7 +108,10 @@ const TABLES = [
 /** Additive migrations for tables that already exist in journals in the
  * wild. Errors from already-applied ALTERs are expected and ignored. */
 const MIGRATIONS = [
-  `ALTER TABLE stories ADD COLUMN fold_reason TEXT`
+  `ALTER TABLE stories ADD COLUMN fold_reason TEXT`,
+  // The outlet's own designated link-preview image (og:image), captured at
+  // article fetch time. Hotlinked with credit, never rehosted.
+  `ALTER TABLE articles ADD COLUMN og_image TEXT`
 ] as const
 
 export const ensureSchema = Effect.gen(function* () {

@@ -64,17 +64,26 @@ const fetchHtml = (item: Item, url: string) =>
     Effect.retry({ schedule: transientRetry, while: (e) => e.transient })
   )
 
-/** Readability-style extraction; jsdom's own noise is swallowed. */
+/** Readability-style extraction; jsdom's own noise is swallowed. Also
+ * captures the outlet's designated link-preview image (og:image). */
 const extractText = (item: Item, url: string, html: string) =>
   Effect.try({
     try: () => {
       const virtualConsole = new VirtualConsole()
       virtualConsole.on("jsdomError", () => {})
       const dom = new JSDOM(html, { url, virtualConsole })
+      const ogImage =
+        dom.window.document
+          .querySelector('meta[property="og:image"], meta[name="twitter:image"]')
+          ?.getAttribute("content")
+          ?.trim() ?? null
       const article = new Readability(dom.window.document).parse()
       const text = (article?.textContent ?? "").replace(/\s+/g, " ").trim()
       if (text.length < 300) throw new Error("extraction too short")
-      return text.slice(0, MAX_STORED_CHARS)
+      return {
+        text: text.slice(0, MAX_STORED_CHARS),
+        ogImage: ogImage?.startsWith("http") ? ogImage : null
+      }
     },
     catch: () => new ArticleUnreadable({ outlet: item.outlet, url: item.link })
   })
@@ -140,11 +149,12 @@ export const fetchArticlesForStories = (
               item_id: item.id,
               status: "ok",
               http_code: 200,
-              text: result.right,
+              text: result.right.text,
+              og_image: result.right.ogImage,
               fetched_at: new Date().toISOString()
             })}
           `
-          accounts.push({ item, text: result.right })
+          accounts.push({ item, text: result.right.text })
           fetched++
         } else {
           const err = result.left

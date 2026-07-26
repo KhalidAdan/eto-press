@@ -157,23 +157,41 @@ ${differ}
 
 /** The home page at eto.news: the North Star stated briefly for readers,
  * today's stories, past editions, and the sources page. It ends too. */
+export interface HomeCard {
+  readonly title: string
+  readonly anchor: string
+  readonly fold: boolean
+  /** Outlets × sides meta line, e.g. "6 outlets · center/left/right". */
+  readonly meta: string
+  /** The outlet-designated link-preview image, hotlinked with credit —
+   * null renders a typographic card. */
+  readonly image: { readonly src: string; readonly credit: string } | null
+}
+
 export const renderHomePage = (opts: {
   readonly latestRunId: string
-  readonly headlines: ReadonlyArray<{
-    readonly title: string
-    readonly anchor: string
-    readonly fold: boolean
-  }>
+  readonly headlines: ReadonlyArray<HomeCard>
   readonly editions: ReadonlyArray<string>
 }): string => {
   const latest = `./${opts.latestRunId}.html`
-  const headlineList = opts.headlines
-    .map(
-      (h) => `        <li class="flex flex-col gap-1">
-          <a href="${latest}#${h.anchor}" class="text-pretty text-lg/8 sm:text-base/7 ${LINK_STYLE}">${esc(h.title)}</a>${h.fold ? `\n          <span class="${MONO} ${ACCENT}">below the fold — the model's one nomination</span>` : ""}
+  const card = (h: HomeCard): string => {
+    const image =
+      h.image === null
+        ? ""
+        : `\n          <figure class="flex flex-col">
+            <img src="${esc(h.image.src)}" alt="" loading="lazy" referrerpolicy="no-referrer" class="aspect-video w-full object-cover">
+            <figcaption class="${MONO} px-5 pt-2 text-neutral-950/50 dark:text-white/40">image · ${esc(h.image.credit)}</figcaption>
+          </figure>`
+    return `        <li class="border border-neutral-950/10 dark:border-white/10">
+          <a href="${latest}#${h.anchor}" class="group flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2">${image}
+            <div class="flex grow flex-col gap-2 p-5">
+              ${h.fold ? `<p class="${MONO} uppercase tracking-wide ${ACCENT}">Below the fold</p>\n              ` : ""}<h3 class="text-pretty text-xl font-semibold group-hover:underline decoration-neutral-950/30 underline-offset-4 dark:decoration-white/30">${esc(h.title)}</h3>
+              <p class="${MONO} mt-auto text-neutral-950/60 dark:text-white/50">${esc(h.meta)}</p>
+            </div>
+          </a>
         </li>`
-    )
-    .join("\n")
+  }
+  const headlineList = opts.headlines.map(card).join("\n")
 
   const editionList = opts.editions
     .map((e) => `<a href="./${e}.html" class="${LINK_STYLE}">${esc(longDate(e))}</a>`)
@@ -212,7 +230,7 @@ export const renderHomePage = (opts: {
 
     <section class="flex flex-col gap-5 border-t ${HAIRLINE} py-10">
       <h2 class="${MONO} font-medium uppercase tracking-wide">Today — ${esc(longDate(opts.latestRunId))}</h2>
-      <ul role="list" class="flex flex-col gap-4">
+      <ul role="list" class="grid gap-6 sm:grid-cols-2">
 ${headlineList}
       </ul>
     </section>

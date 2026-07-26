@@ -16,8 +16,27 @@ import {
   splitDiffer,
   splitParagraphs,
   storyAnchor,
+  type HomeCard,
   type HtmlStory
 } from "./html.js"
+
+const UA = "eto/0.1 (+local news compositor; front-door reader)"
+
+/** Render-time image check: only ship images that actually answer, so the
+ * page needs no client-side fallback JavaScript. */
+const imageAlive = async (src: string): Promise<boolean> => {
+  try {
+    const res = await fetch(src, {
+      method: "HEAD",
+      headers: { "user-agent": UA },
+      signal: AbortSignal.timeout(8000),
+      redirect: "follow"
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
 
 const db = new Database("db/eto.sqlite")
 
@@ -32,7 +51,12 @@ if (editions.length === 0) {
   process.exit(1)
 }
 
-const assembleStories = (runId: string): Array<HtmlStory> => {
+interface AssembledStory {
+  readonly story: HtmlStory
+  readonly clusterHash: string
+}
+
+const assembleStories = (runId: string): Array<AssembledStory> => {
   const rows = db
     .prepare(
       "SELECT cluster_hash, rank, balance_note, fold_reason FROM stories WHERE run_id = ? AND status = 'published' ORDER BY rank"
@@ -71,13 +95,16 @@ const assembleStories = (runId: string): Array<HtmlStory> => {
     const differ = splitDiffer(draft.differ)
     return [
       {
-        headline: draft.headline,
-        bodyParagraphs: splitParagraphs(draft.body),
-        differBullets: differ.bullets,
-        differParagraphs: differ.paragraphs,
-        sources: resolveSourceLinks(draft.sources_line, linkByOutlet),
-        balanceNote: row.balance_note,
-        foldReason: row.fold_reason
+        clusterHash: row.cluster_hash,
+        story: {
+          headline: draft.headline,
+          bodyParagraphs: splitParagraphs(draft.body),
+          differBullets: differ.bullets,
+          differParagraphs: differ.paragraphs,
+          sources: resolveSourceLinks(draft.sources_line, linkByOutlet),
+          balanceNote: row.balance_note,
+          foldReason: row.fold_reason
+        }
       }
     ]
   })
@@ -106,41 +133,75 @@ const reportFor = (runId: string, storyCount: number) => {
 
 mkdirSync("site", { recursive: true })
 
-let latestStories: Array<HtmlStory> = []
+let latestAssembled: Array<AssembledStory> = []
 for (const runId of editions) {
-  const stories = assembleStories(runId)
-  if (runId === editions[0]) latestStories = stories
+  const assembled = assembleStories(runId)
+  if (runId === editions[0]) latestAssembled = assembled
   writeFileSync(
     `site/${runId}.html`,
     renderEditionHtml({
       runId,
       editionLabel: "",
-      stories,
-      report: reportFor(runId, stories.length)
+      stories: assembled.map((a) => a.story),
+      report: reportFor(runId, assembled.length)
     }),
     "utf8"
   )
 }
 
-// Home page: mains first (anchor order matches the edition page), fold last.
-const mains = latestStories.filter((s) => s.foldReason === null)
-const folds = latestStories.filter((s) => s.foldReason !== null)
+// Home page cards: anchor order matches the edition page (mains, then fold).
+const clusterMeta = db.prepare(
+  "SELECT sides, outlet_count FROM clusters WHERE run_id = ? AND cluster_hash = ?"
+)
+const imageCandidates = db.prepare(
+  `SELECT i.outlet AS outlet, a.og_image AS og, length(a.text) AS len
+   FROM cluster_items ci
+   JOIN items i ON i.id = ci.item_id
+   JOIN articles a ON a.item_id = i.id AND a.status = 'ok'
+   WHERE ci.run_id = ? AND ci.cluster_hash = ? AND a.og_image IS NOT NULL
+   ORDER BY len DESC`
+)
+
+const mainsCount = latestAssembled.filter((a) => a.story.foldReason === null).length
+let mainIdx = 0
+let foldIdx = 0
+const cards: Array<HomeCard> = []
+for (const a of latestAssembled) {
+  const isFold = a.story.foldReason !== null
+  const anchor = isFold
+    ? storyAnchor(mainsCount + ++foldIdx)
+    : storyAnchor(++mainIdx)
+  const meta = clusterMeta.get(editions[0], a.clusterHash) as
+    | { sides: string; outlet_count: number }
+    | undefined
+  const candidates = imageCandidates.all(editions[0], a.clusterHash) as Array<{
+    outlet: string
+    og: string
+    len: number
+  }>
+  let image: HomeCard["image"] = null
+  for (const c of candidates) {
+    if (await imageAlive(c.og)) {
+      image = { src: c.og, credit: c.outlet }
+      break
+    }
+  }
+  cards.push({
+    title: a.story.headline,
+    anchor,
+    fold: isFold,
+    meta: meta
+      ? `${meta.outlet_count} outlets · ${meta.sides}`
+      : `${a.story.sources.length} sources`,
+    image
+  })
+}
+
 writeFileSync(
   "site/index.html",
   renderHomePage({
     latestRunId: editions[0]!,
-    headlines: [
-      ...mains.map((s, i) => ({
-        title: s.headline,
-        anchor: storyAnchor(i + 1),
-        fold: false
-      })),
-      ...folds.map((s, i) => ({
-        title: s.headline,
-        anchor: storyAnchor(mains.length + i + 1),
-        fold: true
-      }))
-    ],
+    headlines: cards,
     editions
   }),
   "utf8"
@@ -165,5 +226,6 @@ for (const s of masthead.source) {
 writeFileSync("site/sources.html", renderSourcesPage(bySide), "utf8")
 
 console.log(
-  `rendered ${editions.length} edition(s), index.html, sources.html — latest: ${editions[0]} (${latestStories.length} stories)`
+  `rendered ${editions.length} edition(s), index.html, sources.html — latest: ${editions[0]} ` +
+    `(${latestAssembled.length} stories, ${cards.filter((c) => c.image !== null).length} with images)`
 )
