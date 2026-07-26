@@ -309,12 +309,15 @@ export const renderSourcesPage = (
   bySide: ReadonlyArray<{ side: string; outlets: ReadonlyArray<string> }>
 ): string => {
   const rows = bySide
-    .map(
-      (g) => `      <div class="flex flex-col gap-2 py-6 sm:flex-row sm:gap-6">
-        <p class="${MONO} w-32 shrink-0 uppercase tracking-wide ${ACCENT}">${esc(g.side)}</p>
+    .map((g) => {
+      const cls =
+        SIDE_BADGES.find((b) => b.side === g.side)?.cls ??
+        "text-neutral-950/70 dark:text-white/60"
+      return `      <div class="flex flex-col gap-2 py-6 sm:flex-row sm:gap-6">
+        <p class="${MONO} w-32 shrink-0 uppercase tracking-wide ${cls}">${esc(g.side)}</p>
         <p class="${PROSE}">${g.outlets.map(esc).join(" · ")}</p>
       </div>`
-    )
+    })
     .join("\n")
 
   return `<!DOCTYPE html>
