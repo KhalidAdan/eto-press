@@ -25,6 +25,7 @@
  * All interpolated content is HTML-escaped; the compositor writes prose,
  * never markup.
  */
+import { SITE_URL } from "./config.js"
 
 export interface SourceLink {
   readonly name: string
@@ -109,6 +110,32 @@ const HAIRLINE = "border-neutral-950/15 dark:border-white/15"
 
 const LINK_STYLE =
   "underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25"
+
+export const SITE_DESCRIPTION =
+  "A daily brief. Each story is one event told through outlets that " +
+  "disagree — differences named in plain words, every source linked, " +
+  "coverage gaps measured. Then it ends."
+
+/** Shared head metadata: title, description, canonical, OpenGraph/Twitter
+ * card, and the favicon set (Lora lowercase e, claret period). */
+const headMeta = (opts: {
+  readonly title: string
+  readonly description: string
+  readonly path: string
+}): string => `<title>${esc(opts.title)}</title>
+<meta name="description" content="${esc(opts.description)}">
+<link rel="canonical" href="${SITE_URL}${opts.path}">
+<meta property="og:site_name" content="eto">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${esc(opts.title)}">
+<meta property="og:description" content="${esc(opts.description)}">
+<meta property="og:url" content="${SITE_URL}${opts.path}">
+<meta property="og:image" content="${SITE_URL}/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="./favicon.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">`
 
 export const longDate = (runId: string): string =>
   new Date(`${runId}T12:00:00`).toLocaleDateString("en-US", {
@@ -202,8 +229,11 @@ export const renderHomePage = (opts: {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eto — one story, every side, then it ends</title>
-<meta name="description" content="A daily news brief that takes a single event, gathers the accounts of outlets that disagree, and writes one piece of prose that holds all of them. Every source named. Then it ends.">
+${headMeta({
+    title: "eto — one story, every side, then it ends",
+    description: SITE_DESCRIPTION,
+    path: "/"
+  })}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -268,7 +298,12 @@ export const renderSourcesPage = (
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eto — How we choose our sources</title>
+${headMeta({
+    title: "eto — how we choose our sources",
+    description:
+      "Every outlet this paper reads and where it stands, seeded from the AllSides Media Bias Chart. The masthead is a file: change the file, change the paper.",
+    path: "/sources.html"
+  })}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -325,7 +360,11 @@ export const renderEditionHtml = (opts: {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eto — ${esc(date)}</title>
+${headMeta({
+    title: `eto — ${date}`,
+    description: `The ${date} edition: ${opts.stories.length} stories, each one event told through outlets that disagree, every source linked.`,
+    path: `/${opts.runId}.html`
+  })}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
