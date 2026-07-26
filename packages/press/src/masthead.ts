@@ -15,6 +15,8 @@ export const SourceSchema = Schema.Struct({
 export type Source = typeof SourceSchema.Type
 
 export const MastheadSchema = Schema.Struct({
+  /** Stage 6b kill switch — the editor's, not the model's. Absent = on. */
+  below_the_fold: Schema.optional(Schema.Boolean),
   source: Schema.NonEmptyArray(SourceSchema)
 })
 export type Masthead = typeof MastheadSchema.Type

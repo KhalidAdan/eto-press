@@ -185,6 +185,19 @@ Apply the masthead's eligibility rules, all deterministic:
 - **Fails with:** `NothingToPrint` (run summary attached) — a valid, honest
   outcome: the brief for a quiet day says so and ends.
 
+### 6b. The below-the-fold nomination
+
+One model pick from OUTSIDE the selected front page (experiment 003's sole
+survivor): the story whose consequence most exceeds its coverage. Strictly
+additive — it can never reorder or displace the main stories. The
+nomination reason is printed verbatim in the brief; the editor grades it by
+reading and kills the feature with `below_the_fold = false` in the masthead
+file. Candidate lists are always shuffled (003 run 1: position bias). Any
+failure here degrades to "no nomination today," reported, never fatal.
+
+- **Tables:** `stories` (fold_reason column)
+- **Fails with:** stage-4 model-call error types; all degrade quietly.
+
 ### 7. Fetch articles
 
 For each selected story, fetch the full article behind each member item's

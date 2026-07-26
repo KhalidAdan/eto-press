@@ -33,9 +33,14 @@ const runId = latest.run_id
 
 const storyRows = db
   .prepare(
-    "SELECT cluster_hash, rank, balance_note FROM stories WHERE run_id = ? AND status = 'published' ORDER BY rank"
+    "SELECT cluster_hash, rank, balance_note, fold_reason FROM stories WHERE run_id = ? AND status = 'published' ORDER BY rank"
   )
-  .all(runId) as Array<{ cluster_hash: string; rank: number; balance_note: string | null }>
+  .all(runId) as Array<{
+  cluster_hash: string
+  rank: number
+  balance_note: string | null
+  fold_reason: string | null
+}>
 
 const stories: Array<HtmlStory> = storyRows.map((row) => {
   const draft = db
@@ -72,7 +77,8 @@ const stories: Array<HtmlStory> = storyRows.map((row) => {
     differBullets: differ.bullets,
     differParagraphs: differ.paragraphs,
     sources: resolveSourceLinks(draft.sources_line, linkByOutlet),
-    balanceNote: row.balance_note
+    balanceNote: row.balance_note,
+    foldReason: row.fold_reason
   }
 })
 

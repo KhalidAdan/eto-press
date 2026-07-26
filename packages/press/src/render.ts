@@ -57,14 +57,31 @@ export const renderBrief = (
     ""
   ]
 
-  for (const p of published) {
-    parts.push("---", "", `## ${p.draft.headline}`, "", p.draft.body, "")
+  const mains = published.filter((p) => p.story.foldReason === null)
+  const fold = published.find((p) => p.story.foldReason !== null)
+
+  const pushStory = (p: PublishedStory) => {
+    parts.push(`## ${p.draft.headline}`, "", p.draft.body, "")
     parts.push("**Where the accounts differ**", "", p.draft.differ, "")
     parts.push(`**Sources**  ${p.draft.sourcesLine}`)
     if (p.story.balanceNote !== null) {
       parts.push("", `*${p.story.balanceNote}*`)
     }
     parts.push("")
+  }
+
+  for (const p of mains) {
+    parts.push("---", "")
+    pushStory(p)
+  }
+
+  if (fold !== undefined) {
+    parts.push("---", "", "## Below the fold", "")
+    parts.push(
+      "*One nomination from outside the front page. The model's printed reason — judge it:*"
+    )
+    parts.push(`*${fold.story.foldReason}*`, "")
+    pushStory(fold)
   }
 
   if (published.length === 0) {

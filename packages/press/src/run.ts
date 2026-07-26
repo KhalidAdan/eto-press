@@ -17,7 +17,8 @@ import { judgePairs } from "./judge.js"
 import { loadMasthead } from "./masthead.js"
 import { Ollama } from "./ollama.js"
 import { candidatePairs, crossOutletPairCount } from "./prefilter.js"
-import { markStory, persistStories, selectStories, STORY_CAP } from "./select.js"
+import { nominateBelowTheFold } from "./nominate.js"
+import { balanceNoteFor, markStory, persistStories, selectStories, STORY_CAP } from "./select.js"
 
 /** The run id is the editor's local calendar date — the morning the brief is
  * for. (Found the hard way: the first live run stamped itself with the UTC
@@ -110,15 +111,43 @@ export const nightly = Effect.gen(function* () {
   }
 
   // -- Stage 6: select --------------------------------------------------------
-  const stories = yield* Effect.sync(() => selectStories(masthead, clusters))
-  yield* persistStories(runId, stories)
-  yield* Effect.logInfo(`stage 6: ${stories.length} stories selected (cap ${STORY_CAP})`)
-  for (const s of stories) {
+  const selected = yield* Effect.sync(() => selectStories(masthead, clusters))
+  yield* Effect.logInfo(`stage 6: ${selected.length} stories selected (cap ${STORY_CAP})`)
+  for (const s of selected) {
     yield* Effect.logInfo(
       `  #${s.rank} [${s.cluster.sides.join("/")}] ${s.cluster.items[0]!.title.slice(0, 70)}` +
         (s.balanceNote ? ` — ${s.balanceNote}` : "")
     )
   }
+
+  // -- Stage 6b: the below-the-fold nomination ---------------------------------
+  // One model pick from OUTSIDE the front page; reason printed; no power
+  // over the main ranking; killable in sources.toml (experiment 003).
+  let stories = selected
+  if (masthead.below_the_fold !== false) {
+    const pool = clusters.filter(
+      (c) => !selected.some((s) => s.cluster.hash === c.hash)
+    )
+    const nomination = yield* nominateBelowTheFold(pool, runId).pipe(Effect.either)
+    if (nomination._tag === "Right" && nomination.right !== null) {
+      stories = [
+        ...selected,
+        {
+          cluster: nomination.right.cluster,
+          rank: selected.length + 1,
+          balanceNote: balanceNoteFor(masthead, nomination.right.cluster),
+          foldReason: nomination.right.reason
+        }
+      ]
+      yield* Effect.logInfo(
+        `stage 6b: below the fold — ${nomination.right.cluster.items[0]!.title.slice(0, 60)}` +
+          ` (${nomination.right.reason.slice(0, 80)})`
+      )
+    } else {
+      yield* Effect.logInfo("stage 6b: no below-the-fold nomination today")
+    }
+  }
+  yield* persistStories(runId, stories)
 
   // -- Stage 7: fetch full articles -------------------------------------------
   const withAccounts = yield* fetchArticlesForStories(stories)

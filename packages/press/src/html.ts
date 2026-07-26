@@ -38,6 +38,8 @@ export interface HtmlStory {
   readonly differParagraphs: ReadonlyArray<string>
   readonly sources: ReadonlyArray<SourceLink>
   readonly balanceNote: string | null
+  /** The stage-6b nomination reason; null on front-page stories. */
+  readonly foldReason: string | null
 }
 
 export interface HtmlReport {
@@ -243,8 +245,20 @@ export const renderEditionHtml = (opts: {
     </header>
 
     <div class="flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10">
-${opts.stories.map(storySection).join("\n\n")}
+${opts.stories.filter((s) => s.foldReason === null).map(storySection).join("\n\n")}
     </div>
+${opts.stories
+    .filter((s) => s.foldReason !== null)
+    .map(
+      (s) => `
+    <section class="flex flex-col gap-3 border-t ${HAIRLINE} pt-10">
+      <h2 class="${MONO} font-medium uppercase tracking-wide ${ACCENT}">Below the fold</h2>
+      <p class="${MONO_QUIET}">One nomination from outside the front page. The model's printed reason — judge it:</p>
+      <p class="${MONO_QUIET} italic">${esc(s.foldReason!)}</p>
+${storySection(s)}
+    </section>`
+    )
+    .join("\n")}
 
     <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
       <h2 class="${MONO} font-medium uppercase tracking-wide">The run, reported</h2>

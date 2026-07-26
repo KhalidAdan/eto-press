@@ -16,14 +16,26 @@ export interface Story {
   readonly cluster: Cluster
   readonly rank: number
   readonly balanceNote: string | null
+  /** Set only on the below-the-fold nomination (stage 6b) — the model's
+   * printed, editor-graded reason. Main stories never carry one. */
+  readonly foldReason: string | null
+}
+
+export const balanceNoteFor = (
+  masthead: Masthead,
+  cluster: Cluster
+): string | null => {
+  const allSides = [...new Set(masthead.source.map((s) => s.side))].sort()
+  const missing = allSides.filter((s) => !cluster.sides.includes(s))
+  return missing.length === 0
+    ? null
+    : `No source labeled ${missing.join(" or ")} covered this story.`
 }
 
 export const selectStories = (
   masthead: Masthead,
   clusters: ReadonlyArray<Cluster>
 ): ReadonlyArray<Story> => {
-  const allSides = [...new Set(masthead.source.map((s) => s.side))].sort()
-
   const ranked = [...clusters].sort(
     (a, b) =>
       b.outlets.length - a.outlets.length ||
@@ -31,17 +43,12 @@ export const selectStories = (
       b.items.length - a.items.length
   )
 
-  return ranked.slice(0, STORY_CAP).map((cluster, i) => {
-    const missing = allSides.filter((s) => !cluster.sides.includes(s))
-    return {
-      cluster,
-      rank: i + 1,
-      balanceNote:
-        missing.length === 0
-          ? null
-          : `No source labeled ${missing.join(" or ")} covered this story.`
-    }
-  })
+  return ranked.slice(0, STORY_CAP).map((cluster, i) => ({
+    cluster,
+    rank: i + 1,
+    balanceNote: balanceNoteFor(masthead, cluster),
+    foldReason: null
+  }))
 }
 
 export const persistStories = (
@@ -58,7 +65,8 @@ export const persistStories = (
         rank: s.rank,
         balance_note: s.balanceNote,
         status: "selected",
-        reason: null
+        reason: null,
+        fold_reason: s.foldReason
       })}`
     }
   }).pipe(Effect.withSpan("stage6.persistStories"))

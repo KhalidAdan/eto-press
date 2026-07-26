@@ -105,10 +105,19 @@ const TABLES = [
   )`
 ] as const
 
+/** Additive migrations for tables that already exist in journals in the
+ * wild. Errors from already-applied ALTERs are expected and ignored. */
+const MIGRATIONS = [
+  `ALTER TABLE stories ADD COLUMN fold_reason TEXT`
+] as const
+
 export const ensureSchema = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
   yield* sql.unsafe("PRAGMA journal_mode = WAL")
   for (const ddl of TABLES) {
     yield* sql.unsafe(ddl)
+  }
+  for (const migration of MIGRATIONS) {
+    yield* sql.unsafe(migration).pipe(Effect.ignore)
   }
 }).pipe(Effect.withSpan("stage0.ensureSchema"))
