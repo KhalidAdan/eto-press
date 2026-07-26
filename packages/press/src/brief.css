@@ -1,0 +1,9 @@
+/* The press's stylesheet source. Compiled by `npm run build:css` into
+ * site/brief.css — the archive pages must never depend on a CDN. */
+@import "tailwindcss";
+@source "./html.ts";
+
+@theme {
+  --font-serif: "Lora", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
