@@ -140,6 +140,66 @@ ${differ}
       </article>`
 }
 
+/** The "How we choose our sources" page — the masthead explained to a
+ * reader, with the AllSides provenance linked (NORTH-STAR, The Default
+ * Masthead). Sides render in spectrum order. */
+export const renderSourcesPage = (
+  bySide: ReadonlyArray<{ side: string; outlets: ReadonlyArray<string> }>
+): string => {
+  const rows = bySide
+    .map(
+      (g) => `      <div class="flex flex-col gap-2 py-6 sm:flex-row sm:gap-6">
+        <p class="${MONO} w-32 shrink-0 uppercase tracking-wide ${ACCENT}">${esc(g.side)}</p>
+        <p class="${PROSE}">${g.outlets.map(esc).join(" · ")}</p>
+      </div>`
+    )
+    .join("\n")
+
+  return `<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eto — How we choose our sources</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./brief.css">
+</head>
+<body class="bg-white font-serif text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
+<main class="isolate px-6 py-10 sm:py-14">
+  <div class="mx-auto max-w-[68ch]">
+
+    <nav class="flex justify-end pb-6">
+      <a href="./index.html" class="${MONO_QUIET} underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25">Back to today's brief</a>
+    </nav>
+
+    <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
+      <h1 class="text-6xl font-medium tracking-tight">eto</h1>
+      <p class="${MONO} uppercase tracking-wide">How we choose our sources</p>
+    </header>
+
+    <div class="flex flex-col gap-5 py-12">
+      <p class="${PROSE}">Every story in this paper is one event told through the accounts of outlets that disagree. Which outlets, and where each one stands, is not decided by an algorithm and not decided story by story — it is a single file, owned by this paper's editor, and this page is that file made visible.</p>
+      <p class="${PROSE}">The side labels are seeded from the <a href="https://www.allsides.com/media-bias/media-bias-chart" target="_blank" rel="noopener" class="underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current dark:decoration-white/25">AllSides Media Bias Chart</a> (v11.3), which rates outlets from left to right by balancing the judgment of readers and reviewers across the political spectrum. AllSides rates perspective, not accuracy — and so does this page. A label here is a map reference, not a verdict.</p>
+      <p class="${PROSE}">When a story's coverage collapses onto one side of that map, the brief says so, in plain words, right under the story. That line is a measurement, and you are entitled to it.</p>
+    </div>
+
+    <div class="flex flex-col divide-y divide-neutral-950/10 border-t ${HAIRLINE} dark:divide-white/10">
+${rows}
+    </div>
+
+    <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
+      <p class="pt-2 text-center text-lg/8 sm:text-base/7 italic text-neutral-950/60 dark:text-white/55">The masthead is a file. Change the file, change the paper.</p>
+    </footer>
+
+  </div>
+</main>
+</body>
+</html>
+`
+}
+
 export const renderEditionHtml = (opts: {
   readonly runId: string
   readonly editionLabel: string
@@ -169,8 +229,12 @@ export const renderEditionHtml = (opts: {
 <link rel="stylesheet" href="./brief.css">
 </head>
 <body class="bg-white font-serif text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
-<main class="isolate px-6 py-14 sm:py-20">
+<main class="isolate px-6 py-10 sm:py-14">
   <div class="mx-auto max-w-[68ch]">
+
+    <nav class="flex justify-end pb-6">
+      <a href="./sources.html" class="${MONO_QUIET} underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25">How we choose our sources</a>
+    </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
       <h1 class="text-6xl font-medium tracking-tight">eto</h1>

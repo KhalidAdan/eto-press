@@ -7,9 +7,11 @@
  * paper's public dress. Sources link to the accounts actually read.
  */
 import Database from "better-sqlite3"
-import { mkdirSync, writeFileSync } from "node:fs"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import * as TOML from "smol-toml"
 import {
   renderEditionHtml,
+  renderSourcesPage,
   resolveSourceLinks,
   splitDiffer,
   splitParagraphs,
@@ -101,7 +103,26 @@ const html = renderEditionHtml({
   }
 })
 
+// The sources page, straight from the masthead file — spectrum order.
+const masthead = TOML.parse(readFileSync("sources.toml", "utf8")) as {
+  source: Array<{ name: string; side: string }>
+}
+const SIDE_ORDER = ["left", "lean-left", "center", "lean-right", "right"]
+const bySide = SIDE_ORDER.flatMap((side) => {
+  const outlets = masthead.source.filter((s) => s.side === side).map((s) => s.name)
+  return outlets.length > 0 ? [{ side, outlets }] : []
+})
+// Sides outside the known order (the editor may invent labels) go last.
+for (const s of masthead.source) {
+  if (!SIDE_ORDER.includes(s.side)) {
+    const existing = bySide.find((g) => g.side === s.side)
+    if (existing) (existing.outlets as Array<string>).push(s.name)
+    else bySide.push({ side: s.side, outlets: [s.name] })
+  }
+}
+
 mkdirSync("site", { recursive: true })
 writeFileSync(`site/${runId}.html`, html, "utf8")
 writeFileSync("site/index.html", html, "utf8")
-console.log(`rendered site/${runId}.html and site/index.html (${stories.length} stories, ${stories.reduce((n, s) => n + s.sources.filter((x) => x.href).length, 0)} linked sources)`)
+writeFileSync("site/sources.html", renderSourcesPage(bySide), "utf8")
+console.log(`rendered site/${runId}.html, site/index.html, site/sources.html (${stories.length} stories, ${stories.reduce((n, s) => n + s.sources.filter((x) => x.href).length, 0)} linked sources)`)
