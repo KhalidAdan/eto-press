@@ -147,7 +147,9 @@ export const ingestAllFeeds = (masthead: Masthead, runId: string) =>
               link: entry.link,
               published_at: entry.publishedAt.toISOString()
             })}
-            ON CONFLICT (link) DO NOTHING
+            ON CONFLICT (link) DO UPDATE SET
+              side = excluded.side,
+              kind = excluded.kind
           `
           kept++
         }
