@@ -9,6 +9,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import * as TOML from "smol-toml"
 import {
   assembleStories,
+  correctionsPrintedIn,
+  healthLines,
   openJournal,
   publishedRuns,
   reportFor,
@@ -49,6 +51,7 @@ if (editions.length === 0) {
 
 mkdirSync("site", { recursive: true })
 
+const health = healthLines(db)
 let latestAssembled: Array<AssembledStory> = []
 for (const runId of editions) {
   const assembled = assembleStories(db, runId)
@@ -59,7 +62,11 @@ for (const runId of editions) {
       runId,
       editionLabel: "",
       stories: assembled.map((a) => a.story),
-      report: reportFor(db, runId, assembled.length)
+      report: {
+        ...reportFor(db, runId, assembled.length),
+        ...(runId === editions[0] ? { healthLines: health } : {})
+      },
+      corrections: correctionsPrintedIn(db, runId)
     }),
     "utf8"
   )

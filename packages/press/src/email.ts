@@ -73,12 +73,33 @@ const storyBlock = (s: HtmlStory): string => {
   </div>`
 }
 
+export interface EmailCorrection {
+  readonly edition: string
+  readonly headline: string
+  readonly note: string
+}
+
 export const renderEmailEdition = (opts: {
   readonly runId: string
   readonly stories: ReadonlyArray<HtmlStory>
+  readonly corrections?: ReadonlyArray<EmailCorrection>
 }): { subject: string; html: string; text: string } => {
   const date = longDate(opts.runId)
   const editionUrl = `${SITE_URL}/${opts.runId}.html`
+  const corrections = opts.corrections ?? []
+  const correctionsHtml =
+    corrections.length === 0
+      ? ""
+      : `
+  <div style="border-top:1px solid ${HAIRLINE};padding:20px 0 8px 0;">
+    <p style="margin:0 0 10px 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${CLARET};">Corrections</p>
+    ${corrections
+          .map(
+            (c) =>
+              `<p style="margin:0 0 12px 0;font-family:${SERIF};font-size:15px;line-height:1.6;color:${INK};">In the edition of <a href="${SITE_URL}/${esc(c.edition)}.html" style="color:${INK};">${esc(longDate(c.edition))}</a>, the story &ldquo;${esc(c.headline)}&rdquo;: ${esc(c.note)} The original stands unchanged in the archive.</p>`
+          )
+          .join("")}
+  </div>`
 
   const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
@@ -88,7 +109,7 @@ export const renderEmailEdition = (opts: {
     <p style="margin:0;font-family:${SERIF};font-size:44px;font-weight:500;color:${INK};">eto</p>
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;color:${QUIET};">One story. Every side. Then it ends.</p>
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${INK};">${esc(date)}</p>
-  </div>
+  </div>${correctionsHtml}
 ${opts.stories.map(storyBlock).join("\n")}
   <div style="border-top:1px solid ${HAIRLINE};padding:22px 0;text-align:center;">
     <p style="margin:0 0 10px 0;font-family:${MONO};font-size:12px;color:${QUIET};"><a href="${editionUrl}" style="color:${QUIET};">Read this edition on eto.news</a> · <a href="${SITE_URL}/sources.html" style="color:${QUIET};">How we choose our sources</a></p>

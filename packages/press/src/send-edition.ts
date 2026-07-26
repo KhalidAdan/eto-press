@@ -22,7 +22,7 @@ import {
 } from "@aws-sdk/client-sesv2"
 import { readFileSync } from "node:fs"
 import * as TOML from "smol-toml"
-import { assembleStories, openJournal, publishedRuns } from "./assemble.js"
+import { assembleStories, correctionsPrintedIn, openJournal, publishedRuns } from "./assemble.js"
 import { renderEmailEdition } from "./email.js"
 import { loadEnv } from "./env.js"
 
@@ -68,7 +68,11 @@ if (testAddr === null) {
 }
 
 const stories = assembleStories(db, runId).map((a) => a.story)
-const edition = renderEmailEdition({ runId, stories })
+const edition = renderEmailEdition({
+  runId,
+  stories,
+  corrections: correctionsPrintedIn(db, runId)
+})
 const ses = new SESv2Client({ region: process.env["AWS_REGION"] ?? "ca-central-1" })
 
 const domainIdentity = await ses

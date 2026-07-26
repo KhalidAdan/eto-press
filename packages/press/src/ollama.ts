@@ -14,7 +14,7 @@ interface ChatResponse {
 }
 
 interface TagsResponse {
-  readonly models: ReadonlyArray<{ readonly name: string }>
+  readonly models: ReadonlyArray<{ readonly name: string; readonly digest: string }>
 }
 
 export class Ollama extends Effect.Service<Ollama>()("Ollama", {
@@ -76,7 +76,7 @@ export class Ollama extends Effect.Service<Ollama>()("Ollama", {
       const body = (yield* response.json.pipe(
         Effect.mapError((cause) => new OllamaDown({ url: OLLAMA_URL, cause }))
       )) as TagsResponse
-      return body.models.map((m) => m.name)
+      return body.models.map((m) => ({ name: m.name, digest: m.digest }))
     }).pipe(Effect.scoped, Effect.withSpan("ollama.installedModels"))
 
     return { chat, installedModels } as const

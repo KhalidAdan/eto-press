@@ -23,6 +23,13 @@ export interface PublishedStory {
   readonly advisories: ReadonlyArray<string>
 }
 
+export interface CorrectionNotice {
+  readonly edition: string
+  readonly storyRank: number
+  readonly headline: string
+  readonly note: string
+}
+
 export interface RunReport {
   readonly feedOutcomes: ReadonlyArray<FeedOutcome>
   readonly funnel: {
@@ -35,6 +42,8 @@ export interface RunReport {
     readonly published: number
   }
   readonly dropped: ReadonlyArray<{ readonly rank: number; readonly reason: string }>
+  /** Source-health trends — the §6/§8 instrument panel. */
+  readonly healthLines?: ReadonlyArray<string>
 }
 
 const longDate = (runId: string): string =>
@@ -48,7 +57,8 @@ const longDate = (runId: string): string =>
 export const renderBrief = (
   runId: string,
   published: ReadonlyArray<PublishedStory>,
-  report: RunReport
+  report: RunReport,
+  corrections: ReadonlyArray<CorrectionNotice> = []
 ): string => {
   const parts: Array<string> = [
     `# eto — ${longDate(runId)}`,
@@ -56,6 +66,19 @@ export const renderBrief = (
     "*One story. Every side. Then it ends.*",
     ""
   ]
+
+  // Corrections lead the edition (NORTH-STAR §9): dated, pointing back,
+  // never reaching into the archive.
+  if (corrections.length > 0) {
+    parts.push("---", "", "## Corrections", "")
+    for (const c of corrections) {
+      parts.push(
+        `In the edition of ${longDate(c.edition)}, the story "${c.headline}": ${c.note} ` +
+          `The original stands unchanged in [the archive](${c.edition}.md).`
+      )
+      parts.push("")
+    }
+  }
 
   const mains = published.filter((p) => p.story.foldReason === null)
   const fold = published.find((p) => p.story.foldReason !== null)
@@ -107,6 +130,9 @@ export const renderBrief = (
   )
   for (const d of report.dropped) {
     parts.push(`- Story #${d.rank} dropped: ${d.reason}`)
+  }
+  for (const line of report.healthLines ?? []) {
+    parts.push(`- ${line}`)
   }
   const advisories = published.flatMap((p) =>
     p.advisories.map((a) => `${p.draft.headline.slice(0, 40)}…: ${a}`)

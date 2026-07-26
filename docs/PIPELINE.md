@@ -63,6 +63,21 @@ brief does not already exist.
 - **Note:** `run_id` is the editor's **local** calendar date — the morning
   the brief is for, not the UTC date. (Found the hard way: the first live
   run stamped itself with tomorrow's UTC date at 9:51 p.m. local.)
+- **Model pinning (§10):** preflight compares each model's digest against
+  `models.lock.json` (written on first run). Drift is `ModelDrifted`, fatal:
+  an `ollama pull` must never silently change the paper's mind. Re-pinning
+  is deliberate — delete the lockfile entry and rerun.
+- **Corrections (§9):** the editor records one with
+  `npm run correct -- <edition> <rank> "note"`. Pending corrections print at
+  the top of the next edition (markdown, site, and email), dated, linking
+  back; the pipeline marks them `printed_in` only after the archive write
+  succeeds. The archive itself is never touched.
+- **Resilience:** the paperboy exports the genuinely-ours tables (stories,
+  clusters, feed_fetches, email_sends, corrections) as JSONL to
+  `db/exports/` — committed as diffable text — and takes a rotating binary
+  backup of the whole journal to `E:\eto-backups` (14 kept). The big tables
+  stay out of git: rebuildable caches, and `articles` carries other
+  outlets' full text, which we do not redistribute.
 
 ### 1. Fetch feeds
 
@@ -313,6 +328,7 @@ genuinely ours.
 | `MastheadInvalid` | 0 | path, line, reason | no | yes |
 | `OllamaDown` | 0 | — | no | yes |
 | `ModelMissing` | 0 | model | no | yes |
+| `ModelDrifted` | 0 | model, expected, actual | no | yes |
 | `BriefAlreadyPublished` | 0, 10 | date | no | yes |
 | `FeedUnreachable` | 1 | outlet, url, cause | 3×, transient only | no |
 | `FeedMalformed` | 2 | outlet, url, cause | no | no |

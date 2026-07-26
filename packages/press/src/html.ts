@@ -47,6 +47,7 @@ export interface HtmlReport {
   readonly feedsLine: string
   readonly funnelLine: string
   readonly droppedLines: ReadonlyArray<string>
+  readonly healthLines?: ReadonlyArray<string>
 }
 
 /** Split composed prose into paragraphs (blank-line separated, with
@@ -370,15 +371,38 @@ ${rows}
 `
 }
 
+export interface HtmlCorrection {
+  readonly edition: string
+  readonly headline: string
+  readonly note: string
+}
+
 export const renderEditionHtml = (opts: {
   readonly runId: string
   readonly editionLabel: string
   readonly stories: ReadonlyArray<HtmlStory>
   readonly report: HtmlReport
+  readonly corrections?: ReadonlyArray<HtmlCorrection>
 }): string => {
   const date = longDate(opts.runId)
+  const corrections = opts.corrections ?? []
+  const correctionsSection =
+    corrections.length === 0
+      ? ""
+      : `
+    <section class="flex flex-col gap-3 border-b ${HAIRLINE} py-8">
+      <h2 class="${MONO} font-medium uppercase tracking-wide ${ACCENT}">Corrections</h2>
+${corrections
+          .map(
+            (c) => `      <p class="${PROSE}">In the edition of <a href="./${esc(c.edition)}.html" class="${LINK_STYLE}">${esc(longDate(c.edition))}</a>, the story &ldquo;${esc(c.headline)}&rdquo;: ${esc(c.note)} The original stands unchanged in the archive.</p>`
+          )
+          .join("\n")}
+    </section>`
 
-  const dropped = opts.report.droppedLines
+  const dropped = [
+    ...opts.report.droppedLines,
+    ...(opts.report.healthLines ?? [])
+  ]
     .map((d) => `        <p>${esc(d)}</p>`)
     .join("\n")
 
@@ -411,7 +435,7 @@ ${headMeta({
       <p class="${MONO} text-neutral-950/60 dark:text-white/55">One story. Every side. Then it ends.</p>
       <p class="${MONO} uppercase tracking-wide">${esc(date)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
     </header>
-
+${correctionsSection}
     <div class="flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10">
 ${opts.stories
     .filter((s) => s.foldReason === null)

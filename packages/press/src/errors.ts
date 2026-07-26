@@ -32,6 +32,15 @@ export class BriefAlreadyPublished extends Data.TaggedError(
   readonly path: string
 }> {}
 
+/** A pinned model's digest changed — someone pulled a new build. Nobody
+ * changes the paper's mind by shipping an update (NORTH-STAR §10): the
+ * press stops until the editor re-pins deliberately. */
+export class ModelDrifted extends Data.TaggedError("ModelDrifted")<{
+  readonly model: string
+  readonly expected: string
+  readonly actual: string
+}> {}
+
 // -- Stage 1-2: feeds (per-feed, never fatal to the run) --------------------
 
 export class FeedUnreachable extends Data.TaggedError("FeedUnreachable")<{

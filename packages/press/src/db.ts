@@ -91,6 +91,17 @@ const TABLES = [
     detail       TEXT,
     verified_at  TEXT NOT NULL
   )`,
+  // The §9 mechanism: the archive never changes; corrections run in a
+  // LATER edition, dated, pointing back. Rows are editorial acts — written
+  // only by the editor's own command (npm run correct), never by a model.
+  `CREATE TABLE IF NOT EXISTS corrections (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    edition    TEXT NOT NULL,           -- run_id of the edition being corrected
+    story_rank INTEGER NOT NULL,
+    note       TEXT NOT NULL,           -- the editor's words, printed verbatim
+    created_at TEXT NOT NULL,
+    printed_in TEXT                     -- run_id of the edition that printed it
+  )`,
   `CREATE TABLE IF NOT EXISTS email_sends (
     run_id     TEXT PRIMARY KEY,        -- one delivery per edition, ever
     sent_at    TEXT NOT NULL,

@@ -2,16 +2,17 @@
  * The nightly run, written as the imperative walk from docs/PIPELINE.md.
  * Stages 0-3 are live; stages 4+ land as they are built.
  */
+import { FileSystem } from "@effect/platform"
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
 import { fetchArticlesForStories, type StoryWithAccounts } from "./articles.js"
 import { buildClusters, persistClusters } from "./cluster.js"
 import { compositeStory } from "./composite.js"
-import { archiveBrief, renderBrief, type PublishedStory } from "./render.js"
+import { archiveBrief, renderBrief, type CorrectionNotice, type PublishedStory } from "./render.js"
 import { editorNotes, persistVerifications, verifyDraft } from "./verify.js"
-import { MATCH_MODEL } from "./config.js"
+import { COMPOSITE_MODEL, MATCH_MODEL } from "./config.js"
 import { ensureSchema } from "./db.js"
-import { FunnelAnomalous, ModelMissing } from "./errors.js"
+import { FunnelAnomalous, ModelDrifted, ModelMissing } from "./errors.js"
 import { ingestAllFeeds } from "./feeds.js"
 import { judgePairs } from "./judge.js"
 import { loadMasthead } from "./masthead.js"
@@ -36,8 +37,38 @@ export const nightly = Effect.gen(function* () {
   const ollama = yield* Ollama
 
   const installed = yield* ollama.installedModels
-  if (!installed.includes(MATCH_MODEL)) {
-    return yield* new ModelMissing({ model: MATCH_MODEL, installed })
+  const names = installed.map((m) => m.name)
+  for (const model of [MATCH_MODEL, COMPOSITE_MODEL]) {
+    if (!names.includes(model)) {
+      return yield* new ModelMissing({ model, installed: names })
+    }
+  }
+
+  // Digest pinning (§10): an `ollama pull` must never silently change the
+  // paper's mind. First run writes the lockfile; drift stops the press.
+  const fs = yield* FileSystem.FileSystem
+  const LOCK = "models.lock.json"
+  const current = Object.fromEntries(
+    installed
+      .filter((m) => m.name === MATCH_MODEL || m.name === COMPOSITE_MODEL)
+      .map((m) => [m.name, m.digest])
+  )
+  if (yield* fs.exists(LOCK).pipe(Effect.orDie)) {
+    const locked = JSON.parse(
+      yield* fs.readFileString(LOCK).pipe(Effect.orDie)
+    ) as Record<string, string>
+    for (const [model, digest] of Object.entries(locked)) {
+      if (current[model] !== undefined && current[model] !== digest) {
+        return yield* new ModelDrifted({
+          model,
+          expected: digest,
+          actual: current[model]
+        })
+      }
+    }
+  } else {
+    yield* fs.writeFileString(LOCK, JSON.stringify(current, null, 2) + "\n").pipe(Effect.orDie)
+    yield* Effect.logInfo(`model digests pinned to ${LOCK}`)
   }
 
   const runId = localDateId(new Date())
@@ -220,20 +251,86 @@ export const nightly = Effect.gen(function* () {
     SELECT rank, reason FROM stories
     WHERE run_id = ${runId} AND status = 'dropped' ORDER BY rank
   `
-  const content = renderBrief(runId, published, {
-    feedOutcomes: outcomes,
-    funnel: {
-      items: items.length,
-      news: news.length,
-      candidates: pairs.length,
-      matches: matches.length,
-      clusters: clusters.length,
-      selected: stories.length,
-      published: published.length
+
+  // Pending corrections print at the top of THIS edition (§9), dated,
+  // pointing back. The archive they point at is never touched.
+  const pendingCorrections = yield* sql<{
+    id: number
+    edition: string
+    story_rank: number
+    note: string
+  }>`SELECT id, edition, story_rank, note FROM corrections WHERE printed_in IS NULL ORDER BY id`
+  const corrections: Array<CorrectionNotice> = []
+  for (const c of pendingCorrections) {
+    const h = yield* sql<{ headline: string | null }>`
+      SELECT d.headline AS headline FROM stories s
+      LEFT JOIN drafts d ON d.cluster_hash = s.cluster_hash
+      WHERE s.run_id = ${c.edition} AND s.rank = ${c.story_rank} AND s.status = 'published'
+      GROUP BY s.cluster_hash LIMIT 1
+    `
+    corrections.push({
+      edition: c.edition,
+      storyRank: c.story_rank,
+      headline: h[0]?.headline ?? `story #${c.story_rank}`,
+      note: c.note
+    })
+  }
+
+  // The §6/§8 instrument panel: source-health trends, printed as data.
+  const healthLines: Array<string> = []
+  const recentRuns = yield* sql<{ run_id: string }>`
+    SELECT DISTINCT run_id FROM feed_fetches ORDER BY run_id DESC LIMIT 7
+  `
+  if (recentRuns.length > 0) {
+    const oldest = recentRuns[recentRuns.length - 1]!.run_id
+    const feedHealth = yield* sql<{ outlet: string; total: number; ok: number }>`
+      SELECT outlet, COUNT(*) AS total, SUM(status = 'ok') AS ok
+      FROM feed_fetches WHERE run_id >= ${oldest}
+      GROUP BY outlet HAVING ok < total ORDER BY ok * 1.0 / total
+    `
+    if (feedHealth.length > 0) {
+      healthLines.push(
+        `Feed health (last ${recentRuns.length} runs): ` +
+          feedHealth.map((f) => `${f.outlet} ${f.ok}/${f.total} ok`).join(" · ")
+      )
+    }
+  }
+  const articleHealth = yield* sql<{ outlet: string; total: number; ok: number }>`
+    SELECT i.outlet AS outlet, COUNT(*) AS total, SUM(a.status = 'ok') AS ok
+    FROM articles a JOIN items i ON i.id = a.item_id
+    GROUP BY i.outlet HAVING total >= 5 AND ok * 1.0 / total < 0.8
+    ORDER BY ok * 1.0 / total
+  `
+  if (articleHealth.length > 0) {
+    healthLines.push(
+      "Article access: " +
+        articleHealth.map((a) => `${a.outlet} ${a.ok}/${a.total} readable`).join(" · ")
+    )
+  }
+
+  const content = renderBrief(
+    runId,
+    published,
+    {
+      feedOutcomes: outcomes,
+      funnel: {
+        items: items.length,
+        news: news.length,
+        candidates: pairs.length,
+        matches: matches.length,
+        clusters: clusters.length,
+        selected: stories.length,
+        published: published.length
+      },
+      dropped: droppedRows.map((d) => ({ rank: d.rank, reason: d.reason })),
+      healthLines
     },
-    dropped: droppedRows.map((d) => ({ rank: d.rank, reason: d.reason }))
-  })
+    corrections
+  )
   const briefPath = yield* archiveBrief(runId, content)
+  for (const c of pendingCorrections) {
+    yield* sql`UPDATE corrections SET printed_in = ${runId} WHERE id = ${c.id}`
+  }
   yield* sql`
     UPDATE runs SET finished_at = ${new Date().toISOString()},
       notes = ${`${published.length} published, ${droppedRows.length} dropped`}

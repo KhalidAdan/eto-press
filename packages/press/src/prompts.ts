@@ -35,9 +35,13 @@ export const COMPOSITE_TEMPLATE =
   "and these literal section markers:\n\n" +
   "HEADLINE: <one plain factual line>\n\n" +
   "BODY:\n<two or three short paragraphs of what happened>\n\n" +
-  "WHERE THE ACCOUNTS DIFFER:\n<where the accounts conflict, diverge in " +
-  "emphasis, or one reports what another omits — name each outlet plainly. " +
-  "Do not manufacture conflict that is not there.>\n\n" +
+  "WHERE THE ACCOUNTS DIFFER:\n<where the accounts conflict or one reports " +
+  "what another omits — name each outlet plainly. State concrete, checkable " +
+  "differences: numbers that disagree, claims one outlet carries that " +
+  "another lacks, who each outlet attributes a claim to. Never comment on " +
+  "coverage style, depth, or level of detail — a sentence like 'X provides " +
+  "more detail' is commentary about journalism, not a difference in the " +
+  "event, and is banned. Do not manufacture conflict that is not there.>\n\n" +
   "SOURCES: <outlet> - <outlet> - ...\n\n" +
   "Hard rules:\n" +
   "- Use ONLY facts present in the accounts below. Every claim must be " +

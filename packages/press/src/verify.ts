@@ -53,8 +53,10 @@ export const verifyDraft = (
   const violations: Array<string> = []
   const advisories: Array<string> = []
 
+  // Outlet names join the corpus: the differ section legitimately names
+  // outlets, and "Guardian" not appearing in article text is not a leak.
   const corpus = normalize(
-    accounts.map((a) => `${a.item.title} ${a.text}`).join("\n")
+    accounts.map((a) => `${a.item.outlet} ${a.item.title} ${a.text}`).join("\n")
   )
   const prose = `${draft.body}\n${draft.differ}`
   const proseNorm = normalize(prose)
