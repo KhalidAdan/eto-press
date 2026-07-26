@@ -54,6 +54,15 @@ const TABLES = [
     item_id      INTEGER NOT NULL,
     PRIMARY KEY (run_id, cluster_hash, item_id)
   )`,
+  `CREATE TABLE IF NOT EXISTS stories (
+    run_id       TEXT NOT NULL,
+    cluster_hash TEXT NOT NULL,
+    rank         INTEGER NOT NULL,
+    balance_note TEXT,                   -- the §6 measurement, printed as-is
+    status       TEXT NOT NULL,          -- selected | published | dropped
+    reason       TEXT,                   -- why dropped, for the run report
+    PRIMARY KEY (run_id, cluster_hash)
+  )`,
   // Stage 4+ tables are declared now so the journal's shape is complete:
   `CREATE TABLE IF NOT EXISTS verdicts (
     item_a      INTEGER NOT NULL,

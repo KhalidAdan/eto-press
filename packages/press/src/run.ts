@@ -13,6 +13,7 @@ import { judgePairs } from "./judge.js"
 import { loadMasthead } from "./masthead.js"
 import { Ollama } from "./ollama.js"
 import { candidatePairs, crossOutletPairCount } from "./prefilter.js"
+import { persistStories, selectStories, STORY_CAP } from "./select.js"
 
 /** The run id is the editor's local calendar date — the morning the brief is
  * for. (Found the hard way: the first live run stamped itself with the UTC
@@ -104,9 +105,20 @@ export const nightly = Effect.gen(function* () {
     }
   }
 
-  // -- Stage 6+: select, fetch, composite, verify, render --------------------
+  // -- Stage 6: select --------------------------------------------------------
+  const stories = yield* Effect.sync(() => selectStories(masthead, clusters))
+  yield* persistStories(runId, stories)
+  yield* Effect.logInfo(`stage 6: ${stories.length} stories selected (cap ${STORY_CAP})`)
+  for (const s of stories) {
+    yield* Effect.logInfo(
+      `  #${s.rank} [${s.cluster.sides.join("/")}] ${s.cluster.items[0]!.title.slice(0, 70)}` +
+        (s.balanceNote ? ` — ${s.balanceNote}` : "")
+    )
+  }
+
+  // -- Stage 7+: fetch, composite, verify, render -----------------------------
   // Not yet built. The walk ends here, on purpose, until they are.
-  yield* Effect.logInfo("stages 6+ not yet implemented — run ends")
+  yield* Effect.logInfo("stages 7+ not yet implemented — run ends")
 
   return {
     runId,
