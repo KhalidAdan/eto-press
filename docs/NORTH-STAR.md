@@ -171,4 +171,19 @@ produce a very confident newspaper about one half of the world.
 
 ---
 
+### The Default Masthead
+
+eto ships with a starting source list seeded from the AllSides Media Bias
+Chart (v11.3, read 2026-07-25) — the same kind of chart its editor once kept
+open in another window while doing all of this by hand. The seed uses the
+chart's five labels — left, lean-left, center, lean-right, right — because
+balance measured in finer buckets is harder to fool. The audited catalog of
+every chart outlet's front door lives in `docs/SOURCES.md`, and the active
+list lives in `sources.toml`.
+
+None of this outranks you. The chart is a cartographer, not an editor.
+Change the file, change the paper.
+
+---
+
 *A newspaper whose sources you can read — in both senses.*
