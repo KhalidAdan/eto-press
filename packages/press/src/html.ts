@@ -290,6 +290,17 @@ ${headlineList}
       </ul>
     </section>
 
+    <section class="flex flex-col gap-4 border-t ${HAIRLINE} py-10">
+      <h2 class="${MONO} font-medium uppercase tracking-wide">The morning edition, by email</h2>
+      <form method="POST" action="/subscribe" class="flex flex-col gap-3 sm:flex-row">
+        <div class="absolute -left-[5000px]" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+        <label for="sub-email" class="sr-only hidden">Email address</label>
+        <input id="sub-email" type="email" name="email" required placeholder="you@example.com" class="${MONO} grow border border-neutral-950/25 bg-transparent px-4 py-2.5 sm:py-2 placeholder:text-neutral-950/40 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white/25 dark:placeholder:text-white/40">
+        <button type="submit" class="${MONO} border border-neutral-950 bg-neutral-950 px-6 py-2.5 sm:py-2 text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white dark:bg-white dark:text-neutral-950">Subscribe</button>
+      </form>
+      <p class="${MONO_QUIET}">One email each day. It ends. Unsubscribe in every footer.</p>
+    </section>
+
     <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
       <h2 class="${MONO} font-medium uppercase tracking-wide">Past editions</h2>
       <p class="${MONO_QUIET}">${editionList}</p>
