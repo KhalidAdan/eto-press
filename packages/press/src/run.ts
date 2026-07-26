@@ -4,6 +4,7 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
+import { fetchArticlesForStories, type StoryWithAccounts } from "./articles.js"
 import { buildClusters, persistClusters } from "./cluster.js"
 import { MATCH_MODEL } from "./config.js"
 import { ensureSchema } from "./db.js"
@@ -13,7 +14,7 @@ import { judgePairs } from "./judge.js"
 import { loadMasthead } from "./masthead.js"
 import { Ollama } from "./ollama.js"
 import { candidatePairs, crossOutletPairCount } from "./prefilter.js"
-import { persistStories, selectStories, STORY_CAP } from "./select.js"
+import { markStory, persistStories, selectStories, STORY_CAP } from "./select.js"
 
 /** The run id is the editor's local calendar date — the morning the brief is
  * for. (Found the hard way: the first live run stamped itself with the UTC
@@ -116,9 +117,30 @@ export const nightly = Effect.gen(function* () {
     )
   }
 
-  // -- Stage 7+: fetch, composite, verify, render -----------------------------
+  // -- Stage 7: fetch full articles -------------------------------------------
+  const withAccounts = yield* fetchArticlesForStories(stories)
+  const composable: Array<StoryWithAccounts> = []
+  for (const swa of withAccounts) {
+    const outlets = new Set(swa.accounts.map((a) => a.item.outlet))
+    if (outlets.size < 2) {
+      yield* markStory(
+        runId,
+        swa.story.cluster.hash,
+        "dropped",
+        `fewer than 2 fetched accounts (${outlets.size})`
+      )
+      yield* Effect.logWarning(
+        `  story #${swa.story.rank} dropped: fewer than 2 fetched accounts`
+      )
+      continue
+    }
+    composable.push(swa)
+  }
+  yield* Effect.logInfo(`stage 7: ${composable.length} stories ready to composite`)
+
+  // -- Stage 8+: composite, verify, render -------------------------------------
   // Not yet built. The walk ends here, on purpose, until they are.
-  yield* Effect.logInfo("stages 7+ not yet implemented — run ends")
+  yield* Effect.logInfo("stages 8+ not yet implemented — run ends")
 
   return {
     runId,

@@ -48,6 +48,20 @@ export class FeedMalformed extends Data.TaggedError("FeedMalformed")<{
   readonly cause: unknown
 }> {}
 
+// -- Stage 7: articles (account-level: the account drops, never the run) ----
+
+export class ArticleUnfetchable extends Data.TaggedError("ArticleUnfetchable")<{
+  readonly outlet: string
+  readonly url: string
+  readonly cause: unknown
+  readonly transient: boolean
+}> {}
+
+export class ArticleUnreadable extends Data.TaggedError("ArticleUnreadable")<{
+  readonly outlet: string
+  readonly url: string
+}> {}
+
 // -- Stage 4/5/8: model calls (unit-level, never fatal to the run) ----------
 
 export class OllamaCallFailed extends Data.TaggedError("OllamaCallFailed")<{

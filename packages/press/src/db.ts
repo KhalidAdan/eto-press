@@ -54,6 +54,13 @@ const TABLES = [
     item_id      INTEGER NOT NULL,
     PRIMARY KEY (run_id, cluster_hash, item_id)
   )`,
+  `CREATE TABLE IF NOT EXISTS articles (
+    item_id    INTEGER PRIMARY KEY,      -- cache key: rerun refetches only failures
+    status     TEXT NOT NULL,            -- ok | unfetchable | unreadable
+    http_code  INTEGER,
+    text       TEXT,
+    fetched_at TEXT NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS stories (
     run_id       TEXT NOT NULL,
     cluster_hash TEXT NOT NULL,
