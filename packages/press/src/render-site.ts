@@ -190,9 +190,10 @@ for (const a of latestAssembled) {
     title: a.story.headline,
     anchor,
     fold: isFold,
-    meta: meta
-      ? `${meta.outlet_count} outlets · ${meta.sides}`
+    outletsLabel: meta
+      ? `${meta.outlet_count} outlet${meta.outlet_count === 1 ? "" : "s"}`
       : `${a.story.sources.length} sources`,
+    sides: meta ? meta.sides.split("/") : [],
     image
   })
 }

@@ -188,11 +188,35 @@ export interface HomeCard {
   readonly title: string
   readonly anchor: string
   readonly fold: boolean
-  /** Outlets × sides meta line, e.g. "6 outlets · center/left/right". */
-  readonly meta: string
+  /** e.g. "6 outlets" — the breadth measurement. */
+  readonly outletsLabel: string
+  /** Masthead side labels present on this story, any order. */
+  readonly sides: ReadonlyArray<string>
   /** The outlet-designated link-preview image, hotlinked with credit —
    * null renders a typographic card. */
   readonly image: { readonly src: string; readonly credit: string } | null
+}
+
+/** The spectrum strip: side labels abbreviated and colored blue-to-red
+ * (center is purple), separators dimmed so the letters carry the line. */
+const SIDE_BADGES: ReadonlyArray<{ side: string; abbr: string; cls: string }> = [
+  { side: "left", abbr: "L", cls: "text-blue-700 dark:text-blue-400" },
+  { side: "lean-left", abbr: "CL", cls: "text-blue-500 dark:text-blue-300" },
+  { side: "center", abbr: "C", cls: "text-violet-600 dark:text-violet-400" },
+  { side: "lean-right", abbr: "CR", cls: "text-red-500 dark:text-red-300" },
+  { side: "right", abbr: "R", cls: "text-red-700 dark:text-red-400" }
+]
+
+export const sideSpectrum = (sides: ReadonlyArray<string>): string => {
+  const known = SIDE_BADGES.filter((b) => sides.includes(b.side)).map(
+    (b) => `<span class="${b.cls}">${b.abbr}</span>`
+  )
+  const custom = sides
+    .filter((s) => !SIDE_BADGES.some((b) => b.side === s))
+    .map((s) => `<span>${esc(s.slice(0, 2).toUpperCase())}</span>`)
+  return [...known, ...custom].join(
+    `<span class="text-neutral-950/25 dark:text-white/25"> / </span>`
+  )
 }
 
 export const renderHomePage = (opts: {
@@ -213,7 +237,7 @@ export const renderHomePage = (opts: {
           <a href="${latest}#${h.anchor}" class="group flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2">${image}
             <div class="flex grow flex-col gap-2 p-5">
               ${h.fold ? `<p class="${MONO} uppercase tracking-wide ${ACCENT}">Below the fold</p>\n              ` : ""}<h3 class="text-pretty text-xl font-semibold group-hover:underline decoration-neutral-950/30 underline-offset-4 dark:decoration-white/30">${esc(h.title)}</h3>
-              <p class="${MONO} mt-auto text-neutral-950/60 dark:text-white/50">${esc(h.meta)}</p>
+              <p class="${MONO} mt-auto text-neutral-950/60 dark:text-white/50">${esc(h.outletsLabel)}<span class="text-neutral-950/25 dark:text-white/25"> · </span>${sideSpectrum(h.sides)}</p>
             </div>
           </a>
         </li>`
