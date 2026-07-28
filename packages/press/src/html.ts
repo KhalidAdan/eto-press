@@ -135,6 +135,7 @@ const headMeta = (opts: {
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="eto — the morning edition" href="${SITE_URL}/feed.xml">
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">`
 
@@ -304,6 +305,7 @@ ${headlineList}
     <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
       <h2 class="${MONO} font-medium uppercase tracking-wide">Past editions</h2>
       <p class="${MONO_QUIET}">${editionList}</p>
+      <p class="${MONO_QUIET}"><a href="/feed.xml" class="${LINK_STYLE}">RSS</a> — one item per edition, the whole brief inside, for your own reader.</p>
       <p class="pt-6 text-center text-lg/8 sm:text-base/7 italic text-neutral-950/60 dark:text-white/55">A newspaper whose sources you can read — in both senses.</p>
     </footer>
 

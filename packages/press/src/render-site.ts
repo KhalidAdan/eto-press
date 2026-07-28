@@ -16,6 +16,7 @@ import {
   reportFor,
   type AssembledStory
 } from "./assemble.js"
+import { renderFeedXml } from "./feed.js"
 import {
   renderEditionHtml,
   renderHomePage,
@@ -52,10 +53,10 @@ if (editions.length === 0) {
 mkdirSync("site", { recursive: true })
 
 const health = healthLines(db)
-let latestAssembled: Array<AssembledStory> = []
+const assembledByRun = new Map<string, Array<AssembledStory>>()
 for (const runId of editions) {
   const assembled = assembleStories(db, runId)
-  if (runId === editions[0]) latestAssembled = assembled
+  assembledByRun.set(runId, assembled)
   writeFileSync(
     `site/${runId}.html`,
     renderEditionHtml({
@@ -71,6 +72,20 @@ for (const runId of editions) {
     "utf8"
   )
 }
+const latestAssembled: Array<AssembledStory> = assembledByRun.get(editions[0]!) ?? []
+
+// The RSS feed: one item per edition, whole brief inside, newest first.
+writeFileSync(
+  "site/feed.xml",
+  renderFeedXml(
+    editions.slice(0, 14).map((runId) => ({
+      runId,
+      stories: (assembledByRun.get(runId) ?? []).map((a) => a.story),
+      corrections: correctionsPrintedIn(db, runId)
+    }))
+  ),
+  "utf8"
+)
 
 // Home page cards: anchor order matches the edition page (mains, then fold).
 const clusterMeta = db.prepare(
