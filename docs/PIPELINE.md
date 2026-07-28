@@ -183,6 +183,24 @@ question stage 5 is allowed to ask it.
   judging model to something cheaper).
 - **Fails with:** nothing new (model calls here reuse stage-4 error types).
 
+### 5b. Cross-edition dedupe
+
+The 48-hour window (stage 3) means consecutive editions share most of their
+corpus; without this stage, yesterday's front page reprints itself (found the
+hard way: the 2026-07-28 edition, printed 20 hours after a late 07-27 run).
+A cluster is set aside as a **repeat** when more than half its member
+articles already appeared in a story an earlier edition *published* —
+selected-then-dropped stories never reached the reader, so their articles
+stay eligible, and same-day rows are excluded so a retry can reprint its own
+morning. A story that returns with mostly new reporting clears the threshold
+and runs again as a development. Deterministic arithmetic, not a model's
+mood; set-asides are logged and counted in the stage-11 funnel line.
+
+- **In/Out:** event clusters → fresh clusters (repeats set aside)
+- **Tables:** reads `stories` × `cluster_items` × `items`; writes nothing.
+- **Fails with:** nothing new (a journal read; an empty journal means an
+  empty printed set and every cluster is fresh).
+
 ### 6. Select stories
 
 Apply the masthead's eligibility rules, all deterministic:

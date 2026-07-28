@@ -21,6 +21,43 @@ export interface Story {
   readonly foldReason: string | null
 }
 
+/** Stage 5b: what earlier editions actually printed. Only status
+ * 'published' counts — a story selected but dropped never reached the
+ * reader, so its articles stay eligible. Same-day rows are excluded so a
+ * retry can reprint its own morning's selections. */
+export const previouslyPrintedLinks = (runId: string) =>
+  Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    const rows = yield* sql<{ link: string }>`
+      SELECT DISTINCT i.link AS link
+      FROM stories s
+      JOIN cluster_items ci
+        ON ci.run_id = s.run_id AND ci.cluster_hash = s.cluster_hash
+      JOIN items i ON i.id = ci.item_id
+      WHERE s.status = 'published' AND s.run_id < ${runId}
+    `
+    return new Set(rows.map((r) => r.link))
+  }).pipe(Effect.withSpan("stage5b.previouslyPrintedLinks"))
+
+/** Stage 5b: cross-edition dedupe. A cluster is a repeat when MORE THAN
+ * HALF its members were already printed: the 48-hour window's carryover of
+ * yesterday's front page dies here, while a story that returns with mostly
+ * new reporting is a development and runs again. Deterministic on purpose —
+ * the threshold is arithmetic, not a model's mood. */
+export const dropAlreadyPrinted = (
+  clusters: ReadonlyArray<Cluster>,
+  printed: ReadonlySet<string>
+): { fresh: Array<Cluster>; repeats: Array<Cluster> } => {
+  const fresh: Array<Cluster> = []
+  const repeats: Array<Cluster> = []
+  for (const c of clusters) {
+    const overlap = c.items.filter((it) => printed.has(it.link)).length
+    if (overlap * 2 > c.items.length) repeats.push(c)
+    else fresh.push(c)
+  }
+  return { fresh, repeats }
+}
+
 export const balanceNoteFor = (
   masthead: Masthead,
   cluster: Cluster

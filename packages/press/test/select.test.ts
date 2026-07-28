@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { Cluster } from "../src/cluster.js"
 import type { Masthead } from "../src/masthead.js"
-import { selectStories, STORY_CAP } from "../src/select.js"
+import { dropAlreadyPrinted, selectStories, STORY_CAP } from "../src/select.js"
 
 const masthead = {
   source: [
@@ -58,5 +58,41 @@ describe("selectStories", () => {
       cluster(["FOX News", "NPR"], ["right", "left"])
     )
     expect(selectStories(masthead, many)).toHaveLength(STORY_CAP)
+  })
+})
+
+describe("dropAlreadyPrinted", () => {
+  const links = (c: Cluster) => c.items.map((i) => i.link)
+
+  it("sets aside a cluster whose members were mostly already printed", () => {
+    const carryover = cluster(["FOX News", "NPR", "BBC"], ["right", "left", "center"])
+    const printed = new Set(links(carryover).slice(0, 2)) // 2 of 3
+    const { fresh, repeats } = dropAlreadyPrinted([carryover], printed)
+    expect(repeats).toEqual([carryover])
+    expect(fresh).toHaveLength(0)
+  })
+
+  it("keeps a cluster with mostly new reporting — a development runs again", () => {
+    const developing = cluster(
+      ["FOX News", "NPR", "BBC", "UPI"],
+      ["right", "left", "center", "center"]
+    )
+    const printed = new Set(links(developing).slice(0, 1)) // 1 of 4
+    const { fresh, repeats } = dropAlreadyPrinted([developing], printed)
+    expect(fresh).toEqual([developing])
+    expect(repeats).toHaveLength(0)
+  })
+
+  it("keeps an exact half-overlap — half new reporting is not a repeat", () => {
+    const half = cluster(["FOX News", "NPR"], ["right", "left"])
+    const printed = new Set(links(half).slice(0, 1)) // 1 of 2
+    expect(dropAlreadyPrinted([half], printed).fresh).toEqual([half])
+  })
+
+  it("with an empty journal, every cluster is fresh", () => {
+    const c = cluster(["FOX News", "NPR"], ["right", "left"])
+    const { fresh, repeats } = dropAlreadyPrinted([c], new Set())
+    expect(fresh).toEqual([c])
+    expect(repeats).toHaveLength(0)
   })
 })

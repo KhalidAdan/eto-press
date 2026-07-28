@@ -19,7 +19,15 @@ import { loadMasthead } from "./masthead.js"
 import { Ollama } from "./ollama.js"
 import { candidatePairs, crossOutletPairCount } from "./prefilter.js"
 import { nominateBelowTheFold } from "./nominate.js"
-import { balanceNoteFor, markStory, persistStories, selectStories, STORY_CAP } from "./select.js"
+import {
+  balanceNoteFor,
+  dropAlreadyPrinted,
+  markStory,
+  persistStories,
+  previouslyPrintedLinks,
+  selectStories,
+  STORY_CAP
+} from "./select.js"
 
 /** The run id is the editor's local calendar date — the morning the brief is
  * for. (Found the hard way: the first live run stamped itself with the UTC
@@ -141,8 +149,22 @@ export const nightly = Effect.gen(function* () {
     }
   }
 
+  // -- Stage 5b: cross-edition dedupe -----------------------------------------
+  // The 48-hour window (feeds.ts) means consecutive editions share most of
+  // their corpus; without this, yesterday's front page reprints itself.
+  const printed = yield* previouslyPrintedLinks(runId)
+  const { fresh, repeats } = dropAlreadyPrinted(clusters, printed)
+  if (repeats.length > 0) {
+    yield* Effect.logInfo(
+      `stage 5b: ${repeats.length} cluster(s) set aside — already printed in an earlier edition`
+    )
+    for (const r of repeats) {
+      yield* Effect.logInfo(`  repeat: ${r.items[0]!.title.slice(0, 80)}`)
+    }
+  }
+
   // -- Stage 6: select --------------------------------------------------------
-  const selected = yield* Effect.sync(() => selectStories(masthead, clusters))
+  const selected = yield* Effect.sync(() => selectStories(masthead, fresh))
   yield* Effect.logInfo(`stage 6: ${selected.length} stories selected (cap ${STORY_CAP})`)
   for (const s of selected) {
     yield* Effect.logInfo(
@@ -156,7 +178,7 @@ export const nightly = Effect.gen(function* () {
   // over the main ranking; killable in sources.toml (experiment 003).
   let stories = selected
   if (masthead.below_the_fold !== false) {
-    const pool = clusters.filter(
+    const pool = fresh.filter(
       (c) => !selected.some((s) => s.cluster.hash === c.hash)
     )
     const nomination = yield* nominateBelowTheFold(pool, runId).pipe(Effect.either)
@@ -319,6 +341,7 @@ export const nightly = Effect.gen(function* () {
         candidates: pairs.length,
         matches: matches.length,
         clusters: clusters.length,
+        repeats: repeats.length,
         selected: stories.length,
         published: published.length
       },

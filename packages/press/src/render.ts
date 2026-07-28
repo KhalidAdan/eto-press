@@ -38,6 +38,8 @@ export interface RunReport {
     readonly candidates: number
     readonly matches: number
     readonly clusters: number
+    /** Clusters set aside by stage 5b: already printed in an earlier edition. */
+    readonly repeats: number
     readonly selected: number
     readonly published: number
   }
@@ -125,8 +127,9 @@ export const renderBrief = (
   const f = report.funnel
   parts.push(
     `- Funnel: ${f.items} items → ${f.news} news → ${f.candidates} candidate pairs → ` +
-      `${f.matches} matches → ${f.clusters} clusters → ${f.selected} selected → ` +
-      `${f.published} published`
+      `${f.matches} matches → ${f.clusters} clusters` +
+      (f.repeats > 0 ? ` (${f.repeats} already printed, set aside)` : "") +
+      ` → ${f.selected} selected → ${f.published} published`
   )
   for (const d of report.dropped) {
     parts.push(`- Story #${d.rank} dropped: ${d.reason}`)
