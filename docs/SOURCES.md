@@ -9,6 +9,12 @@ masthead is `sources.toml`; this file is the shelf you stock it from.
 Raw audit data: `lab/output/feed-audit-full.json`. Re-audit any time with
 `npx tsx lab/feed-audit-full.ts`.
 
+**Updated 2026-07-27** after the deeper-feed probes: section feeds added
+for BBC, The Hill, Washington Examiner, and National Review; UPI added
+(not on the AllSides chart, rated Center on their ratings search); AP's
+article front door verified open; Washington Times confirmed closed on
+every path and dropped for good.
+
 **Caveats.** An open feed is not a readable article: paywalled outlets (WSJ,
 NYT, The Atlantic, The Economist…) may serve full headlines but teaser-only
 article pages, in which case stage 7 drops their accounts and they contribute
@@ -43,7 +49,7 @@ health record.
 |---|---|---|
 | ABC News | https://abcnews.go.com/abcnews/topstories | open (25) |
 | Al Jazeera | https://www.aljazeera.com/xml/rss/all.xml | open (25) — AllSides: Lean Left |
-| Associated Press | https://feedx.net/rss/ap.xml | open (10) — **unofficial mirror**, AP has no public RSS |
+| Associated Press | https://feedx.net/rss/ap.xml | open (10) — **unofficial mirror** for discovery only (AP has no public RSS; apnews.com 401/404s every RSS path). Articles fetch fully from apnews.com's own front door — verified 2026-07-27. **In the active masthead.** |
 | Axios | https://api.axios.com/feed/ | open (100) |
 | Business Insider | https://feeds.businessinsider.com/custom/all | open (20) |
 | CBS News | https://www.cbsnews.com/latest/rss/main | open (30) |
@@ -67,7 +73,8 @@ health record.
 
 | Outlet | Feed | Status (items) |
 |---|---|---|
-| BBC News | https://feeds.bbci.co.uk/news/world/rss.xml | open (25) |
+| BBC News | https://feeds.bbci.co.uk/news/world/rss.xml | open (25). Also open: /news/rss.xml (41, main news — in masthead), /news/politics/rss.xml (71, UK Westminster — skipped for a US paper) |
+| UPI | https://rss.upi.com/news/top_news.rss | open (25) — center **wire service**; not on the AllSides chart (Center per their ratings search). **In the active masthead.** |
 | Bloomberg | — | **no public RSS** |
 | Christian Science Monitor | https://rss.csmonitor.com/feeds/all | open (10) |
 | Forbes | — | **no public RSS** |
@@ -77,7 +84,7 @@ health record.
 | Reason | https://reason.com/latest/feed/ | open (48) — libertarian per AllSides |
 | Reuters | — | **no public RSS** (retired 2020; site also blocks hosted fetchers) |
 | Straight Arrow News | https://san.com/feed/ | open (20) |
-| The Hill | https://thehill.com/homenews/feed/ | open (15) — article pages 403 hosted fetchers; fine from here |
+| The Hill | https://thehill.com/homenews/feed/ | open (15) — article pages 403 hosted fetchers; fine from here. Also open: /policy/feed/ (15 — in masthead) |
 | WSJ (us) | https://feeds.content.dowjones.io/public/rss/RSSUSnews | open (40) — paywall |
 | WSJ (world) | https://feeds.content.dowjones.io/public/rss/RSSWorldNews | open (72) — paywall |
 
@@ -88,14 +95,14 @@ health record.
 | Daily Mail | https://www.dailymail.co.uk/articles.rss | open (140) — tabloid volume |
 | Fox Business | https://moxie.foxbusiness.com/google-publisher/latest.xml | open (25) |
 | Just The News | https://justthenews.com/rss.xml | open (20) |
-| National Review | https://www.nationalreview.com/feed/ | open (20) |
+| National Review | https://www.nationalreview.com/feed/ | open (20, essay-heavy). Also open: /news/feed/ (20, straight news — in masthead) and /corner/feed/ (20, opinion blog — deliberately excluded) |
 | RealClearPolitics | https://www.realclearpolitics.com/index.xml | open (21) — aggregator: links out to other outlets |
 | The American Conservative | https://www.theamericanconservative.com/feed/ | open (10) |
 | The Dispatch | https://thedispatch.com/feed/ | open (10) |
 | The Epoch Times | https://www.theepochtimes.com/feed | **HTTP 404** — feed moved or retired |
 | The Free Press | https://www.thefp.com/feed | open (20) |
-| Washington Examiner | https://www.washingtonexaminer.com/feed/ | open (10) |
-| Washington Times | https://www.washingtontimes.com/rss/headlines/news/politics/ | **HTTP 403** — worked at 20:00, closed by 21:51 |
+| Washington Examiner | https://www.washingtonexaminer.com/feed/ | open (10). Also open: /news/feed/ and /politics/feed/ (10 each — in masthead) |
+| Washington Times | https://www.washingtontimes.com/rss/headlines/news/politics/ | **DROPPED (§8).** 403 on every RSS and Atom path with an honest UA (retested 2026-07-27); serves browsers only. A source that must be tricked into being read is a source eto drops. |
 | ZeroHedge | https://feeds.feedburner.com/zerohedge/feed | open (25) |
 
 ## Right
