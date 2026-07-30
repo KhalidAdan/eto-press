@@ -16,6 +16,7 @@ export const REGION = "ca-central-1"
 export const SES = `https://email.${REGION}.amazonaws.com/v2/email`
 export const LIST = "eto-readers"
 export const TOPIC = "morning-edition"
+export const CONFIG_SET = "eto-mail"
 export const FROM = "eto <brief@eto.news>"
 export const SITE = "https://eto.news"
 export const TOKEN_TTL_MS = 7 * 24 * 3600 * 1000

@@ -2,6 +2,7 @@
 import {
   awsClient,
   CLARET,
+  CONFIG_SET,
   esc,
   formHtml,
   FROM,
@@ -46,6 +47,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     body: JSON.stringify({
       FromEmailAddress: FROM,
       Destination: { ToAddresses: [email] },
+      ConfigurationSetName: CONFIG_SET,
+      EmailTags: [{ Name: "eto-mail-kind", Value: "confirm" }],
       Content: {
         Simple: {
           Subject: { Data: "eto — confirm your subscription" },

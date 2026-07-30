@@ -1,13 +1,19 @@
 /**
  * One-time SES setup: verify the sending domain (prints the DKIM records
- * to paste into Cloudflare DNS), create the reader contact list, and
- * verify the editor's own address for sandbox testing.
+ * to paste into Cloudflare DNS), create the reader contact list, verify
+ * the editor's own address for sandbox testing, pin the account-level
+ * suppression list to bounces AND complaints, and create the "eto-mail"
+ * configuration set (reputation metrics on, bounce/complaint/reject
+ * events mirrored to CloudWatch) that every send tags itself with.
  * Idempotent — safe to rerun. Run: npx tsx lab/ses-setup.ts
  */
 import {
+  CreateConfigurationSetCommand,
+  CreateConfigurationSetEventDestinationCommand,
   CreateContactListCommand,
   CreateEmailIdentityCommand,
   GetEmailIdentityCommand,
+  PutAccountSuppressionAttributesCommand,
   SESv2Client
 } from "@aws-sdk/client-sesv2"
 import { loadEnv } from "../src/env.js"
@@ -16,6 +22,7 @@ loadEnv()
 const DOMAIN = "eto.news"
 const EDITOR = "khalidadan@gmail.com"
 export const CONTACT_LIST = "eto-readers"
+export const CONFIG_SET = "eto-mail"
 
 const ses = new SESv2Client({ region: process.env["AWS_REGION"] })
 
@@ -57,6 +64,54 @@ await ensure(`contact list ${CONTACT_LIST}`, () =>
           DefaultSubscriptionStatus: "OPT_IN"
         }
       ]
+    })
+  )
+)
+
+// Bounce and complaint handling (the SES production-access letter's one
+// hard operational demand). Two layers:
+//   1. The account-level suppression list swallows repeat sends to any
+//      address that has bounced or complained — SES's default is BOUNCE
+//      only, so pin it to both, explicitly.
+//   2. The eto-mail configuration set tags every send; reputation metrics
+//      make the bounce/complaint rates visible per-set in the console,
+//      and the CloudWatch event destination keeps a metric trail with no
+//      extra infrastructure to run. send-edition.ts then opts suppressed
+//      readers out of the contact list each morning before delivering.
+await ensure("account suppression list covers BOUNCE + COMPLAINT", () =>
+  ses.send(
+    new PutAccountSuppressionAttributesCommand({
+      SuppressedReasons: ["BOUNCE", "COMPLAINT"]
+    })
+  )
+)
+await ensure(`configuration set ${CONFIG_SET}`, () =>
+  ses.send(
+    new CreateConfigurationSetCommand({
+      ConfigurationSetName: CONFIG_SET,
+      ReputationOptions: { ReputationMetricsEnabled: true },
+      SendingOptions: { SendingEnabled: true }
+    })
+  )
+)
+await ensure(`event destination ${CONFIG_SET} -> CloudWatch`, () =>
+  ses.send(
+    new CreateConfigurationSetEventDestinationCommand({
+      ConfigurationSetName: CONFIG_SET,
+      EventDestinationName: "eto-mail-cloudwatch",
+      EventDestination: {
+        Enabled: true,
+        MatchingEventTypes: ["SEND", "DELIVERY", "BOUNCE", "COMPLAINT", "REJECT"],
+        CloudWatchDestination: {
+          DimensionConfigurations: [
+            {
+              DimensionName: "eto-mail-kind",
+              DimensionValueSource: "MESSAGE_TAG",
+              DefaultDimensionValue: "unspecified"
+            }
+          ]
+        }
+      }
     })
   )
 )
