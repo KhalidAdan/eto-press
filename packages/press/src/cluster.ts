@@ -22,6 +22,11 @@ import type { Item } from "./normalize.js"
  * experiment 002 corpus; revisit with data, not vibes. */
 export const DENSITY_MIN = 0.5
 
+/** How much triangle support the shear will demand before giving up. Low
+ * values sufficed on the 2026-07-31 corpus (replayed offline); a component
+ * that survives the ceiling intact stays a blob for stage 5c to refuse. */
+export const SUPPORT_CEILING = 6
+
 export interface Cluster {
   readonly hash: string
   readonly items: ReadonlyArray<Item>
@@ -120,39 +125,66 @@ export const buildClusters = (
   const clusters: Array<Cluster> = []
   const allIds = [...itemsById.keys()]
 
-  for (const memberIds of componentsOf(allIds, yesEdges)) {
-    if (memberIds.length < 2) continue
-    const candidate = withStats(memberIds, false)
-
-    if (memberIds.length < 3 || candidate.density >= DENSITY_MIN) {
-      clusters.push(candidate)
-      continue
-    }
-
-    // Low-density blob: keep only yes-edges with triangle support — a
-    // common yes-neighbor inside the component. Bridges have none.
-    const memberSet = new Set(memberIds)
-    const neighbors = new Map<number, Set<number>>()
+  // Yes-edges of one component, kept only if the pair has >= minSupport
+  // common yes-neighbors inside it. Accounts of one event vouch for each
+  // other many times over; a bridge between events has few mutual friends.
+  const supportedEdges = (
+    memberSet: ReadonlySet<number>,
+    minSupport: number
+  ): Array<readonly [number, number]> => {
     const internalYes = yesEdges.filter(
       ([a, b]) => memberSet.has(a) && memberSet.has(b)
     )
+    const neighbors = new Map<number, Set<number>>()
     for (const [a, b] of internalYes) {
       if (!neighbors.has(a)) neighbors.set(a, new Set())
       if (!neighbors.has(b)) neighbors.set(b, new Set())
       neighbors.get(a)!.add(b)
       neighbors.get(b)!.add(a)
     }
-    const supported = internalYes.filter(([a, b]) => {
+    return internalYes.filter(([a, b]) => {
       const na = neighbors.get(a)!
       const nb = neighbors.get(b)!
-      for (const n of na) if (n !== b && nb.has(n)) return true
+      let common = 0
+      for (const n of na) if (n !== b && nb.has(n) && ++common >= minSupport) return true
       return false
     })
+  }
 
-    for (const sub of componentsOf(memberIds, supported)) {
-      if (sub.length < 2) continue
-      clusters.push(withStats(sub, true))
+  // Emit a component if it passes the gate; otherwise shear it — demand
+  // ever more triangle support until it breaks, then recurse into the
+  // pieces. One pass at support 1 (the old behavior) is not enough when
+  // storylines share genuine cross-coverage: every bridge sits in some
+  // triangle, so the bar must rise until bridges shear before cores do.
+  const emitOrShear = (memberIds: ReadonlyArray<number>, wasSplit: boolean): void => {
+    if (memberIds.length < 2) return
+    const candidate = withStats(memberIds, wasSplit)
+
+    if (memberIds.length < 3 || candidate.density >= DENSITY_MIN) {
+      clusters.push(candidate)
+      return
     }
+
+    const memberSet = new Set(memberIds)
+    for (let support = 1; support <= SUPPORT_CEILING; support++) {
+      const subs = componentsOf(memberIds, supportedEdges(memberSet, support))
+        .filter((s) => s.length >= 2)
+      const madeProgress =
+        subs.length > 1 ||
+        (subs.length === 1 && subs[0]!.length < memberIds.length)
+      if (madeProgress) {
+        for (const sub of subs) emitOrShear(sub, true)
+        return
+      }
+    }
+
+    // Ceiling reached, still one piece: a blob even maximal support cannot
+    // cut. Emit it as measured; stage 5c refuses it visibly.
+    clusters.push(candidate)
+  }
+
+  for (const memberIds of componentsOf(allIds, yesEdges)) {
+    emitOrShear(memberIds, false)
   }
 
   return [...clusters]

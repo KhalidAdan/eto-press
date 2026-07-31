@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { parseDraft } from "../src/composite.js"
+import type { Account } from "../src/articles.js"
+import { parseDraft, selectAccountsForPrompt, sourcesLineFor } from "../src/composite.js"
 
 const good = `HEADLINE: Maine Democrats nominate Troy Jackson for U.S. Senate
 
@@ -41,5 +42,37 @@ describe("parseDraft", () => {
   it("rejects drafts that keep talking after SOURCES — it ends", () => {
     const chatty = good + "\n\nAlso of note, some analysts believe...\nAnd furthermore..."
     expect(parseDraft(chatty, 0)).toBeNull()
+  })
+})
+
+describe("sourcesLineFor", () => {
+  const account = (outlet: string, len: number): Account => ({
+    item: {
+      id: len,
+      outlet,
+      side: "center",
+      kind: "news",
+      title: `t${len}`,
+      summary: "",
+      link: `https://example.com/${outlet}/${len}`,
+      publishedAt: new Date()
+    },
+    text: "x".repeat(len)
+  })
+
+  it("lists exactly the prompt accounts' outlets, deduplicated, in prompt order", () => {
+    const accounts = [account("NPR", 100), account("BBC", 300), account("NPR", 200)]
+    const prompt = selectAccountsForPrompt(accounts)
+    expect(sourcesLineFor(prompt)).toBe("NPR - BBC")
+  })
+
+  it("never lists an outlet whose account was cut by the prompt cap", () => {
+    const accounts = [
+      account("A", 700), account("B", 600), account("C", 500), account("D", 400),
+      account("E", 300), account("F", 200), account("G", 100)
+    ]
+    const prompt = selectAccountsForPrompt(accounts)
+    expect(prompt).toHaveLength(6)
+    expect(sourcesLineFor(prompt)).not.toContain("G")
   })
 })

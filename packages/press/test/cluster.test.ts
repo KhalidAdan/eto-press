@@ -78,6 +78,56 @@ describe("buildClusters", () => {
     }
   })
 
+  it("shears bridges that DO have triangle support by escalating the bar (2026-07-31 Iran blob)", () => {
+    // Two 5-cliques bridged by two yes-edges that support each other's
+    // triangle: at support 1 nothing cuts (the old failure), at support 2
+    // the bridges shear while in-clique edges (3 common neighbors) survive.
+    const A = ["FOX News", "NPR", "BBC", "UPI", "The Hill"].map((o) => item(o, `strikes ${o}`))
+    const B = ["Guardian", "Al Jazeera", "CBS News", "Slate", "Newsweek"].map((o) => item(o, `coalition ${o}`))
+    const pairs: Array<JudgedPair> = []
+    for (const clique of [A, B]) {
+      for (let i = 0; i < clique.length; i++) {
+        for (let j = i + 1; j < clique.length; j++) {
+          pairs.push(judged(clique[i]!, clique[j]!, true))
+        }
+      }
+    }
+    for (const x of A) {
+      for (const y of B) {
+        const isBridge = (x === A[3] || x === A[4]) && y === B[0]
+        pairs.push(judged(x, y, isBridge))
+      }
+    }
+    // 22 yes of 45 judged = 0.489: under the gate, and fully welded at support 1.
+    const clusters = buildClusters(pairs)
+    expect(clusters).toHaveLength(2)
+    for (const c of clusters) {
+      expect(c.items).toHaveLength(5)
+      expect(c.wasSplit).toBe(true)
+      expect(c.density).toBe(1)
+    }
+  })
+
+  it("keeps an unshearable blob intact for stage 5c to refuse, as measured", () => {
+    // A hub judged same-event with everything, spokes judged no with each
+    // other: every yes-edge is hub-adjacent, no triangles exist at all, so
+    // no support level ever cuts anything. The blob must survive with its
+    // low density visible, not vanish.
+    const hub = item("Straight Arrow News", "digest that matches everything")
+    const spokes = ["FOX News", "NPR", "BBC", "Guardian"].map((o) => item(o, `story ${o}`))
+    const pairs: Array<JudgedPair> = spokes.map((s) => judged(hub, s, true))
+    for (let i = 0; i < spokes.length; i++) {
+      for (let j = i + 1; j < spokes.length; j++) {
+        pairs.push(judged(spokes[i]!, spokes[j]!, false))
+      }
+    }
+    const clusters = buildClusters(pairs)
+    expect(clusters).toHaveLength(1)
+    expect(clusters[0]!.items).toHaveLength(5)
+    expect(clusters[0]!.density).toBeCloseTo(4 / 10)
+    expect(clusters[0]!.density).toBeLessThan(DENSITY_MIN)
+  })
+
   it("leaves an ambiguous open chain of three alone (density above gate)", () => {
     const a = item("FOX News", "story A")
     const b = item("NPR", "story B")

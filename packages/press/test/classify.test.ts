@@ -96,4 +96,98 @@ describe("classify", () => {
       )
     ).toBe("news")
   })
+
+  // The 2026-07-31 mega-cluster: every glue item below is real, from that
+  // morning's corpus. Digests and uncaught liveblogs welded five storylines
+  // into one 105-item front-page blob.
+
+  it("catches named daily digests (2026-07-31 glue)", () => {
+    expect(classify("Morning news brief", "https://www.npr.org/2026/07/31/nx-s1-5916554/morning-news-brief")).toBe("digest")
+    expect(
+      classify(
+        "First Thing: US government borrowing costs hit new high as US strikes resume on Iran",
+        "https://www.theguardian.com/us-news/2026/jul/31/first-thing"
+      )
+    ).toBe("digest")
+    expect(
+      classify(
+        "Wednesday briefing: Will Zelenskyy’s domestic struggles harm his reputation on the global stage?",
+        "https://www.theguardian.com/world/2026/jul/29/wednesday-briefing"
+      )
+    ).toBe("digest")
+    expect(
+      classify(
+        "Trump’s warning becomes reality after Iran's failed attack and more top headlines",
+        "https://www.foxnews.com/us/trump-warning-becomes-reality-top-headlines"
+      )
+    ).toBe("digest")
+  })
+
+  it("catches two-story semicolon headlines with disjoint subjects", () => {
+    expect(
+      classify(
+        "US hits Iran after promised retaliation; GOP senators delay Blanche nomination",
+        "https://san.com/cc/us-hits-iran-after-promised-retaliation"
+      )
+    ).toBe("digest")
+    expect(
+      classify(
+        "Iran’s surprise attack fails; Fauci returns to Capitol Hill as diaries take center stage",
+        "https://san.com/cc/irans-surprise-attack-fails"
+      )
+    ).toBe("digest")
+  })
+
+  it("keeps single-story semicolon headlines as news", () => {
+    // Second clause names no new subject — one story, two beats.
+    expect(
+      classify(
+        "Kumamoto earthquake death toll climbs to 13; rescue efforts continue",
+        "https://www.upi.com/Top_News/World-News/2026/07/30/kumamoto"
+      )
+    ).toBe("news")
+    // HTML-entity semicolons (&#039;) are not clause boundaries.
+    expect(
+      classify(
+        "Tom Holland Says &#039;Spider-Man: Brand New Day&#039; Tackles Loneliness",
+        "https://www.newsweek.com/tom-holland-spider-man"
+      )
+    ).toBe("news")
+  })
+
+  it("catches Guardian-style trailing liveblogs and topic-live prefixes", () => {
+    expect(
+      classify(
+        "UK petrol prices expected to rise to highest this year as US attacks Iran – business live",
+        "https://www.theguardian.com/business/live/2026/jul/31/petrol"
+      )
+    ).toBe("liveblog")
+    expect(
+      classify(
+        "Iran war live: IRGC claims ‘retaliatory attack’ on Kuwait",
+        "https://www.aljazeera.com/news/liveblog/2026/7/31/iran-war-live"
+      )
+    ).toBe("liveblog")
+    expect(
+      classify(
+        "Middle East crisis live: Hamas will hand over weapons to new Gaza administration, says official, but deal depends on Israeli withdrawal",
+        "https://www.theguardian.com/world/live/2026/jul/31/middle-east"
+      )
+    ).toBe("liveblog")
+  })
+
+  it("does not flag news that merely mentions live", () => {
+    expect(
+      classify(
+        "Empty seats? Concert giant Live Nation says ticket sales are actually at record levels.",
+        "https://www.marketwatch.com/story/live-nation-tickets"
+      )
+    ).toBe("news")
+    expect(
+      classify(
+        "'I pay £580 a month to live in a disused care home': Property guardians show us around",
+        "https://www.bbc.co.uk/news/articles/care-home-guardians"
+      )
+    ).toBe("news")
+  })
 })

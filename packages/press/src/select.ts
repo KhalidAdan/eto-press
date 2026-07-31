@@ -6,7 +6,7 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
-import type { Cluster } from "./cluster.js"
+import { DENSITY_MIN, type Cluster } from "./cluster.js"
 import type { Masthead } from "./masthead.js"
 
 /** The brief is finite by construction. */
@@ -56,6 +56,22 @@ export const dropAlreadyPrinted = (
     else fresh.push(c)
   }
   return { fresh, repeats }
+}
+
+/** Stage 5c: the density floor. A cluster still below DENSITY_MIN after the
+ * splitter is a welded blob the triangle test could not cut — digest hubs
+ * give cross-story bridges genuine triangle support (the 2026-07-31
+ * 105-item front page). Not printable; set aside and reported. */
+export const dropLowDensity = (
+  clusters: ReadonlyArray<Cluster>
+): { printable: Array<Cluster>; blobs: Array<Cluster> } => {
+  const printable: Array<Cluster> = []
+  const blobs: Array<Cluster> = []
+  for (const c of clusters) {
+    if (c.density < DENSITY_MIN) blobs.push(c)
+    else printable.push(c)
+  }
+  return { printable, blobs }
 }
 
 export const balanceNoteFor = (

@@ -22,6 +22,7 @@ import { nominateBelowTheFold } from "./nominate.js"
 import {
   balanceNoteFor,
   dropAlreadyPrinted,
+  dropLowDensity,
   markStory,
   persistStories,
   previouslyPrintedLinks,
@@ -149,11 +150,22 @@ export const nightly = Effect.gen(function* () {
     }
   }
 
+  // -- Stage 5c: the density floor --------------------------------------------
+  // A blob the splitter could not cut must not reach print (or the fold
+  // nomination pool) — the 2026-07-31 front page was one.
+  const { printable, blobs } = dropLowDensity(clusters)
+  for (const b of blobs) {
+    yield* Effect.logWarning(
+      `stage 5c: blob set aside — ${b.items.length} items, ${b.outlets.length} outlets, ` +
+        `density ${b.density.toFixed(2)} (floor 0.5): ${b.items[0]!.title.slice(0, 60)}`
+    )
+  }
+
   // -- Stage 5b: cross-edition dedupe -----------------------------------------
   // The 48-hour window (feeds.ts) means consecutive editions share most of
   // their corpus; without this, yesterday's front page reprints itself.
   const printed = yield* previouslyPrintedLinks(runId)
-  const { fresh, repeats } = dropAlreadyPrinted(clusters, printed)
+  const { fresh, repeats } = dropAlreadyPrinted(printable, printed)
   if (repeats.length > 0) {
     yield* Effect.logInfo(
       `stage 5b: ${repeats.length} cluster(s) set aside — already printed in an earlier edition`
@@ -345,6 +357,11 @@ export const nightly = Effect.gen(function* () {
         selected: stories.length,
         published: published.length
       },
+      blobs: blobs.map((b) => ({
+        itemCount: b.items.length,
+        outletCount: b.outlets.length,
+        density: b.density
+      })),
       dropped: droppedRows.map((d) => ({ rank: d.rank, reason: d.reason })),
       healthLines
     },

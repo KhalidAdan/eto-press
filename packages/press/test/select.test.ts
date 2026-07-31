@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { Cluster } from "../src/cluster.js"
 import type { Masthead } from "../src/masthead.js"
-import { dropAlreadyPrinted, selectStories, STORY_CAP } from "../src/select.js"
+import { dropAlreadyPrinted, dropLowDensity, selectStories, STORY_CAP } from "../src/select.js"
 
 const masthead = {
   source: [
@@ -94,5 +94,20 @@ describe("dropAlreadyPrinted", () => {
     const { fresh, repeats } = dropAlreadyPrinted([c], new Set())
     expect(fresh).toEqual([c])
     expect(repeats).toHaveLength(0)
+  })
+})
+
+describe("dropLowDensity", () => {
+  it("sets aside a split survivor still below the floor (2026-07-31 blob)", () => {
+    const blob = { ...cluster(["FOX News", "NPR", "BBC"], ["right", "left", "center"]), density: 0.33, wasSplit: true }
+    const clean = cluster(["FOX News", "NPR"], ["right", "left"])
+    const { printable, blobs } = dropLowDensity([blob, clean])
+    expect(printable).toEqual([clean])
+    expect(blobs).toEqual([blob])
+  })
+
+  it("a density exactly at the floor is printable", () => {
+    const edge = { ...cluster(["FOX News", "NPR"], ["right", "left"]), density: 0.5 }
+    expect(dropLowDensity([edge]).printable).toEqual([edge])
   })
 })

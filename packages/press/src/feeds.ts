@@ -178,7 +178,10 @@ export const ingestAllFeeds = (masthead: Masthead, runId: string) =>
         id: r.id,
         outlet: r.outlet,
         side: r.side,
-        kind: r.kind as Item["kind"],
+        // Classification is derived, not journaled truth: recompute so a
+        // classifier fix reaches items ingested before it (the stored kind
+        // remains as the ingest-time record).
+        kind: classify(r.title, r.link),
         title: r.title,
         summary: r.summary,
         link: r.link,

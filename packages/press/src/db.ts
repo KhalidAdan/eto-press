@@ -28,7 +28,7 @@ const TABLES = [
     run_id       TEXT NOT NULL,         -- run that first saw it
     outlet       TEXT NOT NULL,
     side         TEXT NOT NULL,
-    kind         TEXT NOT NULL,         -- news | opinion | video | podcast | liveblog
+    kind         TEXT NOT NULL,         -- news | opinion | video | podcast | liveblog | digest
     title        TEXT NOT NULL,
     summary      TEXT NOT NULL,
     link         TEXT NOT NULL UNIQUE,  -- the idempotence key

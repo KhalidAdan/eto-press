@@ -54,6 +54,16 @@ export const parseDraft = (raw: string, attempt: number): Draft | null => {
  * per outlet first (longest text wins), then extras by length, capped. */
 export const MAX_PROMPT_ACCOUNTS = 6
 
+/** The sources line is arithmetic, not prose: exactly the outlets whose
+ * accounts were in the prompt (NORTH-STAR §3 — only accounts actually
+ * read). The model still emits a SOURCES section as a format anchor, but
+ * its content is discarded — an 8B model attributing its own reading is a
+ * hallucination surface, not a record. */
+export const sourcesLineFor = (
+  promptAccounts: ReadonlyArray<Account>
+): string =>
+  [...new Set(promptAccounts.map((a) => a.item.outlet))].join(" - ")
+
 export const selectAccountsForPrompt = (
   accounts: ReadonlyArray<Account>
 ): ReadonlyArray<Account> => {
@@ -123,6 +133,13 @@ export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
   Effect.gen(function* () {
     const ollama = yield* Ollama
     const hash = swa.story.cluster.hash
+    const promptAccounts = selectAccountsForPrompt(swa.accounts)
+    // Applied on every return path, including journal reloads: drafts
+    // journal what the model wrote, but the printed line is computed.
+    const withSources = (draft: Draft): Draft => ({
+      ...draft,
+      sourcesLine: sourcesLineFor(promptAccounts)
+    })
 
     if (extraNotes === undefined) {
       const cached = yield* loadCachedDraft(hash)
@@ -130,12 +147,12 @@ export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
         yield* Effect.logInfo(
           `  draft from journal (attempt ${cached.attempt}): ${cached.headline.slice(0, 60)}`
         )
-        return cached
+        return withSources(cached)
       }
     }
 
     const basePrompt = compositePrompt(
-      selectAccountsForPrompt(swa.accounts).map((a) => ({
+      promptAccounts.map((a) => ({
         outlet: a.item.outlet,
         title: a.item.title,
         text: a.text
@@ -156,7 +173,7 @@ export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
       const draft = parseDraft(raw, attempt)
       if (draft !== null) {
         yield* persistDraft(hash, draft)
-        return draft
+        return withSources(draft)
       }
       yield* Effect.logWarning(`  draft malformed (attempt ${attempt}), re-asking`)
     }

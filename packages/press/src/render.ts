@@ -44,6 +44,13 @@ export interface RunReport {
     readonly published: number
   }
   readonly dropped: ReadonlyArray<{ readonly rank: number; readonly reason: string }>
+  /** Clusters set aside by stage 5c: still below the density floor after the
+   * splitter — welded blobs, not stories. */
+  readonly blobs?: ReadonlyArray<{
+    readonly itemCount: number
+    readonly outletCount: number
+    readonly density: number
+  }>
   /** Source-health trends — the §6/§8 instrument panel. */
   readonly healthLines?: ReadonlyArray<string>
 }
@@ -131,6 +138,12 @@ export const renderBrief = (
       (f.repeats > 0 ? ` (${f.repeats} already printed, set aside)` : "") +
       ` → ${f.selected} selected → ${f.published} published`
   )
+  for (const b of report.blobs ?? []) {
+    parts.push(
+      `- Blob set aside unprinted: ${b.itemCount} items across ${b.outletCount} outlets, ` +
+        `match density ${b.density.toFixed(2)} — below the 0.5 floor, not one story`
+    )
+  }
   for (const d of report.dropped) {
     parts.push(`- Story #${d.rank} dropped: ${d.reason}`)
   }
