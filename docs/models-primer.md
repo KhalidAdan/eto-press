@@ -100,8 +100,9 @@ that matters here is eto's own corpus, and eto already has the tooling:
 3. Verdicts are keyed by `(item_a, item_b, model, prompt_hash)` — a judge swap automatically
    invalidates the cache and re-judges the whole window on first run: ~11k pairs ≈ 75–90 min
    at current speeds, once. Composite drafts re-generate the same way (9 stories, minutes).
-4. `models.lock.json` pins digests per model name. A new name isn't in the lock, so the first
-   run pins it automatically; the old entry becomes inert. No manual lock surgery needed.
+4. `models.lock.json` pins digests per model name — but note the pinning code only *writes*
+   the file when it doesn't exist yet, so a newly swapped-in model is NOT pinned automatically:
+   add its digest to the lock by hand (from `/api/tags`) and drop the retired entry.
 5. Audition before committing: probe first, and ideally dry-run a full edition in a sandbox
    (copy `db/eto.sqlite`, run from a scratch directory) and read the paper it produces.
 
