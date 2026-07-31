@@ -20,8 +20,10 @@ export interface JudgedPair {
   readonly cached: boolean
 }
 
-/** The verdict is the last word of the completion, whatever else came out. */
-const parseVerdict = (raw: string): "yes" | "no" | null => {
+/** The verdict is the last word of the completion, whatever else came out.
+ * Exported for lab/judge-eval.ts: candidates must be graded by the same
+ * parser production uses. */
+export const parseVerdict = (raw: string): "yes" | "no" | null => {
   const afterThink = raw.includes("</think>")
     ? raw.slice(raw.lastIndexOf("</think>") + 8)
     : raw
