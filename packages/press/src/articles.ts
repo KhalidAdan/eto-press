@@ -33,7 +33,7 @@ const transientRetry = Schedule.exponential("500 millis").pipe(
 
 const fetchHtml = (item: Item, url: string) =>
   Effect.gen(function* () {
-    const http = yield* HttpClient.HttpClient
+    const http = (yield* HttpClient.HttpClient).pipe(HttpClient.followRedirects(3))
     const response = yield* http.execute(
       HttpClientRequest.get(url).pipe(
         HttpClientRequest.setHeader("User-Agent", USER_AGENT)

@@ -14,6 +14,15 @@ It runs on your machine. The list of outlets it reads is a file you own. That
 file is an editorial line, and it is yours — which means that from the moment
 you install eto, you are not its reader. You are its editor.
 
+A personal paper is not a private one. An edition can have readers — a
+household, a mailing list, the open web — and that is the oldest and best
+shape of the press: one editor, a masthead they own, and whoever cares to
+read it. eto is built for that shape, and holds one goal it means to keep:
+an edition with readers says whose masthead it is, on the page and in the
+mail, so any reader can find the editorial line, question it, and — because
+the press itself is free — go and run their own. That is not a warning
+label. It is the invitation.
+
 ---
 
 ## The Shape of a Story
