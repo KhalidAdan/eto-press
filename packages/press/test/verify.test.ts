@@ -40,6 +40,31 @@ const draft = (over: Partial<Draft>): Draft => ({
 })
 
 describe("verifyDraft", () => {
+  it("flags prose that refers to accounts by number (2026-08-01 Ceuta leak)", () => {
+    const v = verifyDraft(
+      draft({
+        differ:
+          "FOX News and ACCOUNT 3 claim 60,000 migrants entered, while ACCOUNT 2 reports 50,000."
+      }),
+      accounts
+    )
+    expect(v.violations).toContain(
+      "prose refers to accounts by number instead of outlet name"
+    )
+  })
+
+  it("does not flag ordinary plural 'accounts' near numbers", () => {
+    const v = verifyDraft(
+      draft({
+        body: `Jackson won 566 of 571 delegates. He said "I do believe I've been vetted, I've been tested." NPR reports retirement accounts hold 401(k) assets.`
+      }),
+      accounts
+    )
+    expect(
+      v.violations.filter((x) => x.includes("accounts by number"))
+    ).toEqual([])
+  })
+
   it("passes a clean draft", () => {
     const v = verifyDraft(draft({}), accounts)
     expect(v.violations).toEqual([])

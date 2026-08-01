@@ -168,7 +168,8 @@ export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
 
     for (let attempt = nextAttempt; attempt < nextAttempt + 2; attempt++) {
       const raw = yield* ollama.chat(COMPOSITE_MODEL, prompt, `composite ${hash}`, {
-        numCtx: COMPOSITE_NUM_CTX
+        numCtx: COMPOSITE_NUM_CTX,
+        think: false
       })
       const draft = parseDraft(raw, attempt)
       if (draft !== null) {

@@ -100,6 +100,12 @@ export const verifyDraft = (
     }
   }
 
+  // 2b. Prompt scaffolding must not leak: prose that says "ACCOUNT 3"
+  // refers to machinery the reader cannot see (2026-08-01 Ceuta story).
+  if (/\baccount\s+\d/i.test(prose)) {
+    violations.push("prose refers to accounts by number instead of outlet name")
+  }
+
   // 3. Word budget. Soft limit advises; hard limit violates.
   const words = wordCount(draft.headline) + wordCount(prose)
   if (words > WORD_BUDGET_HARD) {

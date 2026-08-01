@@ -31,10 +31,13 @@ interface StoryRow {
   cluster_hash: string
   rank: number
 }
+// Dropped stories are the interesting ones for a candidate audition — a
+// writer that rescues what the incumbent lost is the point of the exercise.
 const stories = db
   .prepare(
     `SELECT cluster_hash, rank FROM stories
-     WHERE run_id = ? AND status = 'published' ORDER BY rank`
+     WHERE run_id = ? AND status IN ('published', 'dropped', 'selected')
+     ORDER BY rank`
   )
   .all(runId) as Array<StoryRow>
 if (stories.length === 0) {

@@ -52,6 +52,8 @@ export const COMPOSITE_TEMPLATE =
   "to that outlet or its cited source — never state it in your own voice.\n" +
   "- Anonymous quotes stay anonymous, attributed to the outlet that " +
   "carried them (e.g. 'a strategist quoted by FOX News').\n" +
+  "- Refer to outlets by name, always. Never write 'account 2' or " +
+  "'the third account' — the reader cannot see the accounts, only names.\n" +
   "- If the accounts leave a gap, say so plainly rather than guessing.\n" +
   "- SOURCES lists exactly the outlets whose accounts you used.\n" +
   "- At most 350 words between HEADLINE and SOURCES. Nothing after SOURCES.\n\n" +
@@ -76,9 +78,11 @@ export const compositePrompt = (
   COMPOSITE_TEMPLATE.replace("{n}", String(accounts.length)).replace(
     "{accounts}",
     accounts
+      // The outlet name IS the account's identity — numbered labels leak
+      // into prose as "ACCOUNT 3 reports…" (2026-08-01 Ceuta story).
       .map(
-        (a, i) =>
-          `=== ACCOUNT ${i + 1} — ${a.outlet}\nHeadline: ${a.title}\n${a.text.slice(0, ACCOUNT_TEXT_CAP)}`
+        (a) =>
+          `=== ${a.outlet}\nHeadline: ${a.title}\n${a.text.slice(0, ACCOUNT_TEXT_CAP)}`
       )
       .join("\n\n")
   )
