@@ -84,11 +84,23 @@ export class VerdictUnparseable extends Data.TaggedError("VerdictUnparseable")<{
   readonly raw: string
 }> {}
 
-// -- Stage 8: composite (story-level: the story drops, never the run) -------
+// -- Stage 8: composite (a shapeless draft drops the story; a dead press
+// stops the run) -------------------------------------------------------------
 
 export class DraftMalformed extends Data.TaggedError("DraftMalformed")<{
   readonly clusterHash: string
   readonly raw: string
+}> {}
+
+/** The compositor stopped answering (timeout, HTTP error, broken journal) —
+ * machinery, not editorial. 2026-08-02: eight straight 5-minute timeouts
+ * were absorbed as story drops, and the press "succeeded" with a 0-story
+ * edition — which suppressed the email and armed the already-published
+ * guard against every hourly retry. The press stops loudly instead; the
+ * next retry resumes from the journal. */
+export class PressStalled extends Data.TaggedError("PressStalled")<{
+  readonly clusterHash: string
+  readonly cause: unknown
 }> {}
 
 // -- Stage 4: distribution tripwire (fatal) ----------------------------------

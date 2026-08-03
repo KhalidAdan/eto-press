@@ -263,9 +263,16 @@ it ends.
 - **Tables:** `drafts` (cluster_hash, model, prompt_hash, attempt, text) —
   cache-keyed like verdicts; a crash mid-composite loses one draft.
 - **Fails with:** stage-4 error types, plus `DraftMalformed` (story — the
-  four-part shape did not parse).
+  four-part shape did not parse) and `PressStalled` (fatal — the compositor
+  stopped answering).
 - **Retry:** `DraftMalformed`: one re-ask; then the story is dropped and
   reported. We do not ship a brief whose shape we had to guess at.
+  `OllamaCallFailed`: backoff + jitter, 3 attempts; then the run aborts
+  with `PressStalled`. A press that cannot reach its model stops loudly —
+  it does not absorb timeouts as story drops and publish an empty paper
+  (2026-08-02: eight straight 5-minute timeouts printed a 0-story edition,
+  which suppressed the email and armed the already-published guard against
+  every hourly retry).
 
 ### 9. Verify
 
@@ -351,12 +358,13 @@ genuinely ours.
 | `FeedUnreachable` | 1 | outlet, url, cause | 3×, transient only | no |
 | `FeedMalformed` | 2 | outlet, url, cause | no | no |
 | `FunnelAnomalous` | 3 | expected, observed | no | yes |
-| `OllamaCallFailed` | 4, 5, 8 | unit id, cause | 3×, backoff | no (unit fails) |
+| `OllamaCallFailed` | 4, 5, 8 | unit id, cause | 3×, backoff | no at 4/5 (unit fails); at 8 escalates to `PressStalled` |
 | `VerdictUnparseable` | 4 | pairId, raw | 1 re-ask | no (abstains) |
 | `VerdictsSuspicious` | 4 | window, distribution | no | yes |
 | `ArticleUnfetchable` | 7 | outlet, url, code | 3×, transient only | no (account drops) |
 | `ArticleUnreadable` | 7 | url | no | no (account drops) |
 | `DraftMalformed` | 8 | story | 1 re-ask | no (story drops) |
+| `PressStalled` | 8 | story, cause | no (fires after `OllamaCallFailed` retries) | yes |
 | `BriefUnverifiable` | 9 | story, violations | 1 revision | no (story drops) |
 | `NothingToPrint` | 6 | run summary | no | no — an honest edition |
 

@@ -12,7 +12,7 @@ import { archiveBrief, renderBrief, type CorrectionNotice, type PublishedStory }
 import { editorNotes, persistVerifications, verifyDraft } from "./verify.js"
 import { COMPOSITE_MODEL, MATCH_MODEL } from "./config.js"
 import { ensureSchema } from "./db.js"
-import { FunnelAnomalous, ModelDrifted, ModelMissing } from "./errors.js"
+import { FunnelAnomalous, ModelDrifted, ModelMissing, PressStalled } from "./errors.js"
 import { ingestAllFeeds } from "./feeds.js"
 import { judgePairs } from "./judge.js"
 import { loadMasthead } from "./masthead.js"
@@ -241,6 +241,12 @@ export const nightly = Effect.gen(function* () {
     const hash = swa.story.cluster.hash
     const first = yield* compositeStory(swa).pipe(Effect.either)
     if (first._tag === "Left") {
+      // A shapeless draft is an editorial failure and drops the story;
+      // anything else (timeout, HTTP error, broken journal) is machinery
+      // and stops the press (PressStalled — the 2026-08-02 empty edition).
+      if (first.left._tag !== "DraftMalformed") {
+        return yield* new PressStalled({ clusterHash: hash, cause: first.left })
+      }
       yield* markStory(runId, hash, "dropped", "draft malformed after two attempts")
       yield* Effect.logWarning(`  story #${swa.story.rank} dropped: draft malformed`)
       continue
@@ -258,6 +264,8 @@ export const nightly = Effect.gen(function* () {
         draft = revised.right
         verdict = verifyDraft(draft, swa.accounts)
         yield* persistVerifications(hash, draft.attempt, verdict)
+      } else if (revised.left._tag !== "DraftMalformed") {
+        return yield* new PressStalled({ clusterHash: hash, cause: revised.left })
       }
     }
 

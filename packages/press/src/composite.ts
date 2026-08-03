@@ -5,7 +5,7 @@
  * prompt_hash, attempt); stage 9's verifier is the cage around this stage.
  */
 import { SqlClient } from "@effect/sql"
-import { Effect } from "effect"
+import { Effect, Schedule } from "effect"
 import type { Account, StoryWithAccounts } from "./articles.js"
 import { COMPOSITE_MODEL, COMPOSITE_NUM_CTX } from "./config.js"
 import { DraftMalformed } from "./errors.js"
@@ -53,6 +53,14 @@ export const parseDraft = (raw: string, attempt: number): Draft | null => {
 /** The context window is finite; a 9-account cluster is not. One account
  * per outlet first (longest text wins), then extras by length, capped. */
 export const MAX_PROMPT_ACCOUNTS = 6
+
+// The catalog's stage-8 contract (PIPELINE.md): OllamaCallFailed retries
+// 3× with backoff — the server may be reloading a model — before the
+// failure escalates to the caller.
+const callRetry = Schedule.exponential("1 second").pipe(
+  Schedule.jittered,
+  Schedule.intersect(Schedule.recurs(2))
+)
 
 /** The sources line is arithmetic, not prose: exactly the outlets whose
  * accounts were in the prompt (NORTH-STAR §3 — only accounts actually
@@ -170,7 +178,7 @@ export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
       const raw = yield* ollama.chat(COMPOSITE_MODEL, prompt, `composite ${hash}`, {
         numCtx: COMPOSITE_NUM_CTX,
         think: false
-      })
+      }).pipe(Effect.retry({ schedule: callRetry }))
       const draft = parseDraft(raw, attempt)
       if (draft !== null) {
         yield* persistDraft(hash, draft)
