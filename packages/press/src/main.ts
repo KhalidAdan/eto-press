@@ -2,8 +2,7 @@ import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
 import { SqliteClient } from "@effect/sql-sqlite-node"
 import { Effect, Layer } from "effect"
 import { mkdirSync } from "node:fs"
-import { Ollama } from "./ollama.js"
-import { nightly } from "./run.js"
+import { nightly, Ollama } from "./press.js"
 
 // The journal lives in db/ (gitignored); ensure the directory exists before
 // the SQLite layer opens the file.
