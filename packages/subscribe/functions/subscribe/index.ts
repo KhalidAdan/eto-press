@@ -8,10 +8,14 @@ import {
   FROM,
   hmacHex,
   MONO,
+  MOTTO,
+  MOTTO_INLINE,
+  NAME,
   page,
   prose,
   SES,
   SITE,
+  TAG_KIND,
   validEmail,
   type Env
 } from "../_shared.js"
@@ -19,7 +23,7 @@ import {
 export const onRequestGet: PagesFunction<Env> = async () =>
   page(
     "subscribe",
-    prose("Get the morning edition by email — one story, every side, then it ends.") + formHtml
+    prose("Get the morning edition by email — each story, every side.") + formHtml
   )
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
@@ -48,16 +52,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       FromEmailAddress: FROM,
       Destination: { ToAddresses: [email] },
       ConfigurationSetName: CONFIG_SET,
-      EmailTags: [{ Name: "eto-mail-kind", Value: "confirm" }],
+      EmailTags: [{ Name: TAG_KIND, Value: "confirm" }],
       Content: {
         Simple: {
-          Subject: { Data: "eto — confirm your subscription" },
+          Subject: { Data: `${NAME} — confirm your subscription` },
           Body: {
             Html: {
-              Data: `<div style="max-width:560px;margin:0 auto;padding:28px 20px;font-family:${SERIF};color:#0a0a0a;"><p style="font-size:34px;margin:0 0 4px 0;">eto</p><p style="font-family:${MONO};font-size:12px;color:${QUIET};margin:0 0 24px 0;">One story. Every side. Then it ends.</p><p style="font-size:16px;line-height:1.6;">You (or someone claiming your inbox) asked for the morning edition. One click to confirm, and it arrives each day, ends, and lets you leave:</p><p style="margin:22px 0;"><a href="${confirmUrl}" style="font-family:${MONO};font-size:15px;color:${CLARET};">Confirm subscription</a></p><p style="font-family:${MONO};font-size:12px;color:${QUIET};">If you didn't ask, ignore this and nothing happens. The link expires in 7 days.</p></div>`
+              Data: `<div style="max-width:560px;margin:0 auto;padding:28px 20px;font-family:${SERIF};color:#0a0a0a;"><p style="font-size:34px;margin:0 0 4px 0;">${esc(NAME)}</p><p style="font-family:${MONO};font-size:12px;color:${QUIET};margin:0 0 24px 0;">${esc(MOTTO)}</p><p style="font-size:16px;line-height:1.6;">You (or someone claiming your inbox) asked for the morning edition. One click to confirm, and it arrives each day, ends, and lets you leave:</p><p style="margin:22px 0;"><a href="${confirmUrl}" style="font-family:${MONO};font-size:15px;color:${CLARET};">Confirm subscription</a></p><p style="font-family:${MONO};font-size:12px;color:${QUIET};">If you didn't ask, ignore this and nothing happens. The link expires in 7 days.</p></div>`
             },
             Text: {
-              Data: `eto — one story, every side, then it ends.\n\nConfirm your subscription to the morning edition:\n${confirmUrl}\n\nIf you didn't ask, ignore this and nothing happens. The link expires in 7 days.`
+              Data: `${NAME} — ${MOTTO_INLINE}.\n\nConfirm your subscription to the morning edition:\n${confirmUrl}\n\nIf you didn't ask, ignore this and nothing happens. The link expires in 7 days.`
             }
           }
         }

@@ -1,7 +1,14 @@
 /* The press's stylesheet source. Compiled by `npm run build:css` into
- * site/brief.css — the archive pages must never depend on a CDN. */
-@import "tailwindcss";
+ * site/brief.css — the archive pages must never depend on a CDN.
+ *
+ * source(none) turns OFF Tailwind's automatic repo-wide scan: without it,
+ * plain English words in docs and configs ("container", "invisible",
+ * "collapse") compile into the paper's stylesheet as junk utilities. The
+ * only class sources are the edition templates and the one hand-written
+ * page. */
+@import "tailwindcss" source(none);
 @source "./html.ts";
+@source "../site/404.html";
 
 @theme {
   --font-serif: "Lora", Georgia, serif;

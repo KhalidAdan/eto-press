@@ -8,7 +8,7 @@
  * own type, and that is exactly as it should be.
  */
 import { SITE_DESCRIPTION, type HtmlCorrection, type HtmlStory, longDate } from "./html.js"
-import { SITE_URL } from "./config.js"
+import { PAPER_NAME, SITE_URL } from "./config.js"
 
 const escXml = (s: string): string =>
   s
@@ -73,7 +73,7 @@ export const renderFeedXml = (editions: ReadonlyArray<FeedEdition>): string => {
         .filter(Boolean)
         .join("\n")
       return `    <item>
-      <title>${escXml(`eto — ${longDate(e.runId)}`)}</title>
+      <title>${escXml(`${PAPER_NAME} — ${longDate(e.runId)}`)}</title>
       <link>${url}</link>
       <guid isPermaLink="true">${url}</guid>
       <pubDate>${new Date(`${e.runId}T11:30:00Z`).toUTCString()}</pubDate>
@@ -86,7 +86,7 @@ export const renderFeedXml = (editions: ReadonlyArray<FeedEdition>): string => {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>eto</title>
+    <title>${escXml(PAPER_NAME)}</title>
     <link>${SITE_URL}</link>
     <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>
     <description>${escXml(SITE_DESCRIPTION)}</description>

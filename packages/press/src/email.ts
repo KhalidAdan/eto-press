@@ -8,11 +8,11 @@
  * link the reader didn't ask for is the unsubscribe link, and that one is
  * a courtesy: SES substitutes {{amazonSESUnsubscribeUrl}} per recipient.
  */
-import { SITE_URL } from "./config.js"
+import { ACCENT, PAPER_MOTTO, PAPER_NAME, SITE_HOST, SITE_URL } from "./config.js"
 import { longDate, type HtmlStory } from "./html.js"
 
 const INK = "#0a0a0a"
-const CLARET = "#7f1d1d"
+const CLARET = ACCENT
 const QUIET = "#6b6b6b"
 const HAIRLINE = "#e4e4e4"
 
@@ -106,13 +106,13 @@ export const renderEmailEdition = (opts: {
 <body style="margin:0;padding:0;background:#ffffff;">
 <div style="max-width:620px;margin:0 auto;padding:28px 20px;">
   <div style="text-align:center;padding-bottom:22px;">
-    <p style="margin:0;font-family:${SERIF};font-size:44px;font-weight:500;color:${INK};">eto</p>
-    <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;color:${QUIET};">One story. Every side. Then it ends.</p>
+    <p style="margin:0;font-family:${SERIF};font-size:44px;font-weight:500;color:${INK};">${esc(PAPER_NAME)}</p>
+    <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;color:${QUIET};">${esc(PAPER_MOTTO)}</p>
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${INK};">${esc(date)}</p>
   </div>${correctionsHtml}
 ${opts.stories.map(storyBlock).join("\n")}
   <div style="border-top:1px solid ${HAIRLINE};padding:22px 0;text-align:center;">
-    <p style="margin:0 0 10px 0;font-family:${MONO};font-size:12px;color:${QUIET};"><a href="${editionUrl}" style="color:${QUIET};">Read this edition on eto.news</a> · <a href="${SITE_URL}/sources.html" style="color:${QUIET};">How we choose our sources</a></p>
+    <p style="margin:0 0 10px 0;font-family:${MONO};font-size:12px;color:${QUIET};"><a href="${editionUrl}" style="color:${QUIET};">Read this edition on ${esc(SITE_HOST)}</a> · <a href="${SITE_URL}/sources.html" style="color:${QUIET};">How we choose our sources</a></p>
     <p style="margin:0 0 14px 0;font-family:${SERIF};font-size:15px;font-style:italic;color:${QUIET};">The brief ends here.</p>
     <p style="margin:0;font-family:${MONO};font-size:11px;color:${QUIET};"><a href="{{amazonSESUnsubscribeUrl}}" style="color:${QUIET};">Unsubscribe</a> — one click, no questions.</p>
   </div>
@@ -120,8 +120,8 @@ ${opts.stories.map(storyBlock).join("\n")}
 </body></html>`
 
   const text = [
-    `eto — ${date}`,
-    "One story. Every side. Then it ends.",
+    `${PAPER_NAME} — ${date}`,
+    PAPER_MOTTO,
     "",
     ...opts.stories.flatMap((s) => [
       "———",
@@ -143,5 +143,5 @@ ${opts.stories.map(storyBlock).join("\n")}
     "Unsubscribe: {{amazonSESUnsubscribeUrl}}"
   ].join("\n")
 
-  return { subject: `eto — ${date}`, html, text }
+  return { subject: `${PAPER_NAME} — ${date}`, html, text }
 }

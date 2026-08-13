@@ -3,6 +3,7 @@ import {
   awsClient,
   CLARET,
   hmacHex,
+  HOST,
   LIST,
   page,
   prose,
@@ -49,6 +50,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return page(
     "you're in",
     prose("Confirmed. The morning edition arrives each day, ends, and lets you leave — there's an unsubscribe link in every footer.") +
-      prose(`Today's edition is already up: <a href="${SITE}" style="color:${CLARET};">eto.news</a>`)
+      prose(`Today's edition is already up: <a href="${SITE}" style="color:${CLARET};">${HOST}</a>`)
   )
 }

@@ -13,14 +13,15 @@ import {
 } from "@aws-sdk/client-sesv2"
 import { existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { BACKUP, MAIL } from "./config.js"
 import { loadEnv } from "./env.js"
 
 loadEnv()
-const DIR = "E:\\eto-backups"
-const KEEP = 14
-const CONTACT_LIST = "eto-readers"
+const DIR = BACKUP.dir
+const KEEP = BACKUP.keep
+const CONTACT_LIST = MAIL.contactList
 
-const ses = new SESv2Client({ region: process.env["AWS_REGION"] ?? "ca-central-1" })
+const ses = new SESv2Client({ region: process.env["AWS_REGION"] ?? MAIL.region })
 
 const lines: Array<string> = []
 let nextToken: string | undefined

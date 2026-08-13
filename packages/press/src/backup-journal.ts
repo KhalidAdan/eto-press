@@ -7,9 +7,10 @@
 import { existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs"
 import { join } from "node:path"
 import { openJournal } from "./assemble.js"
+import { BACKUP } from "./config.js"
 
-const DIR = "E:\\eto-backups"
-const KEEP = 14
+const DIR = BACKUP.dir
+const KEEP = BACKUP.keep
 
 mkdirSync(DIR, { recursive: true })
 const stamp = new Date().toISOString().slice(0, 10)

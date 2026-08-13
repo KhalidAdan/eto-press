@@ -25,7 +25,14 @@
  * All interpolated content is HTML-escaped; the compositor writes prose,
  * never markup.
  */
-import { SITE_URL } from "./config.js"
+import {
+  PAPER_DESCRIPTION,
+  PAPER_MOTTO,
+  PAPER_MOTTO_INLINE,
+  PAPER_NAME,
+  SITE_HOST,
+  SITE_URL
+} from "./config.js"
 
 export interface SourceLink {
   readonly name: string
@@ -112,10 +119,7 @@ const HAIRLINE = "border-neutral-950/15 dark:border-white/15"
 const LINK_STYLE =
   "underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25"
 
-export const SITE_DESCRIPTION =
-  "A daily brief. Each story is one event told through outlets that " +
-  "disagree — differences named in plain words, every source linked, " +
-  "coverage gaps measured. Then it ends."
+export const SITE_DESCRIPTION = PAPER_DESCRIPTION
 
 /** Shared head metadata: title, description, canonical, OpenGraph/Twitter
  * card, and the favicon set (Lora lowercase e, claret period). */
@@ -126,7 +130,7 @@ const headMeta = (opts: {
 }): string => `<title>${esc(opts.title)}</title>
 <meta name="description" content="${esc(opts.description)}">
 <link rel="canonical" href="${SITE_URL}${opts.path}">
-<meta property="og:site_name" content="eto">
+<meta property="og:site_name" content="${esc(PAPER_NAME)}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(opts.title)}">
 <meta property="og:description" content="${esc(opts.description)}">
@@ -135,7 +139,7 @@ const headMeta = (opts: {
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="alternate" type="application/rss+xml" title="eto — the morning edition" href="${SITE_URL}/feed.xml">
+<link rel="alternate" type="application/rss+xml" title="${esc(PAPER_NAME)} — the morning edition" href="${SITE_URL}/feed.xml">
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">`
 
@@ -256,7 +260,7 @@ export const renderHomePage = (opts: {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${headMeta({
-    title: "eto — one story, every side, then it ends",
+    title: `${PAPER_NAME} — ${PAPER_MOTTO_INLINE}`,
     description: SITE_DESCRIPTION,
     path: "/"
   })}
@@ -274,12 +278,12 @@ ${headMeta({
     </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">eto</h1>
-      <p class="${MONO} text-neutral-950/60 dark:text-white/55">One story. Every side. Then it ends.</p>
+      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}</h1>
+      <p class="${MONO} text-neutral-950/60 dark:text-white/55">${esc(PAPER_MOTTO)}</p>
     </header>
 
     <div class="flex flex-col gap-5 py-12">
-      <p class="${PROSE}">eto takes a single event, gathers the accounts of it published by outlets that disagree, and writes one piece of prose that holds all of them. It names every source it used. Then it stops.</p>
+      <p class="${PROSE}">${esc(PAPER_NAME)} takes a single event, gathers the accounts of it published by outlets that disagree, and writes one piece of prose that holds all of them. It names every source it used. Then it stops.</p>
       <p class="${PROSE}">Where the accounts conflict, the story says so — in the body, in plain words, with each side named. Consensus manufactured by deleting the contradiction is not neutrality; it is a quieter kind of lying. And when only one side of the aisle covered a story, the brief tells you that too, because a measurement you are entitled to should never be quietly corrected.</p>
       <p class="${PROSE}">There is no feed here. No recommendations, no related stories, nothing trained on what kept you reading. The brief ends today the way it ended yesterday, and you leave.</p>
     </div>
@@ -340,7 +344,7 @@ export const renderSourcesPage = (
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${headMeta({
-    title: "eto — how we choose our sources",
+    title: `${PAPER_NAME} — how we choose our sources`,
     description:
       "Every outlet this paper reads and where it stands, seeded from the AllSides Media Bias Chart. The masthead is a file: change the file, change the paper.",
     path: "/sources.html"
@@ -359,7 +363,7 @@ ${headMeta({
     </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">eto</h1>
+      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}</h1>
       <p class="${MONO} uppercase tracking-wide">How we choose our sources</p>
     </header>
 
@@ -425,7 +429,7 @@ ${corrections
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${headMeta({
-    title: `eto — ${date}`,
+    title: `${PAPER_NAME} — ${date}`,
     description: `The ${date} edition: ${opts.stories.length} stories, each one event told through outlets that disagree, every source linked.`,
     path: `/${opts.runId}.html`
   })}
@@ -439,13 +443,13 @@ ${headMeta({
   <div class="mx-auto max-w-[68ch]">
 
     <nav class="flex justify-between gap-4 pb-6">
-      <a href="./index.html" class="${MONO_QUIET} ${LINK_STYLE}">eto.news</a>
+      <a href="./index.html" class="${MONO_QUIET} ${LINK_STYLE}">${esc(SITE_HOST)}</a>
       <a href="./sources.html" class="${MONO_QUIET} ${LINK_STYLE}">How we choose our sources</a>
     </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">eto</h1>
-      <p class="${MONO} text-neutral-950/60 dark:text-white/55">One story. Every side. Then it ends.</p>
+      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}</h1>
+      <p class="${MONO} text-neutral-950/60 dark:text-white/55">${esc(PAPER_MOTTO)}</p>
       <p class="${MONO} uppercase tracking-wide">${esc(date)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
     </header>
 ${correctionsSection}

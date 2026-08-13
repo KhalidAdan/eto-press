@@ -13,6 +13,7 @@
 import { FileSystem } from "@effect/platform"
 import { Effect } from "effect"
 import type { Draft } from "./composite.js"
+import { PAPER_MOTTO, PAPER_NAME } from "./config.js"
 import { BriefAlreadyPublished } from "./errors.js"
 import type { FeedOutcome } from "./feeds.js"
 import type { Story } from "./select.js"
@@ -70,9 +71,9 @@ export const renderBrief = (
   corrections: ReadonlyArray<CorrectionNotice> = []
 ): string => {
   const parts: Array<string> = [
-    `# eto — ${longDate(runId)}`,
+    `# ${PAPER_NAME} — ${longDate(runId)}`,
     "",
-    "*One story. Every side. Then it ends.*",
+    `*${PAPER_MOTTO}*`,
     ""
   ]
 

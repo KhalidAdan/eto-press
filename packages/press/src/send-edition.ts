@@ -46,17 +46,18 @@ import {
 import { readFileSync } from "node:fs"
 import * as TOML from "smol-toml"
 import { assembleStories, correctionsPrintedIn, openJournal, publishedRuns } from "./assemble.js"
+import { MAIL, MAIL_TAG_KIND, SITE_URL } from "./config.js"
 import { renderEmailEdition } from "./email.js"
 import { loadEnv } from "./env.js"
 
 loadEnv()
-const CONTACT_LIST = "eto-readers"
-const TOPIC = "morning-edition"
-const DOMAIN = "eto.news"
-const FROM_DOMAIN = `eto <brief@${DOMAIN}>`
-const FROM_FALLBACK = "khalidadan@gmail.com"
-const CONFIG_SET = "eto-mail"
-const EDITION_TAGS = [{ Name: "eto-mail-kind", Value: "morning-edition" }]
+const CONTACT_LIST = MAIL.contactList
+const TOPIC = MAIL.topic
+const DOMAIN = MAIL.domain
+const FROM_DOMAIN = MAIL.from
+const FROM_FALLBACK = MAIL.fromFallback
+const CONFIG_SET = MAIL.configSet
+const EDITION_TAGS = [{ Name: MAIL_TAG_KIND, Value: "morning-edition" }]
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -107,7 +108,7 @@ const edition = renderEmailEdition({
   stories,
   corrections: correctionsPrintedIn(db, runId)
 })
-const ses = new SESv2Client({ region: process.env["AWS_REGION"] ?? "ca-central-1" })
+const ses = new SESv2Client({ region: process.env["AWS_REGION"] ?? MAIL.region })
 
 // Sending health first: if SES has paused the account (reputation, review),
 // every SendEmail would fail — stop before queuing a morning of errors.
@@ -137,14 +138,14 @@ if (!domainReady) {
 
 if (testAddr !== null) {
   // Proof copy: no list management, so substitute the unsubscribe tag.
-  const html = edition.html.replaceAll("{{amazonSESUnsubscribeUrl}}", "https://eto.news")
-  const text = edition.text.replaceAll("{{amazonSESUnsubscribeUrl}}", "https://eto.news")
+  const html = edition.html.replaceAll("{{amazonSESUnsubscribeUrl}}", SITE_URL)
+  const text = edition.text.replaceAll("{{amazonSESUnsubscribeUrl}}", SITE_URL)
   await ses.send(
     new SendEmailCommand({
       FromEmailAddress: from,
       Destination: { ToAddresses: [testAddr] },
       ConfigurationSetName: CONFIG_SET,
-      EmailTags: [{ Name: "eto-mail-kind", Value: "proof" }],
+      EmailTags: [{ Name: MAIL_TAG_KIND, Value: "proof" }],
       Content: {
         Simple: {
           Subject: { Data: `[proof] ${edition.subject}` },

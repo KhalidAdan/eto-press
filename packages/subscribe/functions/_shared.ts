@@ -5,6 +5,7 @@
  * these functions hold one narrow key and an HMAC secret and store nothing.
  */
 import { AwsClient } from "aws4fetch"
+import { CLARET, MOTTO, NAME, REGION, SITE } from "./_config.js"
 
 export interface Env {
   AWS_ACCESS_KEY_ID: string
@@ -12,17 +13,24 @@ export interface Env {
   SUBSCRIBE_SECRET: string
 }
 
-export const REGION = "ca-central-1"
+export {
+  CLARET,
+  CONFIG_SET,
+  FROM,
+  HOST,
+  LIST,
+  MOTTO,
+  MOTTO_INLINE,
+  NAME,
+  REGION,
+  SITE,
+  TAG_KIND,
+  TOPIC
+} from "./_config.js"
 export const SES = `https://email.${REGION}.amazonaws.com/v2/email`
-export const LIST = "eto-readers"
-export const TOPIC = "morning-edition"
-export const CONFIG_SET = "eto-mail"
-export const FROM = "eto <brief@eto.news>"
-export const SITE = "https://eto.news"
 export const TOKEN_TTL_MS = 7 * 24 * 3600 * 1000
 
 const INK = "#0a0a0a"
-export const CLARET = "#7f1d1d"
 const QUIET = "#6b6b6b"
 const SERIF = "Georgia, 'Times New Roman', serif"
 export const MONO = "Consolas, Menlo, 'Courier New', monospace"
@@ -32,10 +40,10 @@ export const esc = (s: string): string =>
 
 export const page = (title: string, body: string, status = 200): Response =>
   new Response(
-    `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>eto — ${esc(title)}</title><link rel="icon" type="image/png" href="${SITE}/favicon.png"></head>
+    `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(NAME)} — ${esc(title)}</title><link rel="icon" type="image/png" href="${SITE}/favicon.png"></head>
 <body style="margin:0;background:#ffffff;"><div style="max-width:560px;margin:0 auto;padding:48px 20px;text-align:center;">
-<p style="margin:0;font-family:${SERIF};font-size:40px;font-weight:500;color:${INK};"><a href="${SITE}" style="color:${INK};text-decoration:none;">eto</a></p>
-<p style="margin:6px 0 34px 0;font-family:${MONO};font-size:12px;color:${QUIET};">One story. Every side. Then it ends.</p>
+<p style="margin:0;font-family:${SERIF};font-size:40px;font-weight:500;color:${INK};"><a href="${SITE}" style="color:${INK};text-decoration:none;">${esc(NAME)}</a></p>
+<p style="margin:6px 0 34px 0;font-family:${MONO};font-size:12px;color:${QUIET};">${esc(MOTTO)}</p>
 ${body}
 </div></body></html>`,
     { status, headers: { "content-type": "text/html; charset=utf-8" } }
