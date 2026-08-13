@@ -4,7 +4,16 @@
   "type": "module",
   "description": "A local-first printing press for a personal newspaper: each story is one event told through outlets that disagree, every source named, and the brief ends.",
   "exports": {
-    ".": "./src/press.ts"
+    ".": "./src/press.ts",
+    "./main": "./src/main.ts",
+    "./render-site": "./src/render-site.ts",
+    "./send-edition": "./src/send-edition.ts",
+    "./correct": "./src/correct.ts",
+    "./export-journal": "./src/export-journal.ts",
+    "./backup-journal": "./src/backup-journal.ts",
+    "./backup-readers": "./src/backup-readers.ts",
+    "./gen-functions-config": "./src/gen-functions-config.ts",
+    "./brief.css": "./src/brief.css"
   },
   "files": ["src", "README.md"],
   "engines": {
