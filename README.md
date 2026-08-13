@@ -28,4 +28,8 @@ the compile-and-bin story arrives with the CLI package.
 
 Extracted 2026-08-13 from the flagship paper's repository with its code
 history (editions stripped). The flagship — eto.news — is customer #1 and
-consumes these packages like any other paper. License: not yet decided.
+consumes these packages like any other paper.
+
+License: **AGPL-3.0-only** — run it, change it, redistribute it; if you
+serve readers with a modified press, they are owed the source. The press
+is free the way the North Star promises, and a hosted fork stays honest.
