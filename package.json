@@ -1,0 +1,11 @@
+{
+  "name": "eto-press",
+  "private": true,
+  "type": "module",
+  "description": "The eto press monorepo — the printing press, not the paper.",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

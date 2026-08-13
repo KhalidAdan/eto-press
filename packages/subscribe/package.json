@@ -1,0 +1,20 @@
+{
+  "name": "@eto-press/subscribe",
+  "version": "1.20260813.0",
+  "type": "module",
+  "description": "The mail slot: double-opt-in subscribe flow for a paper's mailing list, as Cloudflare Pages Functions. Stateless — the reader list lives in SES.",
+  "files": ["functions", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "aws4fetch": "^1.0.20"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260726.1",
+    "typescript": "^5.9.3"
+  }
+}

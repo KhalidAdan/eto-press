@@ -4,11 +4,11 @@
  * source(none) turns OFF Tailwind's automatic repo-wide scan: without it,
  * plain English words in docs and configs ("container", "invisible",
  * "collapse") compile into the paper's stylesheet as junk utilities. The
- * only class sources are the edition templates and the one hand-written
- * page. */
+ * only class source here is the edition template; a paper with its own
+ * hand-written pages (the flagship's site/404.html) adds them via its own
+ * thin stylesheet that @imports this one. */
 @import "tailwindcss" source(none);
 @source "./html.ts";
-@source "../site/404.html";
 
 @theme {
   --font-serif: "Lora", Georgia, serif;
