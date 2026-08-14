@@ -1,0 +1,242 @@
+# The masthead file — your editorial line.
+#
+# Every outlet your paper reads is listed here, and the "side" label on
+# each one is YOUR call — the press only uses it to measure when a
+# story's coverage has collapsed onto one side. Disagree with a label?
+# Change it. That is the point of the file.
+#
+# This starting roster is the press's Default Masthead, seeded from the
+# AllSides Media Bias Chart v11.3 (audited 2026-07-25; the full shelf
+# with open/closed status and paywall caveats is docs/SOURCES.md in the
+# eto-press repository). It is a beginning, not a verdict: the paper
+# becomes yours the first time you edit this file.
+
+# One model-nominated story per day from outside the front page, its
+# reason printed for you to judge. Set false and it is gone.
+below_the_fold = true
+
+# Morning email delivery. Leave false until your mail domain is verified
+# and [mail] in eto.toml says who you are.
+email_edition = false
+
+# Where these side labels came from — a claim YOUR paper makes on its
+# sources page. If you relabel or reroster on your own judgment, rewrite
+# or remove this block; the press asserts nothing it does not know.
+[seed]
+name = "AllSides Media Bias Chart"
+url = "https://www.allsides.com/media-bias/media-bias-chart"
+version = "v11.3"
+description = "which rates outlets from left to right by balancing the judgment of readers and reviewers across the political spectrum"
+
+# ---- left -------------------------------------------------------------
+
+[[source]]
+name = "The Guardian"
+side = "left"
+feeds = [
+  "https://www.theguardian.com/us-news/rss",
+  "https://www.theguardian.com/world/rss",
+]
+
+[[source]]
+name = "Slate"
+side = "left"
+feeds = ["https://slate.com/feeds/all.rss"]
+
+[[source]]
+name = "Mother Jones"
+side = "left"
+feeds = ["https://www.motherjones.com/feed/"]
+
+[[source]]
+name = "The Intercept"
+side = "left"
+feeds = ["https://theintercept.com/feed/?rss"]
+
+[[source]]
+name = "The Nation"
+side = "left"
+feeds = ["https://www.thenation.com/feed/?post_type=article"]
+
+# ---- lean-left --------------------------------------------------------
+
+[[source]]
+name = "NPR"
+side = "lean-left"
+feeds = [
+  "https://feeds.npr.org/1001/rss.xml",
+  "https://feeds.npr.org/1014/rss.xml",
+  "https://feeds.npr.org/1004/rss.xml",
+]
+
+[[source]]
+name = "Al Jazeera"
+side = "lean-left"
+feeds = ["https://www.aljazeera.com/xml/rss/all.xml"]
+
+[[source]]
+name = "Politico"
+side = "lean-left"
+feeds = ["https://rss.politico.com/politics-news.xml"]
+
+[[source]]
+name = "ABC News"
+side = "lean-left"
+feeds = ["https://abcnews.com/abcnews/topstories"]
+
+[[source]]
+name = "CBS News"
+side = "lean-left"
+feeds = ["https://www.cbsnews.com/latest/rss/main"]
+
+[[source]]
+name = "Axios"
+side = "lean-left"
+feeds = ["https://api.axios.com/feed/"]
+
+# AP retired its official public RSS; this unofficial mirror is used for
+# DISCOVERY only — every article is fetched from apnews.com's own front
+# door. If the mirror dies, the health panel will say so.
+[[source]]
+name = "Associated Press"
+side = "lean-left"
+feeds = ["https://feedx.net/rss/ap.xml"]
+
+# ---- center -----------------------------------------------------------
+
+[[source]]
+name = "Newsweek"
+side = "center"
+feeds = ["https://www.newsweek.com/rss"]
+
+[[source]]
+name = "BBC"
+side = "center"
+feeds = [
+  "https://feeds.bbci.co.uk/news/rss.xml",
+  "https://feeds.bbci.co.uk/news/world/rss.xml",
+  "https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml",
+]
+
+[[source]]
+name = "The Hill"
+side = "center"
+feeds = [
+  "https://thehill.com/homenews/feed/",
+  "https://thehill.com/policy/feed/",
+]
+
+# A center wire service — the closest thing to the Reuters-shaped hole
+# (Reuters has no public RSS).
+[[source]]
+name = "UPI"
+side = "center"
+feeds = ["https://rss.upi.com/news/top_news.rss"]
+
+[[source]]
+name = "Straight Arrow News"
+side = "center"
+feeds = ["https://san.com/feed/"]
+
+[[source]]
+name = "MarketWatch"
+side = "center"
+feeds = ["https://feeds.content.dowjones.io/public/rss/mw_topstories"]
+
+[[source]]
+name = "Christian Science Monitor"
+side = "center"
+feeds = ["https://rss.csmonitor.com/feeds/all"]
+
+[[source]]
+name = "NewsNation"
+side = "center"
+feeds = ["https://www.newsnationnow.com/feed/"]
+
+# Paywalled articles: expect clustering signal, possibly no composite text.
+[[source]]
+name = "Wall Street Journal"
+side = "center"
+feeds = [
+  "https://feeds.content.dowjones.io/public/rss/RSSWorldNews",
+  "https://feeds.content.dowjones.io/public/rss/RSSUSnews",
+]
+
+# ---- lean-right -------------------------------------------------------
+
+[[source]]
+name = "Washington Examiner"
+side = "lean-right"
+feeds = [
+  "https://www.washingtonexaminer.com/feed/",
+  "https://www.washingtonexaminer.com/news/feed/",
+  "https://www.washingtonexaminer.com/politics/feed/",
+]
+
+# news/feed is straight news; the main feed skews essay.
+[[source]]
+name = "National Review"
+side = "lean-right"
+feeds = [
+  "https://www.nationalreview.com/feed/",
+  "https://www.nationalreview.com/news/feed/",
+]
+
+[[source]]
+name = "The Dispatch"
+side = "lean-right"
+feeds = ["https://thedispatch.com/feed/"]
+
+[[source]]
+name = "Just The News"
+side = "lean-right"
+feeds = ["https://justthenews.com/rss.xml"]
+
+[[source]]
+name = "The Free Press"
+side = "lean-right"
+feeds = ["https://www.thefp.com/feed"]
+
+[[source]]
+name = "Fox Business"
+side = "lean-right"
+feeds = ["https://moxie.foxbusiness.com/google-publisher/latest.xml"]
+
+# ---- right ------------------------------------------------------------
+
+[[source]]
+name = "FOX News"
+side = "right"
+feeds = [
+  "https://moxie.foxnews.com/google-publisher/politics.xml",
+  "https://moxie.foxnews.com/google-publisher/us.xml",
+  "https://moxie.foxnews.com/google-publisher/world.xml",
+]
+
+[[source]]
+name = "New York Post"
+side = "right"
+feeds = [
+  "https://nypost.com/news/feed/",
+  "https://nypost.com/politics/feed/",
+]
+
+[[source]]
+name = "The Daily Wire"
+side = "right"
+feeds = ["https://www.dailywire.com/feeds/rss.xml"]
+
+[[source]]
+name = "Newsmax"
+side = "right"
+feeds = ["https://www.newsmax.com/rss/Newsfront/16/"]
+
+[[source]]
+name = "The Daily Caller"
+side = "right"
+feeds = ["https://dailycaller.com/feed/"]
+
+[[source]]
+name = "The Federalist"
+side = "right"
+feeds = ["https://thefederalist.com/feed/"]

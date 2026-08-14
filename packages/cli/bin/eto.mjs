@@ -7,6 +7,7 @@
 import { register } from "tsx/esm/api"
 
 const VERBS = {
+  init: ["@eto-press/press/init", "a paper comes into existence (asks three questions)"],
   press: ["@eto-press/press/press-run", "the whole morning: print, render, export, email, backups"],
   print: ["@eto-press/press/main", "run the pipeline: gather, judge, composite, verify, archive"],
   doctor: ["@eto-press/press/doctor", "examine the press: models, lock, GPU, feeds, journal, mail"],

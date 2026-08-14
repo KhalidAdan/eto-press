@@ -14,6 +14,7 @@
     "./backup-journal": "./src/backup-journal.ts",
     "./backup-readers": "./src/backup-readers.ts",
     "./gen-functions-config": "./src/gen-functions-config.ts",
+    "./init": "./src/init.ts",
     "./doctor": "./src/doctor.ts",
     "./models": "./src/models.ts",
     "./press-run": "./src/press-run.ts",
