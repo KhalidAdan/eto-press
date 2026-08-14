@@ -15,6 +15,9 @@
     "./backup-readers": "./src/backup-readers.ts",
     "./gen-functions-config": "./src/gen-functions-config.ts",
     "./doctor": "./src/doctor.ts",
+    "./models": "./src/models.ts",
+    "./press-run": "./src/press-run.ts",
+    "./schedule": "./src/schedule.ts",
     "./brief.css": "./src/brief.css"
   },
   "files": ["src", "README.md"],
@@ -41,13 +44,13 @@
     "jsdom": "^29.1.1",
     "rss-parser": "^3.13.0",
     "smol-toml": "^1.7.0",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/jsdom": "^28.0.3",
     "@types/node": "^24.13.3",
-    "tsx": "^4.23.1",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
   }

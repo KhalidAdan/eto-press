@@ -7,8 +7,11 @@
 import { register } from "tsx/esm/api"
 
 const VERBS = {
+  press: ["@eto-press/press/press-run", "the whole morning: print, render, export, email, backups"],
   print: ["@eto-press/press/main", "run the pipeline: gather, judge, composite, verify, archive"],
   doctor: ["@eto-press/press/doctor", "examine the press: models, lock, GPU, feeds, journal, mail"],
+  models: ["@eto-press/press/models", "status | pull | pin — the models, managed not remembered"],
+  schedule: ["@eto-press/press/schedule", "install the morning into the OS (--time 05:30, --yes)"],
   render: ["@eto-press/press/render-site", "render the public site from the journal"],
   email: ["@eto-press/press/send-edition", "deliver the latest edition to the reader list (--test <addr>)"],
   correct: ["@eto-press/press/correct", "print a dated correction pointing back at an edition"],
