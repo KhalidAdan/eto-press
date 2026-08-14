@@ -12,8 +12,10 @@
  *    instrument voice.
  * 2. ONE COLOR, SPENT IN ONE PLACE. Ink on paper (neutral-950 / white,
  *    inverted for dark). The single claret accent belongs exclusively to
- *    eto's own measurements: the differ label and the balance notes. The
- *    news never gets color; only the parts eto is accountable for do.
+ *    the paper's own voice: the differ label, the balance notes, and the
+ *    full stop after the wordmark — the same period the favicon spends it
+ *    on. The news never gets color; only the parts the paper is
+ *    accountable for do.
  * 3. MINIMAL BY STRUCTURE. No cards, no shadows, no navigation. Hairline
  *    opacity dividers, a 68ch measure, and after "The brief ends here."
  *    there is nothing to scroll to.
@@ -278,7 +280,7 @@ ${headMeta({
     </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}</h1>
+      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}<span class="${ACCENT}">.</span></h1>
       <p class="${MONO} text-neutral-950/60 dark:text-white/55">${esc(PAPER_MOTTO)}</p>
     </header>
 
@@ -363,7 +365,7 @@ ${headMeta({
     </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}</h1>
+      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}<span class="${ACCENT}">.</span></h1>
       <p class="${MONO} uppercase tracking-wide">How we choose our sources</p>
     </header>
 
@@ -448,7 +450,7 @@ ${headMeta({
     </nav>
 
     <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}</h1>
+      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}<span class="${ACCENT}">.</span></h1>
       <p class="${MONO} text-neutral-950/60 dark:text-white/55">${esc(PAPER_MOTTO)}</p>
       <p class="${MONO} uppercase tracking-wide">${esc(date)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
     </header>
