@@ -322,12 +322,35 @@ ${headlineList}
 `
 }
 
+/** The paper's claim about where its side labels came from — rendered
+ * only when the masthead declares a [seed]. The press asserts nothing it
+ * does not know. */
+export interface SourcesSeed {
+  readonly name: string
+  readonly url?: string | undefined
+  readonly version?: string | undefined
+  readonly description?: string | undefined
+}
+
 /** The "How we choose our sources" page — the masthead explained to a
- * reader, with the AllSides provenance linked (NORTH-STAR, The Default
- * Masthead). Sides render in spectrum order. */
+ * reader, with the seed provenance linked when the masthead declares one
+ * (NORTH-STAR, The Default Masthead). Sides render in spectrum order. */
 export const renderSourcesPage = (
-  bySide: ReadonlyArray<{ side: string; outlets: ReadonlyArray<string> }>
+  bySide: ReadonlyArray<{ side: string; outlets: ReadonlyArray<string> }>,
+  seed: SourcesSeed | null = null
 ): string => {
+  const seedName =
+    seed === null
+      ? ""
+      : seed.url === undefined
+        ? esc(seed.name)
+        : `<a href="${esc(seed.url)}" target="_blank" rel="noopener" class="underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current dark:decoration-white/25">${esc(seed.name)}</a>`
+  const seedParagraph =
+    seed === null
+      ? ""
+      : `
+      <p class="${PROSE}">The side labels are seeded from the ${seedName}${seed.version === undefined ? "" : ` (${esc(seed.version)})`}${seed.description === undefined ? "" : `, ${esc(seed.description)}`}. ${esc(seed.name)} rates perspective, not accuracy — and so does this page. A label here is a map reference, not a verdict.</p>`
+
   const rows = bySide
     .map((g) => {
       const cls =
@@ -348,7 +371,7 @@ export const renderSourcesPage = (
 ${headMeta({
     title: `${PAPER_NAME} — how we choose our sources`,
     description:
-      "Every outlet this paper reads and where it stands, seeded from the AllSides Media Bias Chart. The masthead is a file: change the file, change the paper.",
+      `Every outlet this paper reads and where it stands${seed === null ? "" : `, seeded from the ${seed.name}`}. The masthead is a file: change the file, change the paper.`,
     path: "/sources.html"
   })}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -370,8 +393,7 @@ ${headMeta({
     </header>
 
     <div class="flex flex-col gap-5 py-12">
-      <p class="${PROSE}">Every story in this paper is one event told through the accounts of outlets that disagree. Which outlets, and where each one stands, is not decided by an algorithm and not decided story by story — it is a single file, owned by this paper's editor, and this page is that file made visible.</p>
-      <p class="${PROSE}">The side labels are seeded from the <a href="https://www.allsides.com/media-bias/media-bias-chart" target="_blank" rel="noopener" class="underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current dark:decoration-white/25">AllSides Media Bias Chart</a> (v11.3), which rates outlets from left to right by balancing the judgment of readers and reviewers across the political spectrum. AllSides rates perspective, not accuracy — and so does this page. A label here is a map reference, not a verdict.</p>
+      <p class="${PROSE}">Every story in this paper is one event told through the accounts of outlets that disagree. Which outlets, and where each one stands, is not decided by an algorithm and not decided story by story — it is a single file, owned by this paper's editor, and this page is that file made visible.</p>${seedParagraph}
       <p class="${PROSE}">When a story's coverage collapses onto one side of that map, the brief says so, in plain words, right under the story. That line is a measurement, and you are entitled to it.</p>
     </div>
 

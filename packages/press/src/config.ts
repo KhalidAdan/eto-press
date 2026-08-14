@@ -48,8 +48,11 @@ const models = section("models")
 const mail = section("mail")
 const backup = section("backup")
 
-export const PAPER_NAME = str(paper, "paper", "name", "eto")
-export const PAPER_MOTTO = str(paper, "paper", "motto", "Each story. Every side.")
+// Defaults are NEUTRAL: a paper with no eto.toml is an unnamed Tier-1
+// local paper, not a copy of the flagship. No default may carry any real
+// paper's identity, address, or machine.
+export const PAPER_NAME = str(paper, "paper", "name", "your paper")
+export const PAPER_MOTTO = str(paper, "paper", "motto", "Write your masthead in eto.toml.")
 export const PAPER_DESCRIPTION = str(
   paper,
   "paper",
@@ -58,7 +61,7 @@ export const PAPER_DESCRIPTION = str(
     "disagree — differences named in plain words, every source linked, " +
     "coverage gaps measured. Then it ends."
 )
-export const SITE_URL = str(paper, "paper", "site_url", "https://eto.news")
+export const SITE_URL = str(paper, "paper", "site_url", "http://localhost")
 /** The single accent color — the paper's own voice, never the news's. */
 export const ACCENT = str(paper, "paper", "accent", "#7f1d1d")
 
@@ -85,9 +88,12 @@ export const COMPOSITE_NUM_CTX = int(models, "models", "composite_num_ctx", 8192
 
 export const MAIL = {
   region: str(mail, "mail", "region", "ca-central-1"),
-  domain: str(mail, "mail", "domain", "eto.news"),
-  from: str(mail, "mail", "from", "eto <brief@eto.news>"),
-  fromFallback: str(mail, "mail", "from_fallback", "khalidadan@gmail.com"),
+  // Identity defaults are empty: sending mail requires the paper to say
+  // who it is. The list/topic/set names are press conventions, not
+  // identity, and stay.
+  domain: str(mail, "mail", "domain", ""),
+  from: str(mail, "mail", "from", ""),
+  fromFallback: str(mail, "mail", "from_fallback", ""),
   contactList: str(mail, "mail", "contact_list", "eto-readers"),
   topic: str(mail, "mail", "topic", "morning-edition"),
   configSet: str(mail, "mail", "config_set", "eto-mail")
@@ -97,6 +103,9 @@ export const MAIL = {
 export const MAIL_TAG_KIND = `${MAIL.configSet}-kind`
 
 export const BACKUP = {
-  dir: str(backup, "backup", "dir", "E:\\eto-backups"),
+  // Default is cwd-relative: a backup you did not configure still exists,
+  // but it never assumes anyone's drive layout. Point it OUTSIDE the
+  // paper's disk when you configure it for real.
+  dir: str(backup, "backup", "dir", "backups"),
   keep: int(backup, "backup", "keep", 14)
 } as const

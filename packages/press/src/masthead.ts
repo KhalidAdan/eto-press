@@ -14,12 +14,27 @@ export const SourceSchema = Schema.Struct({
 })
 export type Source = typeof SourceSchema.Type
 
+/** Where the side labels came from — a claim the PAPER makes about its
+ * own editorial line, rendered on the sources page only when declared.
+ * The press asserts nothing it does not know: no seed, no provenance
+ * paragraph. */
+export const SeedSchema = Schema.Struct({
+  name: Schema.NonEmptyString,
+  url: Schema.optional(Schema.String),
+  version: Schema.optional(Schema.String),
+  /** An optional clause appended after the name — e.g. how the chart
+   * rates outlets. Reads as: "seeded from {name} ({version}), {description}." */
+  description: Schema.optional(Schema.String)
+})
+export type MastheadSeed = typeof SeedSchema.Type
+
 export const MastheadSchema = Schema.Struct({
   /** Stage 6b kill switch — the editor's, not the model's. Absent = on. */
   below_the_fold: Schema.optional(Schema.Boolean),
   /** Morning email delivery. Absent = off; the editor flips it on when the
    * mail domain is verified and production access is granted. */
   email_edition: Schema.optional(Schema.Boolean),
+  seed: Schema.optional(SeedSchema),
   source: Schema.NonEmptyArray(SourceSchema)
 })
 export type Masthead = typeof MastheadSchema.Type

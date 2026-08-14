@@ -149,6 +149,7 @@ writeFileSync(
 // Sources page, straight from the masthead file — spectrum order.
 const masthead = TOML.parse(readFileSync("sources.toml", "utf8")) as {
   source: Array<{ name: string; side: string }>
+  seed?: { name: string; url?: string; version?: string; description?: string }
 }
 const SIDE_ORDER = ["left", "lean-left", "center", "lean-right", "right"]
 const bySide = SIDE_ORDER.flatMap((side) => {
@@ -162,7 +163,7 @@ for (const s of masthead.source) {
     else bySide.push({ side: s.side, outlets: [s.name] })
   }
 }
-writeFileSync("site/sources.html", renderSourcesPage(bySide), "utf8")
+writeFileSync("site/sources.html", renderSourcesPage(bySide, masthead.seed ?? null), "utf8")
 
 console.log(
   `rendered ${editions.length} edition(s), index.html, sources.html — latest: ${editions[0]} ` +

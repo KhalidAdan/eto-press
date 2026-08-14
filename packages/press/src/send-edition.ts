@@ -127,13 +127,24 @@ const maxPerSec = quota.MaxSendRate ?? 1
 // Pace from the account's real rate, never faster than one send / 120ms.
 const sendDelayMs = Math.max(120, Math.ceil(1000 / maxPerSec))
 
-const domainIdentity = await ses
-  .send(new GetEmailIdentityCommand({ EmailIdentity: DOMAIN }))
-  .catch(() => null)
+const domainIdentity = DOMAIN === ""
+  ? null
+  : await ses
+      .send(new GetEmailIdentityCommand({ EmailIdentity: DOMAIN }))
+      .catch(() => null)
 const domainReady = domainIdentity?.VerifiedForSendingStatus === true
-const from = domainReady ? FROM_DOMAIN : FROM_FALLBACK
+const from = domainReady && FROM_DOMAIN !== "" ? FROM_DOMAIN : FROM_FALLBACK
+// The neutral defaults carry no identity: a paper that wants to mail must
+// say who it is. Stop loudly rather than send as nobody.
+if (from === "") {
+  console.error(
+    "no mail identity configured — set [mail] domain and from (and from_fallback " +
+      "for the pre-verification window) in eto.toml"
+  )
+  process.exit(1)
+}
 if (!domainReady) {
-  console.log(`NOTE: ${DOMAIN} identity not verified yet — sending from ${FROM_FALLBACK}`)
+  console.log(`NOTE: ${DOMAIN || "(no domain)"} identity not verified yet — sending from ${FROM_FALLBACK}`)
 }
 
 if (testAddr !== null) {

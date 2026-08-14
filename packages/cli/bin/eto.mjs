@@ -8,6 +8,7 @@ import { register } from "tsx/esm/api"
 
 const VERBS = {
   print: ["@eto-press/press/main", "run the pipeline: gather, judge, composite, verify, archive"],
+  doctor: ["@eto-press/press/doctor", "examine the press: models, lock, GPU, feeds, journal, mail"],
   render: ["@eto-press/press/render-site", "render the public site from the journal"],
   email: ["@eto-press/press/send-edition", "deliver the latest edition to the reader list (--test <addr>)"],
   correct: ["@eto-press/press/correct", "print a dated correction pointing back at an edition"],
