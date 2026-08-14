@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/cli",
-  "version": "1.20260813.1",
+  "version": "1.20260814.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The eto command — verbs over the press. Generation 1: the paperboy's verbs; init and doctor arrive with roadmap phase 2.",
