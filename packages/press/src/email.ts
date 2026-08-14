@@ -106,7 +106,7 @@ export const renderEmailEdition = (opts: {
 <body style="margin:0;padding:0;background:#ffffff;">
 <div style="max-width:620px;margin:0 auto;padding:28px 20px;">
   <div style="text-align:center;padding-bottom:22px;">
-    <p style="margin:0;font-family:${SERIF};font-size:44px;font-weight:500;color:${INK};">${esc(PAPER_NAME)}</p>
+    <p style="margin:0;font-family:${SERIF};font-size:44px;font-weight:500;color:${INK};">${esc(PAPER_NAME)}<span style="color:${CLARET};">.</span></p>
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;color:${QUIET};">${esc(PAPER_MOTTO)}</p>
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${INK};">${esc(date)}</p>
   </div>${correctionsHtml}

@@ -42,7 +42,7 @@ export const page = (title: string, body: string, status = 200): Response =>
   new Response(
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(NAME)} — ${esc(title)}</title><link rel="icon" type="image/png" href="${SITE}/favicon.png"></head>
 <body style="margin:0;background:#ffffff;"><div style="max-width:560px;margin:0 auto;padding:48px 20px;text-align:center;">
-<p style="margin:0;font-family:${SERIF};font-size:40px;font-weight:500;color:${INK};"><a href="${SITE}" style="color:${INK};text-decoration:none;">${esc(NAME)}</a></p>
+<p style="margin:0;font-family:${SERIF};font-size:40px;font-weight:500;color:${INK};"><a href="${SITE}" style="color:${INK};text-decoration:none;">${esc(NAME)}<span style="color:${CLARET};">.</span></a></p>
 <p style="margin:6px 0 34px 0;font-family:${MONO};font-size:12px;color:${QUIET};">${esc(MOTTO)}</p>
 ${body}
 </div></body></html>`,
