@@ -1,7 +1,13 @@
 # Publish every workspace package to npm when a release tag is pushed.
 # Tags follow the versioning scheme: v<generation>.<YYYYMMDD>.<patch>,
-# e.g. v1.20260813.0. Requires the NPM_TOKEN repository secret (an npm
-# granular token with publish rights on the @eto-press scope).
+# e.g. v1.20260814.0.
+#
+# Auth is npm trusted publishing (OIDC): each package's Settings ->
+# Trusted publisher on npmjs.com names this repository and workflow, and
+# npm mints short-lived credentials from the runner's OIDC token —
+# no NPM_TOKEN secret, no OTP, and provenance attestations for free.
+# (Token-based publishing dead-ends at EOTP: the account requires 2FA
+# and npm is deprecating tokens that bypass it.)
 #
 # Publishing is deliberate, never automatic on merge — the press has no
 # remote switch (NORTH-STAR §10), and its releases are the same way:
@@ -13,6 +19,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,9 +29,9 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
+      # Trusted publishing needs a newer npm than node 22 bundles.
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm publish --workspaces
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
