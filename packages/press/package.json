@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "@eto-press/press",
-  "version": "1.20260814.0",
+  "version": "1.20260814.1",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "A local-first printing press for a personal newspaper: each story is one event told through outlets that disagree, every source named, and the brief ends.",
