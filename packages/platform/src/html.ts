@@ -62,15 +62,12 @@ const esc = (s: string): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
 
-// -- The type scale, named once ---------------------------------------------
-const PROSE = "text-pretty text-lg/8 sm:text-base/7"
-const MONO = "font-mono text-base/7 sm:text-sm/6"
-const MONO_QUIET = `${MONO} text-neutral-950/70 dark:text-white/60`
-const ACCENT = "text-red-900 dark:text-red-300/90"
-const HAIRLINE = "border-neutral-950/15 dark:border-white/15"
-
-const LINK_STYLE =
-  "underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25"
+// -- The semantic anatomy ----------------------------------------------------
+// Markup names structure; brief.css (the default theme) names appearance.
+// The class vocabulary here is the skin contract: a paper restyles these
+// names and never touches this file. Three voice classes are shared by
+// design — prose (the news), instrument (the paper speaking), accent (the
+// claret, spent only on the paper's own measurements).
 
 export const SITE_DESCRIPTION = PAPER_DESCRIPTION
 
@@ -107,36 +104,36 @@ export const longDate = (runId: string): string =>
 const sourceAnchor = (s: SourceLink): string =>
   s.href === null
     ? esc(s.name)
-    : `<a href="${esc(s.href)}" target="_blank" rel="noopener" class="underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25">${esc(s.name)}</a>`
+    : `<a href="${esc(s.href)}" target="_blank" rel="noopener" class="story__source-link link">${esc(s.name)}</a>`
 
 export const storyAnchor = (index: number): string => `s${index}`
 
 const storySection = (story: HtmlStory, index: number): string => {
   const body = story.bodyParagraphs
-    .map((p) => `        <p class="${PROSE}">${esc(p)}</p>`)
+    .map((p) => `        <p class="story__body prose">${esc(p)}</p>`)
     .join("\n")
 
   const differ =
     story.differBullets.length > 0
-      ? `        <ul role="list" class="flex flex-col gap-3">\n${story.differBullets
-          .map((b) => `          <li class="${PROSE}">${esc(b)}</li>`)
+      ? `        <ul role="list" class="story__differ story__differ--list">\n${story.differBullets
+          .map((b) => `          <li class="story__differ-item prose">${esc(b)}</li>`)
           .join("\n")}\n        </ul>`
       : story.differParagraphs
-          .map((p) => `        <p class="${PROSE}">${esc(p)}</p>`)
+          .map((p) => `        <p class="story__differ prose">${esc(p)}</p>`)
           .join("\n")
 
   const balance =
     story.balanceNote === null
       ? ""
-      : `\n          <p class="${MONO} ${ACCENT}">${esc(story.balanceNote)}</p>`
+      : `\n          <p class="story__balance instrument accent">${esc(story.balanceNote)}</p>`
 
-  return `      <article id="${storyAnchor(index)}" class="flex flex-col gap-5 py-12 scroll-mt-6">
-        <h2 class="text-pretty text-2xl font-semibold tracking-tight sm:text-3xl">${esc(story.headline)}</h2>
+  return `      <article id="${storyAnchor(index)}" class="story">
+        <h2 class="story__headline">${esc(story.headline)}</h2>
 ${body}
-        <h3 class="${MONO} font-medium uppercase tracking-wide ${ACCENT}">Where the accounts differ</h3>
+        <h3 class="story__differ-label instrument instrument--label instrument--strong accent">Where the accounts differ</h3>
 ${differ}
-        <footer class="flex flex-col gap-2 pt-1">
-          <p class="${MONO_QUIET}">Sources&ensp;${story.sources.map(sourceAnchor).join(" · ")}</p>${balance}
+        <footer class="story__footer">
+          <p class="story__sources instrument instrument--quiet">Sources&ensp;${story.sources.map(sourceAnchor).join(" · ")}</p>${balance}
         </footer>
       </article>`
 }
@@ -157,25 +154,24 @@ export interface HomeCard {
 }
 
 /** The spectrum strip: side labels abbreviated and colored blue-to-red
- * (center is purple), separators dimmed so the letters carry the line. */
-const SIDE_BADGES: ReadonlyArray<{ side: string; abbr: string; cls: string }> = [
-  { side: "left", abbr: "L", cls: "text-blue-700 dark:text-blue-400" },
-  { side: "lean-left", abbr: "CL", cls: "text-blue-500 dark:text-blue-300" },
-  { side: "center", abbr: "C", cls: "text-violet-600 dark:text-violet-400" },
-  { side: "lean-right", abbr: "CR", cls: "text-red-500 dark:text-red-300" },
-  { side: "right", abbr: "R", cls: "text-red-700 dark:text-red-400" }
+ * (center is purple), separators dimmed so the letters carry the line.
+ * The five known sides get side--{label} classes; the theme colors them. */
+const SIDE_BADGES: ReadonlyArray<{ side: string; abbr: string }> = [
+  { side: "left", abbr: "L" },
+  { side: "lean-left", abbr: "CL" },
+  { side: "center", abbr: "C" },
+  { side: "lean-right", abbr: "CR" },
+  { side: "right", abbr: "R" }
 ]
 
 export const sideSpectrum = (sides: ReadonlyArray<string>): string => {
   const known = SIDE_BADGES.filter((b) => sides.includes(b.side)).map(
-    (b) => `<span class="${b.cls}">${b.abbr}</span>`
+    (b) => `<span class="spectrum__side side--${b.side}">${b.abbr}</span>`
   )
   const custom = sides
     .filter((s) => !SIDE_BADGES.some((b) => b.side === s))
-    .map((s) => `<span>${esc(s.slice(0, 2).toUpperCase())}</span>`)
-  return [...known, ...custom].join(
-    `<span class="text-neutral-950/25 dark:text-white/25"> / </span>`
-  )
+    .map((s) => `<span class="spectrum__side">${esc(s.slice(0, 2).toUpperCase())}</span>`)
+  return [...known, ...custom].join(`<span class="spectrum__sep"> / </span>`)
 }
 
 export const renderHomePage = (opts: {
@@ -188,15 +184,16 @@ export const renderHomePage = (opts: {
     const image =
       h.image === null
         ? ""
-        : `\n          <figure class="flex flex-col">
-            <img src="${esc(h.image.src)}" alt="" loading="lazy" referrerpolicy="no-referrer" class="aspect-video w-full object-cover">
-            <figcaption class="${MONO} px-5 pt-2 text-neutral-950/50 dark:text-white/40">image · ${esc(h.image.credit)}</figcaption>
+        : `\n          <figure class="card__figure">
+            <img src="${esc(h.image.src)}" alt="" loading="lazy" referrerpolicy="no-referrer" class="card__image">
+            <figcaption class="card__credit instrument">image · ${esc(h.image.credit)}</figcaption>
           </figure>`
-    return `        <li class="border border-neutral-950/10 dark:border-white/10">
-          <a href="${latest}#${h.anchor}" class="group flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2">${image}
-            <div class="flex grow flex-col gap-2 p-5">
-              ${h.fold ? `<p class="${MONO} uppercase tracking-wide ${ACCENT}">Below the fold</p>\n              ` : ""}<h3 class="text-pretty text-xl font-semibold group-hover:underline decoration-neutral-950/30 underline-offset-4 dark:decoration-white/30">${esc(h.title)}</h3>
-              <p class="${MONO} mt-auto text-neutral-950/60 dark:text-white/50">${esc(h.outletsLabel)}<span class="text-neutral-950/25 dark:text-white/25"> · </span>${sideSpectrum(h.sides)}</p>
+    return `        <li class="card">
+          <a href="${latest}#${h.anchor}" class="card__link group">${image}
+            <div class="card__body">
+              ${h.fold ? `<p class="card__fold-tag instrument instrument--label accent">Below the fold</p>
+              ` : ""}<h3 class="card__title">${esc(h.title)}</h3>
+              <p class="card__meta instrument">${esc(h.outletsLabel)}<span class="card__meta-sep"> · </span>${sideSpectrum(h.sides)}</p>
             </div>
           </a>
         </li>`
@@ -204,11 +201,11 @@ export const renderHomePage = (opts: {
   const headlineList = opts.headlines.map(card).join("\n")
 
   const editionList = opts.editions
-    .map((e) => `<a href="./${e}.html" class="${LINK_STYLE}">${esc(longDate(e))}</a>`)
+    .map((e) => `<a href="./${e}.html" class="link">${esc(longDate(e))}</a>`)
     .join(" · ")
 
   return `<!DOCTYPE html>
-<html lang="en" class="antialiased">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -222,48 +219,48 @@ ${headMeta({
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./brief.css">
 </head>
-<body class="bg-white font-serif text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
-<main class="isolate px-6 py-10 sm:py-14">
-  <div class="mx-auto max-w-[68ch]">
+<body class="page">
+<main class="page__main">
+  <div class="page__measure">
 
-    <nav class="flex justify-end pb-6">
-      <a href="./sources.html" class="${MONO_QUIET} ${LINK_STYLE}">How we choose our sources</a>
+    <nav class="page__nav">
+      <a href="./sources.html" class="page__nav-link instrument instrument--quiet link">How we choose our sources</a>
     </nav>
 
-    <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}<span class="${ACCENT}">.</span></h1>
-      <p class="${MONO} text-neutral-950/60 dark:text-white/55">${esc(PAPER_MOTTO)}</p>
+    <header class="masthead">
+      <h1 class="masthead__wordmark">${esc(PAPER_NAME)}<span class="masthead__stop accent">.</span></h1>
+      <p class="masthead__motto instrument">${esc(PAPER_MOTTO)}</p>
     </header>
 
-    <div class="flex flex-col gap-5 py-12">
-      <p class="${PROSE}">${esc(PAPER_NAME)} takes a single event, gathers the accounts of it published by outlets that disagree, and writes one piece of prose that holds all of them. It names every source it used. Then it stops.</p>
-      <p class="${PROSE}">Where the accounts conflict, the story says so — in the body, in plain words, with each side named. Consensus manufactured by deleting the contradiction is not neutrality; it is a quieter kind of lying. And when only one side of the aisle covered a story, the brief tells you that too, because a measurement you are entitled to should never be quietly corrected.</p>
-      <p class="${PROSE}">There is no feed here. No recommendations, no related stories, nothing trained on what kept you reading. The brief ends today the way it ended yesterday, and you leave.</p>
+    <div class="about">
+      <p class="prose">${esc(PAPER_NAME)} takes a single event, gathers the accounts of it published by outlets that disagree, and writes one piece of prose that holds all of them. It names every source it used. Then it stops.</p>
+      <p class="prose">Where the accounts conflict, the story says so — in the body, in plain words, with each side named. Consensus manufactured by deleting the contradiction is not neutrality; it is a quieter kind of lying. And when only one side of the aisle covered a story, the brief tells you that too, because a measurement you are entitled to should never be quietly corrected.</p>
+      <p class="prose">There is no feed here. No recommendations, no related stories, nothing trained on what kept you reading. The brief ends today the way it ended yesterday, and you leave.</p>
     </div>
 
-    <section class="flex flex-col gap-5 border-t ${HAIRLINE} py-10">
-      <h2 class="${MONO} font-medium uppercase tracking-wide">Today — ${esc(longDate(opts.latestRunId))}</h2>
-      <ul role="list" class="grid gap-6 sm:grid-cols-2">
+    <section class="page-section">
+      <h2 class="section-label instrument instrument--label instrument--strong">Today — ${esc(longDate(opts.latestRunId))}</h2>
+      <ul role="list" class="cards">
 ${headlineList}
       </ul>
     </section>
 
-    <section class="flex flex-col gap-4 border-t ${HAIRLINE} py-10">
-      <h2 class="${MONO} font-medium uppercase tracking-wide">The morning edition, by email</h2>
-      <form method="POST" action="/subscribe" class="flex flex-col gap-3 sm:flex-row">
-        <div class="absolute -left-[5000px]" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-        <label for="sub-email" class="sr-only hidden">Email address</label>
-        <input id="sub-email" type="email" name="email" required placeholder="you@example.com" class="${MONO} grow border border-neutral-950/25 bg-transparent px-4 py-2.5 sm:py-2 placeholder:text-neutral-950/40 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white/25 dark:placeholder:text-white/40">
-        <button type="submit" class="${MONO} border border-neutral-950 bg-neutral-950 px-6 py-2.5 sm:py-2 text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white dark:bg-white dark:text-neutral-950">Subscribe</button>
+    <section class="page-section page-section--tight">
+      <h2 class="section-label instrument instrument--label instrument--strong">The morning edition, by email</h2>
+      <form method="POST" action="/subscribe" class="subscribe">
+        <div class="honeypot" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+        <label for="sub-email" class="visually-hidden">Email address</label>
+        <input id="sub-email" type="email" name="email" required placeholder="you@example.com" class="subscribe__input instrument">
+        <button type="submit" class="subscribe__button instrument">Subscribe</button>
       </form>
-      <p class="${MONO_QUIET}">One email each day. It ends. Unsubscribe in every footer.</p>
+      <p class="instrument instrument--quiet">One email each day. It ends. Unsubscribe in every footer.</p>
     </section>
 
-    <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
-      <h2 class="${MONO} font-medium uppercase tracking-wide">Past editions</h2>
-      <p class="${MONO_QUIET}">${editionList}</p>
-      <p class="${MONO_QUIET}"><a href="/feed.xml" class="${LINK_STYLE}">RSS</a> — one item per edition, the whole brief inside, for your own reader.</p>
-      <p class="pt-6 text-center text-lg/8 sm:text-base/7 italic text-neutral-950/60 dark:text-white/55">A newspaper whose sources you can read — in both senses.</p>
+    <footer class="page__footer">
+      <h2 class="section-label instrument instrument--label instrument--strong">Past editions</h2>
+      <p class="instrument instrument--quiet">${editionList}</p>
+      <p class="instrument instrument--quiet"><a href="/feed.xml" class="link">RSS</a> — one item per edition, the whole brief inside, for your own reader.</p>
+      <p class="page__end">A newspaper whose sources you can read — in both senses.</p>
     </footer>
 
   </div>
@@ -295,27 +292,26 @@ export const renderSourcesPage = (
       ? ""
       : seed.url === undefined
         ? esc(seed.name)
-        : `<a href="${esc(seed.url)}" target="_blank" rel="noopener" class="underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current dark:decoration-white/25">${esc(seed.name)}</a>`
+        : `<a href="${esc(seed.url)}" target="_blank" rel="noopener" class="link">${esc(seed.name)}</a>`
   const seedParagraph =
     seed === null
       ? ""
       : `
-      <p class="${PROSE}">The side labels are seeded from the ${seedName}${seed.version === undefined ? "" : ` (${esc(seed.version)})`}${seed.description === undefined ? "" : `, ${esc(seed.description)}`}. ${esc(seed.name)} rates perspective, not accuracy — and so does this page. A label here is a map reference, not a verdict.</p>`
+      <p class="prose">The side labels are seeded from the ${seedName}${seed.version === undefined ? "" : ` (${esc(seed.version)})`}${seed.description === undefined ? "" : `, ${esc(seed.description)}`}. ${esc(seed.name)} rates perspective, not accuracy — and so does this page. A label here is a map reference, not a verdict.</p>`
 
   const rows = bySide
     .map((g) => {
-      const cls =
-        SIDE_BADGES.find((b) => b.side === g.side)?.cls ??
-        "text-neutral-950/70 dark:text-white/60"
-      return `      <div class="flex flex-col gap-2 py-6 sm:flex-row sm:gap-6">
-        <p class="${MONO} w-32 shrink-0 uppercase tracking-wide ${cls}">${esc(g.side)}</p>
-        <p class="${PROSE}">${g.outlets.map(esc).join(" · ")}</p>
+      const known = SIDE_BADGES.some((b) => b.side === g.side)
+      const cls = known ? ` side--${g.side}` : " instrument--quiet"
+      return `      <div class="side-row">
+        <p class="side-row__label instrument instrument--label${cls}">${esc(g.side)}</p>
+        <p class="side-row__outlets prose">${g.outlets.map(esc).join(" · ")}</p>
       </div>`
     })
     .join("\n")
 
   return `<!DOCTYPE html>
-<html lang="en" class="antialiased">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -330,30 +326,30 @@ ${headMeta({
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./brief.css">
 </head>
-<body class="bg-white font-serif text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
-<main class="isolate px-6 py-10 sm:py-14">
-  <div class="mx-auto max-w-[68ch]">
+<body class="page">
+<main class="page__main">
+  <div class="page__measure">
 
-    <nav class="flex justify-end pb-6">
-      <a href="./index.html" class="${MONO_QUIET} underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25">Back to today's brief</a>
+    <nav class="page__nav">
+      <a href="./index.html" class="page__nav-link instrument instrument--quiet link">Back to today's brief</a>
     </nav>
 
-    <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}<span class="${ACCENT}">.</span></h1>
-      <p class="${MONO} uppercase tracking-wide">How we choose our sources</p>
+    <header class="masthead">
+      <h1 class="masthead__wordmark">${esc(PAPER_NAME)}<span class="masthead__stop accent">.</span></h1>
+      <p class="masthead__page-title instrument instrument--label">How we choose our sources</p>
     </header>
 
-    <div class="flex flex-col gap-5 py-12">
-      <p class="${PROSE}">Every story in this paper is one event told through the accounts of outlets that disagree. Which outlets, and where each one stands, is not decided by an algorithm and not decided story by story — it is a single file, owned by this paper's editor, and this page is that file made visible.</p>${seedParagraph}
-      <p class="${PROSE}">When a story's coverage collapses onto one side of that map, the brief says so, in plain words, right under the story. That line is a measurement, and you are entitled to it.</p>
+    <div class="about">
+      <p class="prose">Every story in this paper is one event told through the accounts of outlets that disagree. Which outlets, and where each one stands, is not decided by an algorithm and not decided story by story — it is a single file, owned by this paper's editor, and this page is that file made visible.</p>${seedParagraph}
+      <p class="prose">When a story's coverage collapses onto one side of that map, the brief says so, in plain words, right under the story. That line is a measurement, and you are entitled to it.</p>
     </div>
 
-    <div class="flex flex-col divide-y divide-neutral-950/10 border-t ${HAIRLINE} dark:divide-white/10">
+    <div class="side-table">
 ${rows}
     </div>
 
-    <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
-      <p class="pt-2 text-center text-lg/8 sm:text-base/7 italic text-neutral-950/60 dark:text-white/55">The masthead is a file. Change the file, change the paper.</p>
+    <footer class="page__footer">
+      <p class="page__end page__end--tight">The masthead is a file. Change the file, change the paper.</p>
     </footer>
 
   </div>
@@ -376,11 +372,11 @@ export const renderEditionHtml = (opts: {
     corrections.length === 0
       ? ""
       : `
-    <section class="flex flex-col gap-3 border-b ${HAIRLINE} py-8">
-      <h2 class="${MONO} font-medium uppercase tracking-wide ${ACCENT}">Corrections</h2>
+    <section class="corrections">
+      <h2 class="corrections__label instrument instrument--label instrument--strong accent">Corrections</h2>
 ${corrections
           .map(
-            (c) => `      <p class="${PROSE}">In the edition of <a href="./${esc(c.edition)}.html" class="${LINK_STYLE}">${esc(longDate(c.edition))}</a>, the story &ldquo;${esc(c.headline)}&rdquo;: ${esc(c.note)} The original stands unchanged in the archive.</p>`
+            (c) => `      <p class="corrections__item prose">In the edition of <a href="./${esc(c.edition)}.html" class="link">${esc(longDate(c.edition))}</a>, the story &ldquo;${esc(c.headline)}&rdquo;: ${esc(c.note)} The original stands unchanged in the archive.</p>`
           )
           .join("\n")}
     </section>`
@@ -393,7 +389,7 @@ ${corrections
     .join("\n")
 
   return `<!DOCTYPE html>
-<html lang="en" class="antialiased">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -407,22 +403,22 @@ ${headMeta({
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./brief.css">
 </head>
-<body class="bg-white font-serif text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
-<main class="isolate px-6 py-10 sm:py-14">
-  <div class="mx-auto max-w-[68ch]">
+<body class="page">
+<main class="page__main">
+  <div class="page__measure">
 
-    <nav class="flex justify-between gap-4 pb-6">
-      <a href="./index.html" class="${MONO_QUIET} ${LINK_STYLE}">${esc(SITE_HOST)}</a>
-      <a href="./sources.html" class="${MONO_QUIET} ${LINK_STYLE}">How we choose our sources</a>
+    <nav class="page__nav page__nav--between">
+      <a href="./index.html" class="page__nav-link instrument instrument--quiet link">${esc(SITE_HOST)}</a>
+      <a href="./sources.html" class="page__nav-link instrument instrument--quiet link">How we choose our sources</a>
     </nav>
 
-    <header class="flex flex-col items-center gap-4 border-b ${HAIRLINE} pb-10 text-center">
-      <h1 class="text-6xl font-medium tracking-tight">${esc(PAPER_NAME)}<span class="${ACCENT}">.</span></h1>
-      <p class="${MONO} text-neutral-950/60 dark:text-white/55">${esc(PAPER_MOTTO)}</p>
-      <p class="${MONO} uppercase tracking-wide">${esc(date)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
+    <header class="masthead">
+      <h1 class="masthead__wordmark">${esc(PAPER_NAME)}<span class="masthead__stop accent">.</span></h1>
+      <p class="masthead__motto instrument">${esc(PAPER_MOTTO)}</p>
+      <p class="masthead__date instrument instrument--label">${esc(date)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
     </header>
 ${correctionsSection}
-    <div class="flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10">
+    <div class="edition__stories">
 ${opts.stories
     .filter((s) => s.foldReason === null)
     .map((s, i) => storySection(s, i + 1))
@@ -432,23 +428,23 @@ ${opts.stories
     .filter((s) => s.foldReason !== null)
     .map(
       (s, i) => `
-    <section class="flex flex-col gap-3 border-t ${HAIRLINE} pt-10">
-      <h2 class="${MONO} font-medium uppercase tracking-wide ${ACCENT}">Below the fold</h2>
-      <p class="${MONO_QUIET}">One nomination from outside the front page. The model's printed reason — judge it:</p>
-      <p class="${MONO_QUIET} italic">${esc(s.foldReason!)}</p>
+    <section class="fold">
+      <h2 class="fold__label instrument instrument--label instrument--strong accent">Below the fold</h2>
+      <p class="fold__note instrument instrument--quiet">One nomination from outside the front page. The model's printed reason — judge it:</p>
+      <p class="fold__reason instrument instrument--quiet">${esc(s.foldReason!)}</p>
 ${storySection(s, opts.stories.filter((x) => x.foldReason === null).length + i + 1)}
     </section>`
     )
     .join("\n")}
 
-    <footer class="flex flex-col gap-4 border-t ${HAIRLINE} pt-10">
-      <h2 class="${MONO} font-medium uppercase tracking-wide">The run, reported</h2>
-      <div class="flex flex-col gap-2 ${MONO_QUIET} tabular-nums">
+    <footer class="report">
+      <h2 class="report__label instrument instrument--label instrument--strong">The run, reported</h2>
+      <div class="report__lines instrument instrument--quiet">
         <p>${esc(opts.report.feedsLine)}</p>
         <p>${esc(opts.report.funnelLine)}</p>
 ${dropped}
       </div>
-      <p class="pt-6 text-center text-lg/8 sm:text-base/7 italic text-neutral-950/60 dark:text-white/55">The brief ends here.</p>
+      <p class="page__end">The brief ends here.</p>
     </footer>
 
   </div>
