@@ -33,7 +33,8 @@ export type CorrectionNotice = EditionCorrection
 
 export interface RunReport {
   readonly feedOutcomes: ReadonlyArray<FeedOutcome>
-  readonly funnel: {
+  /** The eto engine's funnel. Absent for engines with no funnel to report. */
+  readonly funnel?: {
     readonly items: number
     readonly news: number
     readonly candidates: number
@@ -94,12 +95,18 @@ export const renderBrief = (
 
   // The archive prints the compositor's text verbatim — the raw fields,
   // never the split form. The record is what was written, not a re-layout.
+  // Differ and sources are anatomy some engines guarantee (eto's cage
+  // does) and others never produce (a desk entry has no accounts).
   const pushStory = (s: EditionStory) => {
     parts.push(`## ${s.headline}`, "", s.body, "")
-    parts.push("**Where the accounts differ**", "", s.differ, "")
-    parts.push(`**Sources**  ${s.sourcesLine}`)
-    if (s.balanceNote !== null) {
-      parts.push("", `*${s.balanceNote}*`)
+    if (s.differ.trim() !== "") {
+      parts.push("**Where the accounts differ**", "", s.differ, "")
+    }
+    if (s.sourcesLine.trim() !== "") {
+      parts.push(`**Sources**  ${s.sourcesLine}`)
+      if (s.balanceNote !== null) parts.push("", `*${s.balanceNote}*`)
+    } else if (s.balanceNote !== null) {
+      parts.push(`*${s.balanceNote}*`)
     }
     parts.push("")
   }
@@ -127,19 +134,23 @@ export const renderBrief = (
   const ok = report.feedOutcomes.filter((o) => o.status === "ok").length
   const failedFeeds = report.feedOutcomes.filter((o) => o.status !== "ok")
   parts.push("---", "", "## The run, reported", "")
-  parts.push(
-    `- Feeds read: ${ok} of ${report.feedOutcomes.length}` +
-      (failedFeeds.length > 0
-        ? `; failed: ${failedFeeds.map((f) => `${f.outlet} (${f.status})`).join(", ")}`
-        : "")
-  )
+  if (report.feedOutcomes.length > 0) {
+    parts.push(
+      `- Feeds read: ${ok} of ${report.feedOutcomes.length}` +
+        (failedFeeds.length > 0
+          ? `; failed: ${failedFeeds.map((f) => `${f.outlet} (${f.status})`).join(", ")}`
+          : "")
+    )
+  }
   const f = report.funnel
-  parts.push(
-    `- Funnel: ${f.items} items → ${f.news} news → ${f.candidates} candidate pairs → ` +
-      `${f.matches} matches → ${f.clusters} clusters` +
-      (f.repeats > 0 ? ` (${f.repeats} already printed, set aside)` : "") +
-      ` → ${f.selected} selected → ${f.published} published`
-  )
+  if (f !== undefined) {
+    parts.push(
+      `- Funnel: ${f.items} items → ${f.news} news → ${f.candidates} candidate pairs → ` +
+        `${f.matches} matches → ${f.clusters} clusters` +
+        (f.repeats > 0 ? ` (${f.repeats} already printed, set aside)` : "") +
+        ` → ${f.selected} selected → ${f.published} published`
+    )
+  }
   for (const b of report.blobs ?? []) {
     parts.push(
       `- Blob set aside unprinted: ${b.itemCount} items across ${b.outletCount} outlets, ` +

@@ -113,28 +113,37 @@ const storySection = (story: HtmlStory, index: number): string => {
     .map((p) => `        <p class="story__body prose">${esc(p)}</p>`)
     .join("\n")
 
-  const differ =
-    story.differBullets.length > 0
-      ? `        <ul role="list" class="story__differ story__differ--list">\n${story.differBullets
+  const hasDiffer = story.differBullets.length > 0 || story.differParagraphs.length > 0
+  const differ = !hasDiffer
+    ? ""
+    : story.differBullets.length > 0
+      ? `\n        <h3 class="story__differ-label instrument instrument--label instrument--strong accent">Where the accounts differ</h3>
+        <ul role="list" class="story__differ story__differ--list">\n${story.differBullets
           .map((b) => `          <li class="story__differ-item prose">${esc(b)}</li>`)
           .join("\n")}\n        </ul>`
-      : story.differParagraphs
+      : `\n        <h3 class="story__differ-label instrument instrument--label instrument--strong accent">Where the accounts differ</h3>\n${story.differParagraphs
           .map((p) => `        <p class="story__differ prose">${esc(p)}</p>`)
-          .join("\n")
+          .join("\n")}`
 
   const balance =
     story.balanceNote === null
       ? ""
       : `\n          <p class="story__balance instrument accent">${esc(story.balanceNote)}</p>`
 
+  const sources =
+    story.sources.length === 0
+      ? ""
+      : `\n          <p class="story__sources instrument instrument--quiet">Sources&ensp;${story.sources.map(sourceAnchor).join(" · ")}</p>`
+
+  const footer =
+    sources === "" && balance === ""
+      ? ""
+      : `\n        <footer class="story__footer">${sources}${balance}
+        </footer>`
+
   return `      <article id="${storyAnchor(index)}" class="story">
         <h2 class="story__headline">${esc(story.headline)}</h2>
-${body}
-        <h3 class="story__differ-label instrument instrument--label instrument--strong accent">Where the accounts differ</h3>
-${differ}
-        <footer class="story__footer">
-          <p class="story__sources instrument instrument--quiet">Sources&ensp;${story.sources.map(sourceAnchor).join(" · ")}</p>${balance}
-        </footer>
+${body}${differ}${footer}
       </article>`
 }
 

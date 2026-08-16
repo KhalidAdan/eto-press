@@ -62,15 +62,20 @@ const storyBlock = (s: HtmlStory): string => {
   const balance =
     s.balanceNote === null ? "" : monoLine(esc(s.balanceNote), CLARET)
 
+  const hasDiffer = s.differBullets.length > 0 || s.differParagraphs.length > 0
+  const differSection = !hasDiffer
+    ? ""
+    : `<p style="margin:16px 0 8px 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${CLARET};">Where the accounts differ</p>
+    ${differ}
+    `
+  const sourcesLine = s.sources.length === 0 ? "" : `${monoLine(`Sources&ensp;${sources}`)}
+    `
   return `
   <div style="border-top:1px solid ${HAIRLINE};padding:26px 0 12px 0;">
     ${fold}
     <h2 style="margin:0 0 14px 0;font-family:${SERIF};font-size:21px;line-height:1.35;font-weight:600;color:${INK};">${esc(s.headline)}</h2>
     ${s.bodyParagraphs.map(para).join("")}
-    <p style="margin:16px 0 8px 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${CLARET};">Where the accounts differ</p>
-    ${differ}
-    ${monoLine(`Sources&ensp;${sources}`)}
-    ${balance}
+    ${differSection}${sourcesLine}${balance}
   </div>`
 }
 
@@ -127,10 +132,18 @@ ${opts.stories.map(storyBlock).join("\n")}
       "",
       ...s.bodyParagraphs,
       "",
-      "WHERE THE ACCOUNTS DIFFER",
-      ...(s.differBullets.length > 0 ? s.differBullets.map((b) => `- ${b}`) : s.differParagraphs),
-      "",
-      `Sources: ${s.sources.map((x) => (x.href ? `${x.name} <${x.href}>` : x.name)).join(" · ")}`,
+      ...(s.differBullets.length > 0 || s.differParagraphs.length > 0
+        ? [
+            "WHERE THE ACCOUNTS DIFFER",
+            ...(s.differBullets.length > 0
+              ? s.differBullets.map((b) => `- ${b}`)
+              : s.differParagraphs),
+            ""
+          ]
+        : []),
+      s.sources.length > 0
+        ? `Sources: ${s.sources.map((x) => (x.href ? `${x.name} <${x.href}>` : x.name)).join(" · ")}`
+        : "",
       s.balanceNote ?? "",
       ""
     ]).filter((l) => l !== ""),

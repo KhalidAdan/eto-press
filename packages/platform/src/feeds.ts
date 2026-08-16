@@ -10,7 +10,7 @@ import { Effect, Schedule } from "effect"
 import Parser from "rss-parser"
 import { FeedMalformed, FeedUnreachable } from "./errors.js"
 import type { Masthead, Source } from "./masthead.js"
-import { classify, stripHtml, type Item } from "./normalize.js"
+import { stripHtml, type Classifier, type Item } from "./normalize.js"
 
 export const USER_AGENT =
   "eto/0.1 (+local news compositor; front-door reader)"
@@ -120,7 +120,7 @@ export interface FeedOutcome {
  * Fetch + normalize + persist every feed in the masthead. Returns the run's
  * in-window items (deduplicated by link) and a per-feed outcome list.
  */
-export const ingestAllFeeds = (masthead: Masthead, runId: string) =>
+export const ingestAllFeeds = (masthead: Masthead, runId: string, classify: Classifier) =>
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
     const outcomes: Array<FeedOutcome> = []

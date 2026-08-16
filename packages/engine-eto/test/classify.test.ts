@@ -4,7 +4,7 @@
  * including the exact items that glued unrelated clusters together.
  */
 import { describe, expect, it } from "vitest"
-import { classify } from "../src/normalize.js"
+import { classify } from "../src/classify.js"
 
 describe("classify", () => {
   it("plain news is news", () => {

@@ -24,6 +24,7 @@ const escHtml = escXml
 const cdata = (s: string): string => `<![CDATA[${s.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`
 
 const storyHtml = (s: EditionStory): string => {
+  const hasDiffer = s.differBullets.length > 0 || s.differParagraphs.length > 0
   const differ =
     s.differBullets.length > 0
       ? `<ul>${s.differBullets.map((b) => `<li>${escHtml(b)}</li>`).join("")}</ul>`
@@ -37,9 +38,9 @@ const storyHtml = (s: EditionStory): string => {
       : "",
     `<h2>${escHtml(s.headline)}</h2>`,
     ...s.bodyParagraphs.map((p) => `<p>${escHtml(p)}</p>`),
-    `<h3>Where the accounts differ</h3>`,
+    hasDiffer ? `<h3>Where the accounts differ</h3>` : "",
     differ,
-    `<p><strong>Sources</strong> ${sources}</p>`,
+    s.sources.length > 0 ? `<p><strong>Sources</strong> ${sources}</p>` : "",
     s.balanceNote !== null ? `<p><em>${escHtml(s.balanceNote)}</em></p>` : ""
   ]
     .filter(Boolean)
