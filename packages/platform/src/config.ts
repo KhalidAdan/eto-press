@@ -47,6 +47,12 @@ const paper = section("paper")
 const models = section("models")
 const mail = section("mail")
 const backup = section("backup")
+const engine = section("engine")
+
+/** Which engine prints this paper — a paper-level declaration, not a
+ * download: the named engine must be a dependency the press was built
+ * with. Absent means the eto engine, so every existing paper is valid. */
+export const ENGINE = str(engine, "engine", "use", "eto")
 
 // Defaults are NEUTRAL: a paper with no eto.toml is an unnamed Tier-1
 // local paper, not a copy of the flagship. No default may carry any real

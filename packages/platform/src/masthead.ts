@@ -35,7 +35,10 @@ export const MastheadSchema = Schema.Struct({
    * mail domain is verified and production access is granted. */
   email_edition: Schema.optional(Schema.Boolean),
   seed: Schema.optional(SeedSchema),
-  source: Schema.NonEmptyArray(SourceSchema)
+  /** May be empty: a desk paper reads no outlets. Whether emptiness is
+   * an error is the ENGINE's call — eto refuses to print without sources;
+   * the desk engine never looks. */
+  source: Schema.optionalWith(Schema.Array(SourceSchema), { default: () => [] })
 })
 export type Masthead = typeof MastheadSchema.Type
 

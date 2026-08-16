@@ -147,10 +147,12 @@ writeFileSync(
 )
 
 // Sources page, straight from the masthead file — spectrum order.
-const masthead = TOML.parse(readFileSync("sources.toml", "utf8")) as {
-  source: Array<{ name: string; side: string }>
+const parsed = TOML.parse(readFileSync("sources.toml", "utf8")) as {
+  source?: Array<{ name: string; side: string }>
   seed?: { name: string; url?: string; version?: string; description?: string }
 }
+// A desk paper reads no outlets; its sources page is simply short.
+const masthead = { ...parsed, source: parsed.source ?? [] }
 const SIDE_ORDER = ["left", "lean-left", "center", "lean-right", "right"]
 const bySide = SIDE_ORDER.flatMap((side) => {
   const outlets = masthead.source.filter((s) => s.side === side).map((s) => s.name)
