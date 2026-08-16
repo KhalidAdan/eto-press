@@ -16,7 +16,12 @@ import {
 } from "@eto-press/platform/edition"
 import type { Day, EngineOutcome } from "@eto-press/platform/engine"
 import { COMPOSITE_MODEL, MATCH_MODEL } from "@eto-press/platform/config"
-import { FunnelAnomalous, MastheadInvalid, PressStalled } from "@eto-press/platform/errors"
+import {
+  BriefUnverifiable,
+  FunnelAnomalous,
+  MastheadInvalid,
+  PressStalled
+} from "@eto-press/platform/errors"
 import { ingestAllFeeds } from "@eto-press/platform/feeds"
 import type { PublishedStory } from "@eto-press/platform/render"
 import { classify } from "./classify.js"
@@ -233,13 +238,26 @@ const edition = (day: Day) =>
       }
 
       if (verdict.violations.length > 0) {
-        yield* markStory(
-          runId,
-          hash,
-          "dropped",
-          `failed verification: ${verdict.violations.join("; ").slice(0, 200)}`
+        // The cage's terminal verdict is a named value, story-scoped: the
+        // error is raised and caught here so it exists in the typed
+        // channel (and in the span), while the run continues (§5 drops
+        // the story, never the morning).
+        yield* new BriefUnverifiable({ clusterHash: hash, violations: verdict.violations }).pipe(
+          Effect.catchTag("BriefUnverifiable", (err) =>
+            markStory(
+              runId,
+              hash,
+              "dropped",
+              `failed verification: ${err.violations.join("; ").slice(0, 200)}`
+            ).pipe(
+              Effect.zipRight(
+                Effect.logWarning(
+                  `  story #${swa.story.rank} dropped: BriefUnverifiable (${err.violations.length} violation(s))`
+                )
+              )
+            )
+          )
         )
-        yield* Effect.logWarning(`  story #${swa.story.rank} dropped: failed verification`)
         continue
       }
 

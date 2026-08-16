@@ -92,6 +92,15 @@ export class DraftMalformed extends Data.TaggedError("DraftMalformed")<{
   readonly raw: string
 }> {}
 
+/** Verification violations survived the one revision pass — the cage's
+ * terminal verdict for a story, never for the run. The story drops with
+ * the violations journaled as its reason; a gap over a guess (§5). Named
+ * because no stage may fail anonymously, even story-locally. */
+export class BriefUnverifiable extends Data.TaggedError("BriefUnverifiable")<{
+  readonly clusterHash: string
+  readonly violations: ReadonlyArray<string>
+}> {}
+
 /** The compositor stopped answering (timeout, HTTP error, broken journal) —
  * machinery, not editorial. 2026-08-02: eight straight 5-minute timeouts
  * were absorbed as story drops, and the press "succeeded" with a 0-story
