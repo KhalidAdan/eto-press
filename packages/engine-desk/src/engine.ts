@@ -81,35 +81,10 @@ const edition = (day: Day) =>
           sourcesLine: "",
           balanceNote: null,
           foldReason: null,
-          linkByOutlet: NO_LINKS
+          linkByOutlet: NO_LINKS,
+          engineRef: `desk:${hash}`
         })
       )
-      // The journal's published-edition tables are what the site and mail
-      // dialects reconstruct an edition from, so the desk engine writes
-      // them too. (That these tables ARE the reconstruction interface is
-      // rung 1's finding — a cleaner abstraction waits for rung 2.)
-      const clusterHash = `desk:${hash}`
-      yield* sql`INSERT INTO drafts ${sql.insert({
-        cluster_hash: clusterHash,
-        model: "none",
-        prompt_hash: "desk",
-        attempt: 0,
-        headline,
-        body,
-        differ: "",
-        sources_line: "",
-        raw: entry.content,
-        created_at: new Date().toISOString()
-      })} ON CONFLICT (cluster_hash, model, prompt_hash, attempt) DO NOTHING`
-      yield* sql`INSERT INTO stories ${sql.insert({
-        run_id: day.runId,
-        cluster_hash: clusterHash,
-        rank: stories.length,
-        balance_note: null,
-        fold_reason: null,
-        status: "published",
-        reason: null
-      })} ON CONFLICT (run_id, cluster_hash) DO NOTHING`
       yield* sql`INSERT INTO desk_printed ${sql.insert({
         file: entry.file,
         content_hash: hash,

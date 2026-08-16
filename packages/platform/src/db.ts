@@ -108,6 +108,24 @@ const TABLES = [
     recipients INTEGER NOT NULL,
     failures   INTEGER NOT NULL
   )`,
+  // The published-edition store: the archive's queryable shadow, written by
+  // the FRAME after the archive write succeeds, read by the site/email/RSS
+  // dialects. Engine-agnostic on purpose — engines return a document; the
+  // platform publishes it. Source links are resolved once, here, so an
+  // edition's record is frozen even if link resolution evolves.
+  `CREATE TABLE IF NOT EXISTS published_stories (
+    run_id       TEXT NOT NULL,
+    position     INTEGER NOT NULL,      -- print order, 1-based
+    headline     TEXT NOT NULL,
+    body         TEXT NOT NULL,         -- the raw text, as archived
+    differ       TEXT NOT NULL,         -- may be empty: optional anatomy
+    sources_line TEXT NOT NULL,         -- may be empty
+    source_links TEXT NOT NULL,         -- JSON [{name, href|null}], resolved at publish
+    balance_note TEXT,
+    fold_reason  TEXT,
+    engine_ref   TEXT,                  -- the engine's opaque story ref, for cache enrichment
+    PRIMARY KEY (run_id, position)
+  )`,
   // Stage 4+ tables are declared now so the journal's shape is complete:
   `CREATE TABLE IF NOT EXISTS verdicts (
     item_a      INTEGER NOT NULL,
