@@ -32,7 +32,7 @@ brief quietly and honestly.**
 | `VerdictUnparseable` | judge | The answer wasn't yes/no. One re-ask at temperature 0, then recorded as an abstention — stored distinctly so a rash of them is visible. |
 | `ArticleUnfetchable` / `ArticleUnreadable` | accounts | The account drops out of the composite — the sources line names only accounts actually read. Below two accounts, the story drops. |
 | `DraftMalformed` | composite | The four-part shape didn't parse. One re-ask; then the story drops. The press does not ship a brief whose shape it had to guess at. |
-| `BriefUnverifiable` | verify | Violations survived the one revision pass. The offending claims are cut, or the story drops — a gap over a guess, every time. |
+| failed verification | verify | Violations survived the one revision pass. Not a tagged error — the story drops with its violations journaled as the drop reason, printed in the run report. A gap over a guess, every time. |
 
 ## Honest outcomes that are not errors
 

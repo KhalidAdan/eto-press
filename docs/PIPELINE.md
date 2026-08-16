@@ -9,6 +9,16 @@ missing, that is a documentation defect and it gets fixed like a code defect.
 Companion documents: `NORTH-STAR.md` (why), `experiments/` (evidence for the
 design choices made here).
 
+**Generation 2 overlay (as built, 2026-08-16).** The stages below are
+unchanged, but they no longer live in one program. Stage 0 and stages 10-11
+are the **platform frame** (`packages/press/src/run.ts`); stages 1-9 are the
+**eto engine's** morning, behind one call — `engine.edition(day)`
+(`packages/engine-eto/src/engine.ts`). The engine returns either an Edition
+(stories, its own report, advisories) or `NoEdition` — true silence: no
+archive file, no mail, one honest note in the runs table. A different
+engine substitutes a different middle entirely; the frame and its
+guarantees stay. See "The joint" below the stage list.
+
 ---
 
 ## Principles the architecture answers to
@@ -54,6 +64,12 @@ Parse and validate `sources.toml` against a Schema. Run database migrations.
 Ping Ollama (`/api/version`) and confirm required models are present
 (`/api/tags`). Confirm the archive directory is writable and that today's
 brief does not already exist.
+
+Since generation 2, the model list comes from the **engine's declaration**
+(`engine.models`) — an engine that declares none (the desk engine) skips
+Ollama entirely — and an empty `[[source]]` list is the *engine's* call:
+the platform accepts it, the eto engine refuses it by name, the desk engine
+never looks.
 
 - **Fails with:** `MastheadInvalid` (path, line, reason) · `OllamaDown` ·
   `ModelMissing` (model) · `BriefAlreadyPublished` (date)
@@ -106,8 +122,11 @@ surfaced mojibake in Guardian/Al Jazeera titles — treat encoding as hostile
 input, always).
 
 **Classify each item deterministically** as `news | opinion | video | podcast
-| liveblog`, from URL patterns (`/opinion/`), title conventions ("Watch:",
-"– podcast", a trailing "| Author Name"), and feed metadata. Experiment 002
+| liveblog | digest`, from URL patterns (`/opinion/`), title conventions
+("Watch:", "– podcast", a trailing "| Author Name"), and feed metadata.
+Since generation 2 the classifier is the **engine's** (deciding what counts
+as news is doctrine), injected into the platform's feed ingest —
+`packages/engine-eto/src/classify.ts`. Experiment 002
 failure mode 2: opinion and format items act as glue between unrelated
 clusters. Only `news` items participate in event matching; the others are
 retained and may attach to a story later as satellites, but they never create
@@ -324,6 +343,34 @@ by design, it should never start in a stack trace.
 
 ---
 
+## The joint (generation 2)
+
+The platform and an engine meet exactly once per run:
+
+```
+frame:   preflight → runs row → ┐
+                                ├─ engine.edition({ runId, masthead })
+frame:   corrections ← render ← ┘ ← Edition | NoEdition
+         archive → runs finish
+```
+
+- **Day carries no corpus.** The eto engine builds its own from the
+  platform's feed library; the desk engine reads the Desk; a future engine
+  reads documents or APIs. The platform hands an engine the morning, not a
+  worldview.
+- **The report is engine-authored.** The funnel, the drops, the health
+  lines are the engine's account of its own morning; the frame renders
+  them.
+- **`NoEdition` is an outcome, not an error** — distinct from an Edition
+  with zero stories (the quiet page, which prints). The 2026-08-02
+  incident is why the distinction is load-bearing.
+- **Capabilities, not ambient authority.** An engine runs with the journal
+  (SQL), the platform's front-door fetch libraries, the pinned Ollama
+  service, and the Desk. It is never handed the filesystem, the archive,
+  the mail, or the readers.
+- The `Engine` interface is **private to the monorepo** until the engine
+  ladder has enough rungs to extract a public contract from.
+
 ## Cross-cutting machinery
 
 **Effect mapping.** Each stage is an `Effect` with its failure types in its
@@ -367,6 +414,7 @@ genuinely ours.
 | `PressStalled` | 8 | story, cause | no (fires after `OllamaCallFailed` retries) | yes |
 | `BriefUnverifiable` | 9 | story, violations | 1 revision | no (story drops) |
 | `NothingToPrint` | 6 | run summary | no | no — an honest edition |
+| `NoEdition` (outcome, not error) | the joint | reason | n/a | no — true silence: no file, no mail, a note in `runs` |
 
 The row-level rule underneath the table: **configuration and distribution
 problems kill the run loudly; unit-of-work problems degrade the brief

@@ -1,0 +1,77 @@
+---
+title: Architecture
+description: The monorepo, the dependency arrows, and where to start reading.
+---
+
+This section is for the second reader of these docs: not the editor setting
+up a paper, but the developer who wants to know how the machine works. It
+assumes you have the repository open.
+
+## The monorepo
+
+<FileTree>
+- packages
+  - platform — the machinery of a personal periodical; knows nothing of news
+  - engine-eto — the flagship doctrine: prefilter, judge, cluster, composite, the cage
+  - engine-desk — the null engine: the editor writes, the press prints
+  - press — the thin binding: preflight, the joint, the tail, the verb shims
+  - cli — the `eto` command; each verb loads a press module via tsx
+  - subscribe — the double-opt-in edge functions
+- docs — the design documents (North Star, pipeline, roadmap, experiments)
+- docs-site — this site
+</FileTree>
+
+**The dependency arrows point one way.** Engines import the platform; the
+press imports both; the platform imports nothing above itself. There is no
+way to express "the platform calls the engine's clustering" — the only
+crossing is the joint.
+
+## The joint
+
+One call per morning:
+
+```ts
+// packages/platform/src/engine.ts
+interface Engine<E, R> {
+  name: string
+  doctrine: ReadonlyArray<string>   // printable principles
+  models: ReadonlyArray<string>     // preflight pins these; [] = no Ollama needed
+  edition: (day: Day) => Effect<EngineOutcome, E, R>
+}
+
+type Day = { runId: string; masthead: Masthead }   // no corpus — engines build their own
+
+type EngineOutcome =
+  | { _tag: "Edition"; stories; report; advisoryLines }
+  | { _tag: "NoEdition"; reason: string }           // no file, no mail, one honest note
+```
+
+`packages/press/src/run.ts` is the frame: preflight (masthead, migrations,
+model pins from `engine.models`), the joint, then the tail — corrections,
+the four dialects, the atomic archive write. `main.ts` holds the static
+engine registry (`eto`, `desk`) picked by `eto.toml [engine] use`.
+
+The interface is deliberately **private to the monorepo**: it has two
+consumers, and interfaces drawn from n=1 are reliably wrong, so it stays
+unpublished until the engine ladder has more rungs to extract from.
+
+## Effect, everywhere
+
+The codebase speaks [Effect](https://effect.website): every stage is an
+`Effect` with its failure types in its signature, retry policies are
+`Schedule` values owned by the stage, and external services — HTTP, SQLite,
+Ollama, the Desk — are Layers. That last part is the architecture's honesty
+mechanism: an engine's requirements are visible in its type, and the
+services it is never handed (the filesystem, the raw network, the archive,
+the mail) are simply absent from what the press provides it. The test
+suites swap the same Layers for fakes, which is how failure paths run
+without a GPU or a network.
+
+## Reading order
+
+1. `packages/press/src/run.ts` — the frame; the whole morning in one file.
+2. `packages/engine-eto/src/engine.ts` — stages 1–9 behind the joint.
+3. `packages/platform/src/edition.ts` — the document every dialect consumes.
+4. `packages/platform/src/render.ts`, `html.ts` — the dialects.
+5. `packages/engine-desk/src/engine.ts` — the whole engine idea in ~150
+   lines; the best single file for understanding the boundary.

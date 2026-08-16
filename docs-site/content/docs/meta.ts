@@ -8,6 +8,7 @@ export default defineMeta({
     "concepts",
     "guides",
     "reference",
+    "internals",
     "troubleshooting",
     "faq"
   ]

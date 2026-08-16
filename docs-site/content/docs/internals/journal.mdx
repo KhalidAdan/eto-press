@@ -1,0 +1,62 @@
+---
+title: The journal
+description: One SQLite file, cache keys that carry the resume story, and the two tables that are truly yours.
+---
+
+`db/eto.sqlite`, WAL mode, one file. Backup is copying a file; inspection is
+`sqlite3` and SELECT; nothing lives at a path the user can't open.
+
+## The principle
+
+**Every expensive unit of work is keyed, cached, and skipped on rerun.**
+Resume is not a feature; it is the absence of one. A crash at minute 28
+costs the unit of work in flight, nothing else, and recovery is always the
+same command.
+
+## The tables, by owner
+
+**Platform tables** — the frame's bookkeeping:
+
+| Table | Keyed by | Holds |
+| --- | --- | --- |
+| `runs` | `run_id` (the editor's local date) | started/finished, the morning's note |
+| `feed_fetches` | every attempt | the §8 source-health history — one of the two tables you cannot rebuild |
+| `items` | `link` UNIQUE | normalized entries; insert-or-ignore makes refetching idempotent |
+| `articles` | `item_id` | fetched account text; a rerun refetches only what's missing or failed |
+| `corrections` | id | your corrections — the other unrebuildable table |
+
+**Engine tables** — the eto engine's working memory:
+
+| Table | Keyed by | Why the key matters |
+| --- | --- | --- |
+| `verdicts` | `(item_a, item_b, model, prompt_hash)` | **the resume story of the whole pipeline**: a rerun skips every judged pair; changing the model or prompt automatically re-judges |
+| `clusters`, `cluster_items` | run + hash | persisted because later stages and corrections reference them |
+| `stories` | `(run_id, cluster_hash)` | selected/published/dropped, with the named drop reason |
+| `drafts` | `(cluster_hash, model, prompt_hash, attempt)` | composite output, cache-keyed like verdicts |
+| `verifications` | draft | every cage check's result |
+
+The desk engine adds its own table (`desk_printed`, keyed by file and
+content hash) — engines own their schema, created idempotently on first use.
+
+## Prompts are versioned artifacts
+
+Every prompt lives in a file and is hashed; the hash is part of the cache
+key of any work it produced. Change a prompt and its stale outputs
+invalidate themselves — no manual cache-busting, ever.
+
+## The reconstruction interface
+
+The site, email, and RSS dialects rebuild editions **from the journal**
+(`assemble.ts`): published `stories` rows joined to their `drafts`, with
+account links resolved from `cluster_items`. This is why the desk engine
+writes `stories` and `drafts` rows too — those tables are, today, the
+de-facto contract for "what published." Abstracting that store into a
+proper platform interface is the next planned refactor; until then, treat
+those two tables as load-bearing API.
+
+## What can be deleted
+
+Everything except `corrections` and `feed_fetches` rebuilds from the world
+(at the cost of one slow morning). `eto export` writes the precious tables
+as diffable JSONL; `eto backup` snapshots the whole file. See
+[Backups](/docs/guides/backups) for the operator's view.

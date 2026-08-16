@@ -1,0 +1,84 @@
+---
+title: The engine contract
+description: What an engine is handed, what it must return, and how to write one today.
+---
+
+<Callout>
+  The `Engine` interface is **private to the monorepo** and will change.
+  Writing an engine today means adding a package to this repository —
+  deliberately. The public plugin story waits until the ladder has enough
+  rungs that the interface is extracted from evidence rather than guessed.
+</Callout>
+
+## The shape
+
+```ts
+// packages/platform/src/engine.ts
+export interface Day {
+  readonly runId: string        // the editor's local calendar date
+  readonly masthead: Masthead   // sources.toml as data; interpretation is yours
+}
+
+export type EngineOutcome =
+  | {
+      readonly _tag: "Edition"
+      readonly stories: ReadonlyArray<EditionStory>
+      readonly report: RunReport            // your instrument panel, printed as data
+      readonly advisoryLines: ReadonlyArray<string>
+    }
+  | { readonly _tag: "NoEdition"; readonly reason: string }
+
+export interface Engine<E = unknown, R = unknown> {
+  readonly name: string
+  readonly doctrine: ReadonlyArray<string>
+  readonly models: ReadonlyArray<string>
+  readonly edition: (day: Day) => Effect.Effect<EngineOutcome, E, R>
+}
+```
+
+Three decisions are encoded here:
+
+- **No corpus in `Day`.** The eto engine builds its corpus from feeds; the
+  desk engine from the Desk; a future engine from documents or APIs. The
+  platform hands you the morning, not a worldview.
+- **Silence is an outcome, not an error.** `NoEdition` means no archive
+  file and no mail — distinct from an Edition with zero stories, which
+  prints the honest quiet page. Your doctrine chooses.
+- **`models` drives preflight.** Declare the model names you call; the
+  frame verifies presence and pins digests before your code runs. Declare
+  `[]` and a paper on your engine never needs Ollama.
+
+## What you're given, and not
+
+Your `edition()` runs with the services the press provides: the SQL client
+(the journal — create your own tables, read the platform's), the HTTP
+client via platform libraries (`ingestAllFeeds`, `fetchArticlesForStories`
+— front-door discipline included), the `Ollama` service (pinned, retried),
+and the `Desk`. You are never handed the filesystem, the archive, the mail,
+or your readers. The constitution is the shape of the toolbox.
+
+## The minimum viable engine
+
+The desk engine is the reference implementation — one file. The walk:
+
+1. Read your corpus (its case: `Desk.entries`).
+2. Decide: anything to print? If not, `NoEdition` with an honest reason.
+3. Build `EditionStory` values with `editionStoryFrom` — raw text in, both
+   the archive form and the split visual form out. Differ and sources may
+   be empty; the dialects render their absence correctly.
+4. Persist `stories` and `drafts` rows so the site and mail dialects can
+   reconstruct your editions from the journal (see
+   [The journal](/docs/internals/journal#the-reconstruction-interface)).
+5. Return your report — the lines you'd want in front of you at 6 a.m.
+
+Then register it in `packages/press/src/main.ts` and declare it in a test
+paper's `eto.toml`. The registry is static on purpose: an engine is a
+dependency the press was built with, not a download.
+
+## Failure discipline
+
+Fail with named, tagged errors. The frame's rule inherits to you:
+configuration problems should stop the press loudly; unit-of-work problems
+should shrink the edition honestly and say so in your report. The eto
+engine's `PressStalled` — stop rather than print hollow — is the posture
+worth copying.
