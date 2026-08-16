@@ -1,0 +1,68 @@
+---
+title: The verification cage
+description: The model writes; deterministic code decides what ships.
+---
+
+Two stages of the eto pipeline call a model. Everything the model produces
+passes through deterministic verification before a reader sees it. This
+page is why the cage looks the way it does — most of it was paid for in
+live incidents and controlled experiments, kept in `docs/experiments/`.
+
+## What the cage checks
+
+Against the fetched account texts — never against the model's memory:
+
+- **Every direct quote appears verbatim** in some fetched account.
+- **Every named entity appears** in some fetched account.
+- **Evaluative adjectives in the paper's own voice** that appear in no
+  account are violations — the model may carry an outlet's
+  characterization only as that outlet's.
+- **The sources line names exactly** the accounts fetched and used.
+- **The word budget holds** (350 target, 420 hard cap), the four parts are
+  present, and nothing follows the end.
+
+Violations become editor-style notes sent back to the compositor for
+**one** revision pass — experiment 001 converged in one, so one is the
+budget. Still failing: cut the offending claims if the story survives their
+loss, else drop the story and print the named reason. A gap over a guess,
+every time.
+
+## Why these checks, specifically
+
+Experiment 001's finding: the compositor's only recurring failure class was
+**attribution laundering** — a source's characterization drifting into the
+paper's own voice — and every instance was mechanically detectable. The
+cage is that finding industrialized. The judge's failure classes
+(experiment 002: transitive chaining welding unrelated stories; position
+bias in candidate lists, experiment 003) got their own gates upstream: the
+cluster density gate, the shuffled nomination pool, the funnel and verdict
+tripwires.
+
+## The tripwires
+
+Statistical self-checks that abort a morning early when a stage's output
+*distribution* says misconfiguration, even though every individual call
+succeeded:
+
+- `FunnelAnomalous` — hundreds of news items but zero candidate pairs (or
+  20× the profile). A broken prefilter, caught before model time.
+- `VerdictsSuspicious` — the first hundred verdicts unanimous. A broken
+  prompt teaches nothing for twenty more minutes; stop now.
+
+Experiment 002 paid for this lesson: its zero-matches run failed silently,
+politely, and completely.
+
+## Degrade quietly, stop loudly
+
+The dividing line runs through the whole codebase: a fetch that fails
+shrinks the brief and says so; a compositor that stops answering stops the
+press (`PressStalled`) rather than absorbing timeouts as story drops. The
+2026-08-02 incident — eight straight timeouts printed a zero-story edition
+— is why that error exists and why it is fatal.
+
+## Advisories
+
+Checks worth recording but not enforcing (a story slightly over the soft
+word target, an account fetched but unnamed) print in the run report as
+advisories. They are the cage's gray zone made visible — candidates for
+promotion to real checks when a pattern emerges.

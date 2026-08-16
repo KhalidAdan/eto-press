@@ -1,0 +1,63 @@
+---
+title: Testing
+description: The suites, the fakes, and the gates that let refactors land byte-identical.
+---
+
+## Running the suites
+
+```bash
+npm test            # all workspaces
+npm run typecheck   # tsc --noEmit, all workspaces
+```
+
+Each package owns its tests (`packages/*/test`, vitest). None of them need
+a GPU or a network: external services are Effect Layers, and the suites
+swap in fakes — the same mechanism production uses to wire the real ones.
+
+## What the unit suites cover
+
+- **Pure engine logic** — classification, prefiltering, cluster building
+  and the density gate, selection and the story cap, draft parsing, the
+  verification checks. These are the doctrine's executable form, so they
+  are tested as functions with plain fixtures.
+- **Platform machinery** — feed parsing against hostile encodings, the
+  masthead loader (including the misplaced-flag refusal), configuration
+  defaults, renderer behavior for present *and absent* anatomy.
+- **Docs accuracy** — the reference pages of this site are pinned to the
+  code they document: the CLI table to the real verb registry, the
+  configuration defaults to `config.ts`, the error catalog to the tagged
+  errors in `errors.ts`, the anatomy reference to the classes the markup
+  and theme actually use. Documentation that drifts fails CI, not readers.
+
+## The refactor gates
+
+Structural changes land under evidence, not review vibes. The patterns,
+all reusable:
+
+- **Same-journal replay.** Run a full pipeline morning in a sandbox paper,
+  copy the journal, run the changed code against the copy. The cache keys
+  make the replay near-deterministic; the edition files diff byte-for-byte.
+  Live feeds drift between runs — so pair the replay with a **same-code
+  control run** to establish what pure drift looks like before attributing
+  any diff to the change.
+- **Hermetic renderer proof.** Old and new renderer imported side by side
+  (from a git worktree of the baseline commit), fed identical fixtures
+  covering every branch — corrections, fold, both differ shapes, the quiet
+  page — and required to emit identical bytes.
+- **Computed-style comparison.** When markup changes on purpose (the
+  semantic-anatomy migration), byte-identity is the wrong bar. Instead:
+  render old and new sites from the same journal, load both in a real
+  browser, and hash `getComputedStyle` of every element. The gen-2
+  migration passed with every element identical across the edition, home,
+  and sources pages, light and dark.
+- **The sandbox discipline.** Everything above works because the press is
+  strictly cwd-relative: any directory is a paper, so a baseline and a
+  candidate can print side by side from copied journals without touching a
+  real paper. Keep it that way; it is the test infrastructure.
+
+## Writing tests for a new engine
+
+The desk engine's suite is the template: test your parsing and decisions as
+pure functions; let the frame's own tests carry the joint. If your engine
+grows a model call, give its prompt known-answer probes — a prompt is a
+versioned artifact here, and experiment 002's twenty lost minutes are why.

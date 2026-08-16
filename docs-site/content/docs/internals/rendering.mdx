@@ -1,0 +1,71 @@
+---
+title: Rendering
+description: One typed document, two constructors, four dialects, one theme.
+---
+
+Everything a reader sees passes through one narrow waist:
+`EditionDocument`.
+
+## The document
+
+```ts
+// packages/platform/src/edition.ts
+interface EditionStory {
+  headline: string
+  body: string          // the compositor's raw text — the archive's record
+  differ: string        // may be empty: not every engine has accounts to differ
+  sourcesLine: string   // may be empty
+  bodyParagraphs: string[]      // the derived, split form —
+  differBullets: string[]       // what the visual dialects set in type
+  differParagraphs: string[]
+  sources: SourceLink[]
+  balanceNote: string | null
+  foldReason: string | null
+}
+```
+
+One constructor — `editionStoryFrom` — takes raw text and produces both
+forms. It is called from exactly two places: the pipeline as stories verify
+(in memory), and `assemble.ts` rebuilding editions from the journal for the
+site and mail. Same constructor, same splitting, same link resolution —
+byte-identical output from either side, by construction.
+
+## The four dialects
+
+| Dialect | File | Consumes |
+| --- | --- | --- |
+| Markdown archive | `render.ts` | the **raw** fields — the record is what was written, never a re-layout |
+| Site | `html.ts` | the split fields, as semantic anatomy |
+| Email | `email.ts` | the split fields, inline-styled (mail clients strip stylesheets) |
+| RSS | `feed.ts` | the split fields, as unstyled semantic HTML |
+
+Absent anatomy renders as absence: an empty differ produces no "Where the
+accounts differ" label anywhere; an empty sources list produces no sources
+line. That is how a desk story and an eto story share every renderer.
+
+## Structure vs skin
+
+The site markup carries **only semantic classes** — `story__differ`,
+`masthead__wordmark`, and the three voice classes (`prose`, `instrument`,
+`accent`). Every visual decision lives in `brief.css`, the default theme:
+semantic selectors carrying their rules via Tailwind `@apply`, compiled to
+plain CSS at build time. Tailwind is the theme's private build tool; a
+paper's replacement skin is plain CSS over the same anatomy and needs no
+toolchain at all. The full contract is the
+[anatomy reference](/docs/reference/anatomy).
+
+## The archive write
+
+The single non-idempotent step of a morning, which is why it is last,
+atomic (write temp file, rename), and guarded by existence —
+`BriefAlreadyPublished` if the path exists. Corrections are spliced by the
+frame above whatever the engine returned; §9 cannot be forgotten by an
+engine that never heard of it.
+
+## The invariant that gates refactors
+
+Rendering changes in generation 2 were landed under a standing bar:
+byte-identical output for existing content (site trees diffed across 23
+real editions; `renderBrief` proven on hermetic fixtures) or
+computed-style-identical in a real browser where markup deliberately
+changed. See [Testing](/docs/internals/testing) for how those gates run.
