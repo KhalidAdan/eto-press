@@ -18,7 +18,7 @@
 import { spawn } from "node:child_process"
 import { createWriteStream, existsSync, mkdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { OLLAMA_URL } from "./config.js"
+import { OLLAMA_URL } from "@eto-press/platform/config"
 
 const args = new Set(process.argv.slice(2))
 const noEmail = args.has("--no-email")

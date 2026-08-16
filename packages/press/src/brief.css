@@ -1,16 +1,90 @@
-/* The press's stylesheet source. Compiled by `npm run build:css` into
- * site/brief.css — the archive pages must never depend on a CDN.
+/* The default theme — Lora and claret, the hairlines, the wordmark's
+ * full stop. Compiled by `npm run build:css` into site/brief.css; the
+ * archive pages must never depend on a CDN.
  *
- * source(none) turns OFF Tailwind's automatic repo-wide scan: without it,
- * plain English words in docs and configs ("container", "invisible",
- * "collapse") compile into the paper's stylesheet as junk utilities. The
- * only class source here is the edition template; a paper with its own
- * hand-written pages (the flagship's site/404.html) adds them via its own
- * thin stylesheet that @imports this one. */
+ * Since generation 2's structure/skin split, the edition markup carries
+ * only semantic anatomy classes (story__differ, masthead__wordmark, the
+ * prose/instrument/accent voices) and every visual decision lives here.
+ * A paper that wants its own look replaces this stylesheet — no fork,
+ * no permission, full editorial CSS rights over the same anatomy.
+ * Tailwind is this theme's build tool, nothing more: a skin may be
+ * plain CSS. Anatomy classes with no rule here (story__body,
+ * masthead__date, corrections__item, …) are deliberate skin hooks. */
 @import "tailwindcss" source(none);
-@source "./html.ts";
 
 @theme {
   --font-serif: "Lora", Georgia, serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
+
+/* -- The two voices, and the one color --------------------------------- */
+.prose { @apply text-pretty text-lg/8 sm:text-base/7; }
+.instrument { @apply font-mono text-base/7 sm:text-sm/6; }
+.instrument--quiet { @apply text-neutral-950/70 dark:text-white/60; }
+.instrument--label { @apply uppercase tracking-wide; }
+.instrument--strong { @apply font-medium; }
+.accent { @apply text-red-900 dark:text-red-300/90; }
+.link { @apply underline decoration-neutral-950/25 underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 dark:decoration-white/25; }
+
+/* -- The page ----------------------------------------------------------- */
+html { @apply antialiased; }
+.page { @apply bg-white font-serif text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100; }
+.page__main { @apply isolate px-6 py-10 sm:py-14; }
+.page__measure { @apply mx-auto max-w-[68ch]; }
+.page__nav { @apply flex justify-end pb-6; }
+.page__nav--between { @apply justify-between gap-4; }
+.page-section { @apply flex flex-col gap-5 border-t border-neutral-950/15 py-10 dark:border-white/15; }
+.page-section--tight { @apply gap-4; }
+.page__footer { @apply flex flex-col gap-4 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
+.page__end { @apply pt-6 text-center text-lg/8 sm:text-base/7 italic text-neutral-950/60 dark:text-white/55; }
+.page__end--tight { @apply pt-2; }
+
+/* -- The masthead -------------------------------------------------------- */
+.masthead { @apply flex flex-col items-center gap-4 border-b border-neutral-950/15 pb-10 text-center dark:border-white/15; }
+.masthead__wordmark { @apply text-6xl font-medium tracking-tight; }
+.masthead__motto { @apply text-neutral-950/60 dark:text-white/55; }
+
+.about { @apply flex flex-col gap-5 py-12; }
+
+/* -- The stories: the engine's anatomy, set in type ---------------------- */
+.corrections { @apply flex flex-col gap-3 border-b border-neutral-950/15 py-8 dark:border-white/15; }
+.edition__stories { @apply flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10; }
+.story { @apply flex flex-col gap-5 py-12 scroll-mt-6; }
+.story__headline { @apply text-pretty text-2xl font-semibold tracking-tight sm:text-3xl; }
+.story__differ--list { @apply flex flex-col gap-3; }
+.story__footer { @apply flex flex-col gap-2 pt-1; }
+.fold { @apply flex flex-col gap-3 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
+.fold__reason { @apply italic; }
+.report { @apply flex flex-col gap-4 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
+.report__lines { @apply flex flex-col gap-2 tabular-nums; }
+
+/* -- The home page's furniture ------------------------------------------- */
+.cards { @apply grid gap-6 sm:grid-cols-2; }
+.card { @apply border border-neutral-950/10 dark:border-white/10; }
+.card__link { @apply flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2; }
+.card__figure { @apply flex flex-col; }
+.card__image { @apply aspect-video w-full object-cover; }
+.card__credit { @apply px-5 pt-2 text-neutral-950/50 dark:text-white/40; }
+.card__body { @apply flex grow flex-col gap-2 p-5; }
+.card__title { @apply text-pretty text-xl font-semibold group-hover:underline decoration-neutral-950/30 underline-offset-4 dark:decoration-white/30; }
+.card__meta { @apply mt-auto text-neutral-950/60 dark:text-white/50; }
+.card__meta-sep, .spectrum__sep { @apply text-neutral-950/25 dark:text-white/25; }
+
+/* -- The spectrum: blue to red, center violet ----------------------------- */
+.side--left { @apply text-blue-700 dark:text-blue-400; }
+.side--lean-left { @apply text-blue-500 dark:text-blue-300; }
+.side--center { @apply text-violet-600 dark:text-violet-400; }
+.side--lean-right { @apply text-red-500 dark:text-red-300; }
+.side--right { @apply text-red-700 dark:text-red-400; }
+
+/* -- The sources page ----------------------------------------------------- */
+.side-table { @apply flex flex-col divide-y divide-neutral-950/10 border-t border-neutral-950/15 dark:divide-white/10 dark:border-white/15; }
+.side-row { @apply flex flex-col gap-2 py-6 sm:flex-row sm:gap-6; }
+.side-row__label { @apply w-32 shrink-0; }
+
+/* -- The subscribe form --------------------------------------------------- */
+.subscribe { @apply flex flex-col gap-3 sm:flex-row; }
+.subscribe__input { @apply grow border border-neutral-950/25 bg-transparent px-4 py-2.5 sm:py-2 placeholder:text-neutral-950/40 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white/25 dark:placeholder:text-white/40; }
+.subscribe__button { @apply border border-neutral-950 bg-neutral-950 px-6 py-2.5 sm:py-2 text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white dark:bg-white dark:text-neutral-950; }
+.honeypot { position: absolute; left: -5000px; }
+.visually-hidden { @apply sr-only hidden; }

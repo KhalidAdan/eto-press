@@ -1,0 +1,74 @@
+---
+title: Run a desk paper
+description: A newsletter and a web presence with no feeds, no models, and no accounts you don't choose.
+---
+
+<Callout>
+  The desk engine is a **generation 2** capability — merged on the
+  `gen2-package` line and shipping with the 2.x releases.
+</Callout>
+
+A desk paper is the smallest honest publication: you write markdown, the
+press prints it into the same append-only archive, the same site, the same
+morning email — with the same constitution (no tracking, the brief ends) —
+and *nothing else happens*. No feeds are fetched, no models run, no GPU is
+needed.
+
+## Set it up
+
+<Steps>
+  <Step title="Declare the engine">
+    In your paper's `eto.toml`:
+
+    ```toml
+    [paper]
+    name = "the desk paper"
+    motto = "The editor writes. The press prints."
+
+    [engine]
+    use = "desk"
+    ```
+
+    A desk paper needs no `[[source]]` blocks at all.
+  </Step>
+  <Step title="Write onto the desk">
+    ```text
+    desk/2026-08-16-on-quiet-days.md
+    ```
+
+    ```markdown
+    # On quiet days
+
+    Some mornings there is nothing to add to what the world already said.
+    ```
+
+    The first `# heading` becomes the headline. No heading, and the
+    filename — de-dated, de-dashed — serves.
+  </Step>
+  <Step title="Print">
+    ```bash
+    eto press
+    ```
+    Every entry not yet printed becomes a story in this morning's edition.
+    Each entry prints exactly once — the press journals a content hash — so
+    editing an already-printed file makes it print again as a new entry,
+    which is exactly what a revised thought deserves.
+  </Step>
+</Steps>
+
+## The empty desk
+
+A morning with nothing new prints nothing at all: no archive file, no email,
+one honest line in the log — *the desk holds nothing new. The press rests.*
+Your readers get email only when you wrote something, which is most of the
+reason they will stay subscribed.
+
+## What carries over from the news engine
+
+Everything that is the platform's rather than the doctrine's: the archive
+that never rewrites, [corrections](/docs/guides/corrections) that point
+back, the [tier ladder](/docs/tiers), the
+[morning email](/docs/guides/mail) with its double-opt-in list you own, and
+[skins](/docs/concepts/skins) over the same semantic anatomy — a desk story
+is simply a story with no differ block and no sources line, and the default
+theme sets it accordingly.

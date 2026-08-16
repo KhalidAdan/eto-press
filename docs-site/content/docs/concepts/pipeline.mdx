@@ -1,0 +1,102 @@
+---
+title: The pipeline
+description: Twelve stages from raw feeds to a verified edition, resumable at every step.
+---
+
+Every morning is the same walk. Two principles shape all of it:
+
+1. **The database is the journal.** Every expensive unit of work — a feed
+   fetch, a model verdict, a composite draft — is keyed and cached in SQLite.
+   A crash at minute 28 costs the unit in flight and nothing else; recovery is
+   always the same command, run again. Resume is not a feature; it is the
+   absence of one.
+2. **The model only touches prose.** Two stages ask a model anything: judging
+   pairs and compositing stories. Every other stage is deterministic code, and
+   the model's output is always caged by deterministic verification.
+
+## The stages
+
+<Steps>
+  <Step title="Preflight">
+    Validate the masthead, run migrations, confirm the engine's models are
+    present and match `models.lock.json`. A drifted digest stops the press —
+    an `ollama pull` must never silently change your paper's mind.
+    Configuration problems fail loudly here, before any work.
+  </Step>
+  <Step title="Fetch feeds">
+    Every feed of every source, through the front door, with an honest
+    user-agent. Every attempt is recorded — success or not — which is where
+    your source-health history comes from. A failed feed never kills the run;
+    the outlet is simply absent and the report says so.
+  </Step>
+  <Step title="Normalize and classify">
+    Parse RSS and Atom (hostile encodings assumed), then classify each item —
+    news, opinion, video, podcast, liveblog, digest. Only `news` items may
+    participate in event matching: opinion and format items act as glue
+    between unrelated clusters.
+  </Step>
+  <Step title="Window and prefilter">
+    Keep the 48-hour window, then cut candidate pairs with plain code — two
+    items must share capitalized tokens before any model sees them. This is
+    a ~97% cut before a single model call. A funnel wildly off profile
+    aborts the run: cheap sanity beats expensive garbage.
+  </Step>
+  <Step title="Judge pairs">
+    The small model answers one question per pair: same news event, yes or
+    no. Verdicts are cached by pair, model, and prompt hash — rerunning
+    skips every judged pair; changing the prompt re-judges automatically. A
+    unanimous verdict stream trips an abort: one-sided answers mean a broken
+    prompt, not a quiet news day.
+  </Step>
+  <Step title="Cluster, gate, dedupe">
+    Union-find over the yes-edges, then a density gate that cuts the welded
+    blobs transitive chaining creates. Clusters mostly published in an
+    earlier edition are set aside — yesterday's front page does not reprint
+    itself. A story that returns with mostly new reporting runs again as a
+    development.
+  </Step>
+  <Step title="Select">
+    Deterministic eligibility: two or more distinct outlets, ranked by
+    breadth of outlets and sides, capped — the brief ends by design. A
+    one-sided story runs, carrying its measurement in print: *no source
+    labeled lean-right covered this story.*
+  </Step>
+  <Step title="Nominate below the fold">
+    One model pick from outside the front page: the story whose consequence
+    most exceeds its coverage. Its reason is printed verbatim for you to
+    judge, it can never displace a main story, and `below_the_fold = false`
+    kills the feature entirely.
+  </Step>
+  <Step title="Fetch the accounts">
+    The full article behind every selected item — front door, politeness
+    delay. An account that cannot be fetched drops out of the composite: the
+    sources line names only accounts actually read. A story below two
+    fetched accounts is dropped and reported.
+  </Step>
+  <Step title="Composite">
+    The larger model merges the fetched accounts into the four-part story:
+    headline, body, where-the-accounts-differ, sources. No adjective it was
+    not given, no motive, no forecast, ~350 words, it ends.
+  </Step>
+  <Step title="Verify">
+    The cage. Deterministic checks against the fetched text: every quote
+    verbatim, every entity present, no evaluative adjective in the paper's
+    own voice, the sources line exact, the word budget respected. Violations
+    go back to the compositor once as editor's notes; a story that still
+    fails is cut or dropped. A gap over a guess, every time.
+  </Step>
+  <Step title="Render, archive, report">
+    Surviving stories become the edition — markdown in the archive (written
+    once, atomically, never overwritten), the site, the email, the RSS item.
+    The run report prints the whole morning as data: feeds read and failed,
+    the funnel, every drop and its named reason, source-health trends.
+  </Step>
+</Steps>
+
+## When something fails
+
+Every failure is a named error with structured fields, and one rule decides
+its blast radius: **configuration and distribution problems stop the press
+loudly; unit-of-work problems degrade the brief quietly and honestly.** A
+missing outlet is a smaller brief. A broken prompt is a stopped press. The
+full catalog is in [the error reference](/docs/reference/errors).

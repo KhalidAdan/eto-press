@@ -1,0 +1,62 @@
+---
+title: Backups and the journal
+description: What must survive, what can be rebuilt, and the two commands that cover both.
+---
+
+Not everything in a paper is equally precious, and the backup story follows
+that honestly.
+
+## What can never be rebuilt
+
+- **The archive** (`archive/*.md`) — the record itself. It is plain files;
+  version it, sync it, copy it. The flagship keeps it in git.
+- **Your corrections and source-health history** — the two journal tables
+  that came from you and your mornings rather than from the world.
+- **Your configuration** — `eto.toml`, `sources.toml`, `models.lock.json`,
+  and (tier 3) the reader list.
+
+## What can
+
+Everything else in the journal — items, verdicts, drafts, verifications —
+is a cache of work the press can redo from the world. Losing it costs one
+slow morning, not history.
+
+## The two commands
+
+```bash
+eto export
+```
+
+exports the genuinely-yours tables as diffable JSONL into `db/exports/` —
+text files that belong in version control beside the archive, where a bad
+day is a readable diff instead of a binary mystery.
+
+```bash
+eto backup
+```
+
+takes a rotating snapshot of the whole journal (SQLite online backup — safe
+while the press runs) to your configured backup directory, keeping the last
+N:
+
+```toml
+[backup]
+dir = "D:\\paper-backups"   # point this at a different disk
+keep = 14
+```
+
+On tier 3, `eto backup-readers` snapshots the reader list from SES, so your
+list survives even your mail provider.
+
+Both run automatically at the tail of every `eto press` morning; the
+commands exist for the days you want one now.
+
+## Restoring
+
+- **Archive**: it's files — put them back.
+- **Journal**: copy a snapshot over `db/eto.sqlite`, or simply delete the
+  journal and let the next morning rebuild the caches; then re-import your
+  exports if you want corrections and history back.
+- **A whole paper on a new machine**: config + archive + the latest journal
+  snapshot, then `eto doctor` — it will tell you what's missing (usually
+  just the models, which `eto models pull` restores to pinned digests).

@@ -1,0 +1,18 @@
+{
+  "name": "@eto-press/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The eto press documentation site — how a stranger learns to run their own paper.",
+  "scripts": {
+    "dev": "blume dev",
+    "build": "blume build",
+    "preview": "blume preview"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "blume": "^1.5.1"
+  }
+}

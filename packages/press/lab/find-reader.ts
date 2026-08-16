@@ -1,6 +1,6 @@
 /** One-off: find a reader on the eto-readers list by substring. */
 import { ListContactsCommand, SESv2Client } from "@aws-sdk/client-sesv2"
-import { loadEnv } from "../src/env.js"
+import { loadEnv } from "@eto-press/platform/env"
 
 loadEnv()
 const needle = (process.argv[2] ?? "").toLowerCase()

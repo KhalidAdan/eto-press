@@ -5,7 +5,7 @@
  * schema, this script is the migration path. Run: npx tsx lab/reclassify.ts
  */
 import Database from "better-sqlite3"
-import { classify } from "../src/normalize.js"
+import { classify } from "@eto-press/platform/normalize"
 
 const db = new Database("db/eto.sqlite")
 const rows = db

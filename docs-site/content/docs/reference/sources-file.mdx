@@ -1,0 +1,63 @@
+---
+title: The sources file — sources.toml
+description: The editorial line's full schema.
+---
+
+`sources.toml` is the editorial line: which outlets the paper reads, where
+each stands, and the paper-wide editorial flags. It is deliberately small.
+
+## Paper-wide flags
+
+Flags live at the **top of the file**, above the first `[[source]]` block.
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `below_the_fold` | `true` | The one model nomination from outside the front page, reason printed for you to judge. `false` kills the feature. |
+| `email_edition` | `false` | Send the morning email. Flip on when your mail domain verifies. |
+
+<Callout>
+  TOML scoping means a flag placed *below* a `[[source]]` block would
+  silently belong to that source. The press refuses this by name —
+  `"below_the_fold" appears inside [[source]] #3 — move it to the top of
+  the file` — rather than ignoring your intent.
+</Callout>
+
+## `[seed]` — the provenance claim
+
+Optional. A paper that declares where its side labels came from renders that
+claim on its public sources page; a paper that doesn't, doesn't. The press
+asserts nothing it does not know.
+
+```toml
+[seed]
+name = "AllSides Media Bias Chart"
+url = "https://www.allsides.com/media-bias/media-bias-chart"
+version = "v11.3"
+description = "which rates outlets' perspective, not their accuracy"
+```
+
+## `[[source]]` — one block per outlet
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `name` | yes | The outlet's name as it appears in sources lines and reports. |
+| `side` | yes | The outlet's place on *your* map. The five seeded labels are `left`, `lean-left`, `center`, `lean-right`, `right`; custom labels are allowed and measured like any other. |
+| `feeds` | yes | One or more front-door feed URLs. |
+
+```toml
+[[source]]
+name = "The Guardian"
+side = "lean-left"
+feeds = ["https://www.theguardian.com/world/rss"]
+```
+
+An unknown key on a source block warns by name (an annotation like
+`added = "2026-08"` won't stop a morning); a *known paper-wide flag* on a
+source block is refused, because it means the flag you set is not in effect.
+
+## Emptiness is the engine's call
+
+The platform accepts a sources file with no `[[source]]` blocks at all. The
+**eto engine** refuses to print without sources — a story is an event told
+through outlets that disagree, so a paper with no outlets cannot be an eto
+paper. The **desk engine** never looks. (Generation 2.)

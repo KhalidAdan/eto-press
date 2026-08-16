@@ -10,7 +10,7 @@ import {
   SESv2Client
 } from "@aws-sdk/client-sesv2"
 import { readFileSync } from "node:fs"
-import { loadEnv } from "../src/env.js"
+import { loadEnv } from "@eto-press/platform/env"
 
 loadEnv()
 const CONTACT_LIST = "eto-readers"

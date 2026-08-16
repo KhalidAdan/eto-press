@@ -1,0 +1,84 @@
+---
+title: eto press
+description: A local-first printing press for a personal newspaper. One story, every side, then it ends.
+---
+
+eto takes a single news event, gathers the accounts of it published by outlets
+that disagree, and writes one piece of prose that holds all of them. It names
+every source it used. Then it stops.
+
+It runs on your machine — your model, your electricity, your source list. There
+is no account, no service, and no remote switch. From the moment you install it,
+you are not its reader. **You are its editor.**
+
+## What a story looks like
+
+Every story has four parts: what happened, where the accounts part company, who
+said so, and an end.
+
+```text
+IDF claims Hamas headquartered under Al-Shifa
+
+  Israeli troops entered Al-Shifa Hospital in Gaza after
+  encountering fighters at the gate. The IDF had surrounded
+  the hospital, saying Hamas had established a command post
+  in tunnels beneath it. Staff were told in advance.
+
+  Where the accounts differ
+  Hamas denies the tunnel claim outright. The Guardian notes
+  the search results were unreleased at press time; FOX
+  reports White House officials corroborating the Israeli
+  account. No source reports having seen the tunnels.
+
+  Sources  The Guardian · Reuters · FOX
+```
+
+The third part is old — every honest outlet cites. The fourth is rare. The
+second is the one that does not exist anywhere else, and it is the reason this
+exists.
+
+## Start here
+
+<Columns cols={2}>
+  <Card title="Quickstart" href="/docs/quickstart" icon="rocket">
+    Your own front page in about fifteen minutes, before you have created a
+    single account anywhere.
+  </Card>
+  <Card title="Installation" href="/docs/installation" icon="download">
+    Node, Ollama, and a GPU that can hold an 8B model — everything the press
+    needs, per operating system.
+  </Card>
+  <Card title="The tier ladder" href="/docs/tiers" icon="stairs">
+    A paper for yourself, a paper on the web, a paper with a mailing list.
+    You only pay for the rung you stand on.
+  </Card>
+  <Card title="Your first week" href="/docs/guides/first-week" icon="calendar">
+    How to read the brief, when to check a source, and what the run report
+    is telling you.
+  </Card>
+</Columns>
+
+## Understand it
+
+<Columns cols={2}>
+  <Card title="What is a paper?" href="/docs/concepts/paper" icon="folder">
+    A paper is a directory. The press is what visits it each morning.
+  </Card>
+  <Card title="The pipeline" href="/docs/concepts/pipeline" icon="settings">
+    Twelve stages from raw feeds to a verified edition, resumable at every
+    step.
+  </Card>
+  <Card title="The engines" href="/docs/concepts/engines" icon="cpu">
+    eto prints the news that disagrees with itself. The desk engine prints
+    you.
+  </Card>
+  <Card title="Reference" href="/docs/reference/cli" icon="book">
+    Every verb, every configuration field, every named error.
+  </Card>
+</Columns>
+
+## What it will never do
+
+No infinite scroll. No recommendations. No tracking — not of you, and not of
+your readers. The brief ends today the way it ended yesterday, and you leave.
+A product that cannot be finished is not informing you; it is holding you.

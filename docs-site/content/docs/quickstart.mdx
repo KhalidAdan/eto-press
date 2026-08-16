@@ -1,0 +1,69 @@
+---
+title: Quickstart
+description: Your own front page in about fifteen minutes, with zero accounts.
+---
+
+This page takes you from nothing to a printed edition. If you want the full
+requirements first, see [Installation](/docs/installation).
+
+## Print your first edition
+
+<Steps>
+  <Step title="Initialize a paper">
+    ```bash
+    npx @eto-press/cli init
+    ```
+    The wizard asks for your paper's name, seeds `sources.toml` from the
+    audited AllSides shelf, pulls and pins the models
+    (`models.lock.json` is generated, never hand-edited), and runs a
+    sandboxed dry edition so your first real morning is not your first test.
+  </Step>
+  <Step title="Check the press">
+    ```bash
+    eto doctor
+    ```
+    Preflight as a command: Ollama reachable, models matching the lock, VRAM
+    sanity, feeds answering, the last edition's status.
+  </Step>
+  <Step title="Print a morning">
+    ```bash
+    eto press
+    ```
+    The whole morning as one verb — print the edition, render the site,
+    export the journal, send the email (if configured), take the backups.
+    Expect twenty to forty minutes on the first run while the judge works
+    through the morning's pairs; reruns resume from the journal.
+  </Step>
+  <Step title="Make it a habit">
+    ```bash
+    eto schedule --time 05:30
+    ```
+    Installs the morning into your operating system's scheduler — Task
+    Scheduler on Windows, launchd on macOS, cron or systemd on Linux.
+  </Step>
+</Steps>
+
+Your edition is now three things at once: a markdown file in `archive/`
+(the permanent record), a web page in `site/`, and — if you climb the
+[tier ladder](/docs/tiers) — an email in your readers' inboxes.
+
+## What just happened
+
+The wizard created a **paper**: an ordinary directory holding your masthead
+(`eto.toml`), your editorial line (`sources.toml`), your journal (`db/`), and
+your archive. The press visits it each morning, prints, and leaves.
+Everything about that directory is yours — see
+[What is a paper?](/docs/concepts/paper)
+
+While it printed, the press fetched every feed through the front door with an
+honest user-agent, asked a small local model which items describe the same
+event, clustered the matches, selected the broadest stories, fetched the full
+accounts, composited each story from outlets that disagree, and then checked
+every quote, entity, and adjective against the fetched text before letting it
+ship. The whole walk is in [The pipeline](/docs/concepts/pipeline).
+
+## Where to go next
+
+- [Your first week](/docs/guides/first-week) — how to read what you just printed.
+- [Editing your sources](/docs/guides/editing-sources) — the file that makes it your paper.
+- [Publish to the web](/docs/guides/publish-web) — when you want readers.

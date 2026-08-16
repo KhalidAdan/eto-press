@@ -1,0 +1,45 @@
+---
+title: CLI reference
+description: Every verb the eto command knows, and what each one touches.
+---
+
+The CLI runs in the current directory — which is to say, in a paper. Install
+nothing globally; `npx @eto-press/cli <verb>` works everywhere, and a paper
+created by `init` has `eto` available in its own scripts.
+
+## Setup verbs
+
+| Verb | What it does |
+| --- | --- |
+| `eto init` | A paper comes into existence: three questions, the seeded source list, models pulled and pinned, a sandboxed dry edition. |
+| `eto doctor` | Examine the press: models against the lock, GPU sanity, feeds reachable, journal health, mail verification, the last edition's status. Exit code 1 if the press would stall. |
+| `eto models` | `status` \| `pull` \| `pin` — the models, managed rather than remembered. `pull` restores to pinned digests; re-pinning is deliberate. |
+| `eto schedule` | Install the morning into the OS scheduler. `--time 05:30` sets the hour; `--yes` skips confirmation. |
+
+## The morning verbs
+
+| Verb | What it does |
+| --- | --- |
+| `eto press` | The whole morning: print, render, export, email, backups — with the pipeline's fatality rules (a failed print stops; the idempotent tail degrades gracefully). |
+| `eto print` | Just the pipeline: gather, judge, composite, verify, archive. |
+| `eto render` | Render the public site from the journal. Expects the stylesheet already compiled (`tailwindcss -i brief.css -o site/brief.css --minify`). |
+| `eto email` | Deliver the latest edition to the reader list. `--test <addr>` sends to one address and nobody else. |
+
+## The record verbs
+
+| Verb | What it does |
+| --- | --- |
+| `eto correct <edition> <rank> "<note>"` | Print a dated correction in the next edition, pointing back. The archive is never touched. |
+| `eto export` | Export the genuinely-yours journal tables as diffable JSONL to `db/exports/`. |
+| `eto backup` | Snapshot the journal (SQLite online backup) to the configured backup directory, rotating. |
+| `eto backup-readers` | Snapshot the reader list from SES. |
+| `eto gen-functions` | Regenerate the subscribe functions' configuration from `eto.toml`. |
+
+## Conventions
+
+- Every verb reads the paper in the **current working directory** — running
+  in an empty directory gives you an unnamed local paper's defaults, which
+  is also how the sandboxed dry run works.
+- Verbs exit nonzero on failure and print named errors, never bare stack
+  traces; the [error reference](/docs/reference/errors) maps each to its
+  meaning and blast radius.

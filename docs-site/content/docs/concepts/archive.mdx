@@ -1,0 +1,39 @@
+---
+title: The archive and the report
+description: Being able to watch a story be wrong, and then be corrected, is most of what trust is.
+---
+
+
+## The archive is fixed
+
+Yesterday's brief is the record of what was known yesterday, and it stays that
+way — one markdown file per edition, written once, atomically, never rewritten.
+When a story turns out to have been wrong, the correction runs in **today's**
+brief, dated, pointing back:
+
+```bash
+npm run correct -- 2026-08-10 2 "The figure was wrong; the source has issued a correction."
+```
+
+The press never reaches into what it has already told you and changes it while
+you sleep. Nobody's press should.
+
+## The run, reported
+
+Every edition ends with its own instrument panel, printed as data, not advice:
+which feeds answered and which refused, the funnel from raw items to published
+stories, every story dropped and the named reason it dropped, and the health
+trends of your sources over the past week.
+
+This is where "your sources have collapsed onto one side" appears — a
+measurement you are entitled to. The press will tell you plainly; it will not
+quietly correct you. An editor who can be overruled by his own press is not an
+editor.
+
+## When something breaks
+
+Every failure in the pipeline is a named error with structured fields, and the
+row-level rule is constant: **configuration problems stop the press loudly;
+unit-of-work problems degrade the brief quietly and honestly.** A missing
+outlet is a smaller brief. A broken prompt is a stopped press. The 6 a.m.
+debugging session starts in the run report, never in a stack trace.

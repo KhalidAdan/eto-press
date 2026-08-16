@@ -8,8 +8,8 @@
  * (Originally lab/probe_prompts.py; ported when the lab went TypeScript.)
  */
 
-import { MATCH_MODEL, OLLAMA_URL } from "../src/config.js"
-import { sameEventPrompt, type PromptItem } from "../src/prompts.js"
+import { MATCH_MODEL, OLLAMA_URL } from "@eto-press/platform/config"
+import { sameEventPrompt, type PromptItem } from "@eto-press/engine-eto/prompts"
 
 const MODEL = process.argv[2] ?? MATCH_MODEL
 const OLLAMA = `${OLLAMA_URL}/api/chat`

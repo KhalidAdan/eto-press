@@ -13,9 +13,9 @@
  */
 import Database from "better-sqlite3"
 import { mkdirSync, writeFileSync } from "node:fs"
-import { MATCH_MODEL, OLLAMA_URL } from "../src/config.js"
-import { parseVerdict } from "../src/judge.js"
-import { SAME_EVENT_PROMPT_HASH, sameEventPrompt } from "../src/prompts.js"
+import { MATCH_MODEL, OLLAMA_URL } from "@eto-press/platform/config"
+import { parseVerdict } from "@eto-press/engine-eto/judge"
+import { SAME_EVENT_PROMPT_HASH, sameEventPrompt } from "@eto-press/engine-eto/prompts"
 
 const model = process.argv[2]
 if (!model) {

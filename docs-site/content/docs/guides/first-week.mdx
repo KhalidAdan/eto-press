@@ -1,0 +1,63 @@
+---
+title: Your first week
+description: How to read the brief, when to check a source, and what the report is telling you.
+---
+
+The press succeeds by being finished — present for a few minutes, trusted
+because it was checkable, and then done for the day. The first week is where
+that trust gets earned or doesn't.
+
+## Day one: read one edition, whole
+
+Six minutes, maybe eight. Notice the four parts of each story: what happened,
+**where the accounts differ**, the sources line, and the end. The differ
+block is the part that exists nowhere else — it is the paper telling you, in
+plain words, where the outlets you chose part company.
+
+## Sometime this week: check a source
+
+A line will seem too clean — about a hospital, a budget, a resignation.
+Click the outlet's name in the sources line. It links to the account the
+press actually read, not a homepage. Find the claim. It should say what the
+brief said it said, because the verification cage checked every quote and
+entity against that text before the story shipped.
+
+Do this four or five times over the coming weeks. When it checks out each
+time, you will mostly stop — and the stopping will be earned rather than
+lazy. If it ever does *not* check out, that is a defect in the press, and it
+is reported and fixed like any other defect.
+
+## Read the run report like an editor
+
+Every edition ends with the morning's instrument panel. Three lines matter
+most in week one:
+
+- **Feeds read: 44 of 46; failed: …** — an outlet that keeps failing is
+  either having a bad week or closing its front door. The press retries
+  transient failures and reports the rest; a persistent refuser is a
+  candidate for [replacement](/docs/guides/editing-sources).
+- **Balance notes** — *no source labeled lean-right covered this story* is a
+  measurement of your masthead, printed under the story it measures. A
+  drumbeat of the same note is your source list telling you where it is
+  thin.
+- **Story #N dropped: …** — every drop has a named reason: too few fetched
+  accounts, a draft that failed verification. Drops are the press choosing a
+  gap over a guess, in public.
+
+## The below-the-fold experiment
+
+One story per edition arrives from outside the front page: the model's single
+nomination, chosen because its consequence exceeds its coverage, with its
+reason printed verbatim. You are the grader. If the nominations bore you,
+kill the feature with one line in `sources.toml`:
+
+```toml
+below_the_fold = false
+```
+
+## The end of the week
+
+You have now seen a correction run (or you will soon): dated, at the top of a
+later edition, pointing back at the original, which stands unchanged. Being
+able to watch a story be wrong and then be corrected is most of what it means
+to trust a paper.
