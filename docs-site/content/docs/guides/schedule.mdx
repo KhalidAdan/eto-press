@@ -1,0 +1,26 @@
+---
+title: The paperboy
+description: The paper prints itself before you wake.
+---
+
+# The paperboy
+
+`eto press` is the whole morning as one verb: print the edition, render the
+site, export the journal, send the email, take the backups. `eto schedule`
+installs it into your operating system's scheduler — Task Scheduler on
+Windows, launchd on macOS, cron or systemd on Linux — so it runs before you
+wake.
+
+## Retries are safe
+
+Every stage is idempotent by construction. If today's edition already exists,
+the print is skipped but the tail still runs — render, export, email, backups
+— so an hourly retry after a partial morning *finishes* the morning instead of
+failing at a guard.
+
+## The one caution
+
+The pipeline wants your GPU to itself. If other model servers (a speech
+model, a second LLM) share the card at press time, the compositor can starve
+and the press will stop loudly rather than print a hollow edition. `eto
+doctor` names this check; scheduling around your other workloads is the cure.

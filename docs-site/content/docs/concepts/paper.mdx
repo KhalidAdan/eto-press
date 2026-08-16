@@ -1,0 +1,46 @@
+---
+title: What is a paper?
+description: A paper is a directory. The press is what visits it each morning.
+---
+
+# What is a paper?
+
+A **paper** is an ordinary directory on your disk:
+
+```text
+my-paper/
+├── eto.toml          the nameplate and plumbing — name, motto, accent, models, mail
+├── sources.toml      the editorial line — which outlets, standing where
+├── models.lock.json  pinned model digests — nothing changes your paper's mind silently
+├── desk/             editor-authored copy (optional — see the desk engine)
+├── db/               the journal: every fetch, verdict, and draft, resumable
+├── archive/          one markdown file per edition, append-only, forever
+└── site/             the rendered web edition
+```
+
+The **press** is software that visits this directory each morning. It reads
+your configuration, prints your edition, and leaves. The press updates like
+any dependency — deliberately, with a changelog, by your hand — and your
+paper's content never lives inside it.
+
+## The two files that are yours
+
+**`sources.toml` is the editorial line.** Which outlets your paper reads and
+where each one stands. The press enforces the balance *you* configured and no
+other; when your sources collapse onto one side of a story, it tells you — a
+measurement, not a correction. Change the file, change the paper.
+
+**`eto.toml` is the nameplate.** Name, motto, the single accent color, which
+local models print your paper, how the mail goes out, and — since generation
+2 — which [engine](/docs/concepts/engines) prints it.
+
+## The guarantees the directory carries
+
+- **The archive is fixed.** Yesterday's brief is the record of what was known
+  yesterday. Corrections run in today's edition, dated, pointing back — the
+  old file is never touched.
+- **The journal resumes.** Every expensive unit of work is cached; a crash at
+  minute 28 costs the unit in flight and nothing else. Recovery is always the
+  same command: run it again.
+- **Nothing phones home.** No analytics, no telemetry, no reader tracking, in
+  any tier, on any page, in any email.

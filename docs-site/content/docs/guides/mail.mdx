@@ -1,0 +1,36 @@
+---
+title: The morning email
+description: Tier 3 — a mailing list you own, on infrastructure you control.
+---
+
+# The morning email
+
+A paper with readers sends one email a day. It ends, like the brief ends:
+no tracking pixels, no click wrapping, an unsubscribe link in every footer
+that actually works.
+
+## Setting up SES
+
+Amazon SES is the recommended provider for a real mailing list — roughly the
+cost of a coffee per year at household scale. The provisioning is one command
+and two DNS records:
+
+```bash
+eto mail setup ses
+```
+
+This creates the domain identity, DKIM records, the contact list, the
+suppression handling, and the configuration set, then wires the secrets. Flip
+`email_edition = true` in your masthead when the domain verifies.
+
+## The guards
+
+Sends are idempotent — a retried morning never mails twice. Suppressed
+addresses are swept before every send. Quota pacing respects your provider's
+limits. On a morning with no edition, nothing leaves.
+
+## The subscribe flow
+
+Tier 3 deploys a small pair of edge functions: a form endpoint with a
+honeypot, and a confirm link. Readers opt in twice; your list is yours,
+exportable, and never enriched with anything you did not ask for.

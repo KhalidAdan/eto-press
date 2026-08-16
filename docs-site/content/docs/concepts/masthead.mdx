@@ -1,0 +1,49 @@
+---
+title: The masthead file
+description: The editorial line is a file you own. Change the file, change the paper.
+---
+
+# The masthead file
+
+`sources.toml` is your paper's editorial line — which outlets it reads, and
+where each stands:
+
+```toml
+below_the_fold = true
+
+[[source]]
+name = "The Guardian"
+side = "lean-left"
+feeds = ["https://www.theguardian.com/world/rss"]
+
+[[source]]
+name = "FOX News"
+side = "right"
+feeds = ["https://moxie.foxnews.com/google-publisher/latest.xml"]
+```
+
+## The seed
+
+New papers are seeded from the AllSides Media Bias Chart — five labels, left
+to right, because balance measured in finer buckets is harder to fool. The
+chart is a cartographer, not an editor: none of it outranks you. Drop an
+outlet that keeps being alone on its own facts; add one when the brief says
+*no source on the right covered this* and you decide that gap is yours to
+close. Both times you will understand exactly what you changed about your own
+paper.
+
+## Honest defaults, loud failures
+
+The press validates shape, never opinion. Flags at the top of the file are
+paper-wide; a flag accidentally placed below a `[[source]]` block would
+silently belong to that source — so the press refuses it by name and tells
+you where it goes. Point the press at nine outlets that agree, and it will
+faithfully produce a very confident newspaper about one half of the world —
+that is your call to make, and yours to see measured in every balance note.
+
+## Neutral by construction
+
+eto holds no view on what balance means. It enforces the balance you
+configured and no other. The sources page of your site renders this file to
+your readers — the editorial line made visible, so anyone can question it and,
+because the press is free, go run their own.

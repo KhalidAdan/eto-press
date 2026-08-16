@@ -1,0 +1,53 @@
+---
+title: The platform and the engine
+description: One machine, many doctrines — the press has been two things all along.
+---
+
+# The platform and the engine
+
+The press is two things, and generation 2 makes the boundary real:
+
+**The platform** is the machinery of a personal periodical. Polite front-door
+feed reading, the resumable journal, the append-only archive with corrections,
+rendering to site and inbox and RSS, the subscribe flow, the schedule, the
+mail. None of it knows what news is. Its guarantees are the **constitution**,
+and every paper on the platform inherits them: the brief ends, the front door
+only, the archive is fixed, your readers are untracked, it runs on your metal.
+
+**An engine** is the editorial machinery that decides what a story *is* and
+how it must be told. The eto engine's prefilter, judge, clustering gates,
+compositor, and verification cage are one answer. A desk engine that simply
+prints what the editor wrote is another. An engine's beliefs are its
+**doctrine** — stated, printable, inherited by every paper on that engine.
+
+They meet exactly once per morning, at one joint:
+
+```text
+platform:  schedule → preflight → ┐
+                                  ├─ engine.edition(day) ─┐
+                                  ┆   the whole middle    ┆
+platform:  corrections ← render ← ┘ ← Edition | NoEdition ┘
+           archive → report → mail
+```
+
+The engine is handed the morning — the date and the masthead, nothing else —
+and hands back either an **edition** or **NoEdition**: true silence, no file,
+no mail. A quiet page and silence are different editorial statements, and the
+engine chooses which its doctrine prints.
+
+## What an engine is never handed
+
+The filesystem, the raw network, the archive, the mail, or your readers. An
+engine reads the world through the platform's front door, reads the editor
+through [the desk](/docs/concepts/engines#the-desk-engine), and remembers
+through the journal. The constitution is not a promise the engine makes — it
+is the shape of what the engine is given.
+
+## Four ownership surfaces
+
+| Surface | Owner | Contents |
+| --- | --- | --- |
+| Constitution | the platform | local-first, front-door reading, fixed archive, the brief ends, no tracking |
+| Doctrine | an engine | the editorial principles and the anatomy of an edition they guarantee |
+| Masthead | a paper | name, motto, accent, sources, domain, mail identity |
+| Skin | a paper | the stylesheet — full editorial CSS rights over the engine's structure |

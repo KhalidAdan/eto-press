@@ -1,0 +1,61 @@
+---
+title: The engines
+description: eto prints the news that disagrees with itself. The desk engine prints you.
+---
+
+# The engines
+
+A paper declares its engine in `eto.toml` — absent means eto:
+
+```toml
+[engine]
+use = "desk"
+```
+
+## The eto engine
+
+The flagship doctrine, and the reason the press exists:
+
+1. **One story, many mouths.** A story is an event and the competing accounts
+   of it, collapsed into one telling. A single-source item is a rumour with
+   good manners, and it does not run.
+2. **The disagreement is the story.** Where accounts conflict, the story says
+   so, in the body, with each side named. Consensus manufactured by deleting
+   the contradiction is a quieter kind of lying.
+3. **Nothing unattributed ships.** The sources line is the proof of work.
+4. **The model composites. It does not comment.** No adjective it was not
+   given, no motive, no forecast — and a deterministic verification cage that
+   checks every quote, entity, and adjective against the fetched accounts.
+5. **Incomplete beats wrong.** Given a gap or a guess, eto prints the gap.
+6. **The masthead is yours.** eto enforces the balance you configured and no
+   other, and tells you plainly when your sources collapse onto one side.
+
+It needs two local models — a small judge and an 8B-class compositor — both
+digest-pinned so an `ollama pull` can never silently change your paper's mind.
+
+## The desk engine
+
+The null machinery: **the editor writes, the press prints.** Drop markdown
+files onto the desk —
+
+```text
+desk/2026-08-16-on-quiet-days.md
+```
+
+— and each entry prints once, as a story, in the next morning's edition. A
+morning with nothing new prints nothing at all. No feeds, no judging, no
+models: a desk paper never needs Ollama, and everything it inherits — the
+append-only archive, the untracked readers, the finite brief, the mail —
+comes from the platform's constitution.
+
+If you have ever wanted a newsletter and a web presence without renting your
+audience from a platform that tracks them, this is the smallest honest way to
+have one.
+
+## The ladder
+
+More engines are planned, each deliberately small, each forcing the next
+piece of the platform into shape: an event-driven letter (prints only when
+its institution speaks), a link digest, a sports paper with columns and
+tables. The engine interface stays private until the ladder has enough rungs
+that it is extracted from evidence rather than guessed.

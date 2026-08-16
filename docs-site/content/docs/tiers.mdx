@@ -1,0 +1,36 @@
+---
+title: The tier ladder
+description: Publicness is a ladder, and you only pay for the rung you stand on.
+---
+
+# The tier ladder
+
+Most newsletter tooling charges every user the full public-publishing price —
+cloud accounts, DNS, mail providers — even to read their own words. eto's
+installation cost scales with how public your paper is, and the private tier
+is the one everything else is measured against.
+
+## Tier 1 — a paper for yourself
+
+Ollama, Node, `sources.toml`. Output is `site/` opened locally or on your LAN.
+Zero accounts, zero secrets, working fifteen minutes after install. This tier
+is the constitution's "it runs on your metal" made literal.
+
+## Tier 2 — a paper on the web
+
+Add a static host. Publishing is an adapter named in configuration — Cloudflare
+Pages, Netlify, rsync, or a plain folder — not a workflow you maintain. Your
+archive is static HTML; anything that can serve files can serve your paper.
+
+## Tier 3 — a paper with a mailing list
+
+Only here does a mail provider enter. `eto mail setup ses` walks the
+provisioning — domain identity, DKIM, the contact list, suppression — and the
+subscribe flow deploys only for this tier. The press's send guards are
+idempotent: a retried morning never mails twice.
+
+## Climbing is optional
+
+A Tier 1 paper is not a demo. It is the complete product: the same pipeline,
+the same verification, the same archive. The ladder exists so that the cost of
+an audience is paid only by papers that want one.

@@ -1,0 +1,42 @@
+---
+title: Skins
+description: Forks are for dissent, not typography.
+---
+
+# Skins
+
+Every page the press renders carries only **semantic anatomy** — class names
+that say what things are, never how they look:
+
+```html
+<article class="story">
+  <h2 class="story__headline">…</h2>
+  <p class="story__body prose">…</p>
+  <h3 class="story__differ-label instrument accent">Where the accounts differ</h3>
+  <p class="story__differ prose">…</p>
+  <p class="story__sources instrument">Sources …</p>
+</article>
+```
+
+Three voice classes are shared by design, because they *are* the design:
+`prose` (the news speaking), `instrument` (the paper speaking), and `accent`
+(the single color, spent only on the paper's own measurements — the differ
+label, the balance notes, the full stop after the wordmark).
+
+## The default theme
+
+The press ships one stylesheet — Lora and claret, the hairlines, a 68ch
+measure — so the zero-effort path is beautiful. It is just CSS over the
+anatomy above.
+
+## Your skin
+
+Replace the stylesheet. That is the entire mechanism: no fork, no template
+override, no permission. Your paper keeps the engine's structure — the differ
+block, the sources line, the end marker are guaranteed by the engine, present
+and checkable in every page — and you have full editorial CSS rights over how
+that structure looks.
+
+A skin that styles its attribution invisible has not defeated the engine; it
+has stopped being an eto-engine paper. Enforcement is checkability, not locks
+— that norm is stated in public, by name.

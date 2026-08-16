@@ -1,0 +1,58 @@
+---
+title: Quickstart
+description: Your own front page in about fifteen minutes, with zero accounts.
+---
+
+# Quickstart
+
+Tier 1 — a paper for yourself — needs exactly three things: [Node.js 20+](https://nodejs.org),
+[Ollama](https://ollama.com), and a machine with a GPU that can hold an 8B
+model (about 8 GB of VRAM). No cloud accounts, no API keys, no secrets.
+
+## Print your first edition
+
+1. **Initialize a paper.** The wizard asks for your paper's name, seeds your
+   source list from the audited AllSides shelf, pulls and pins the models, and
+   runs a sandboxed dry edition from that morning's actual feeds:
+
+   ```bash
+   npx @eto-press/cli init
+   ```
+
+2. **Check the press.** Preflight as a command — Ollama reachable, models
+   matching the lock, feeds answering, the last edition's status:
+
+   ```bash
+   eto doctor
+   ```
+
+3. **Print a morning.** The whole pipeline, one verb — fetch, judge, cluster,
+   select, composite, verify, render, archive:
+
+   ```bash
+   eto press
+   ```
+
+4. **Make it a habit.** Install the schedule so the paper prints itself before
+   you wake — Task Scheduler on Windows, launchd on macOS, cron on Linux:
+
+   ```bash
+   eto schedule
+   ```
+
+Your edition is a markdown file in `archive/`, a web page in `site/`, and — if
+you climb the [tier ladder](/docs/tiers) — an email in your readers' inboxes.
+
+## What just happened
+
+The wizard created a **paper**: an ordinary directory holding your masthead
+(`eto.toml`), your editorial line (`sources.toml`), your journal (`db/`), and
+your archive. The press visits it each morning. Everything about that
+directory is yours — see [What is a paper?](/docs/concepts/paper)
+
+## The first week
+
+Read the brief. Somewhere in the second week you will click a source link
+because a line seemed too clean — and find the source says what eto said it
+said. Do that four or five times. After that you will mostly stop checking,
+and the stopping will be earned rather than lazy.
