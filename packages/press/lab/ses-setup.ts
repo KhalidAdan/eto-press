@@ -16,7 +16,7 @@ import {
   PutAccountSuppressionAttributesCommand,
   SESv2Client
 } from "@aws-sdk/client-sesv2"
-import { loadEnv } from "../src/env.js"
+import { loadEnv } from "@eto-press/platform/env"
 
 loadEnv()
 const DOMAIN = "eto.news"

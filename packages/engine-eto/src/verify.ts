@@ -12,8 +12,7 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
-import type { Account } from "./articles.js"
-import type { Draft } from "./composite.js"
+import type { Account, Draft } from "@eto-press/platform/edition"
 
 export interface Verification {
   readonly violations: ReadonlyArray<string>

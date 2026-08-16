@@ -5,20 +5,31 @@
 import { FileSystem } from "@effect/platform"
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
-import { fetchArticlesForStories, type StoryWithAccounts } from "./articles.js"
-import { buildClusters, persistClusters } from "./cluster.js"
-import { compositeStory } from "./composite.js"
-import { archiveBrief, renderBrief, type CorrectionNotice, type PublishedStory } from "./render.js"
-import { editorNotes, persistVerifications, verifyDraft } from "./verify.js"
-import { COMPOSITE_MODEL, MATCH_MODEL } from "./config.js"
-import { ensureSchema } from "./db.js"
-import { FunnelAnomalous, ModelDrifted, ModelMissing, PressStalled } from "./errors.js"
-import { ingestAllFeeds } from "./feeds.js"
-import { judgePairs } from "./judge.js"
-import { loadMasthead } from "./masthead.js"
-import { Ollama } from "./ollama.js"
-import { candidatePairs, crossOutletPairCount } from "./prefilter.js"
-import { nominateBelowTheFold } from "./nominate.js"
+import { fetchArticlesForStories } from "@eto-press/platform/articles"
+import type { StoryWithAccounts } from "@eto-press/platform/edition"
+import { buildClusters, persistClusters } from "@eto-press/engine-eto/cluster"
+import { compositeStory } from "@eto-press/engine-eto/composite"
+import {
+  archiveBrief,
+  renderBrief,
+  type CorrectionNotice,
+  type PublishedStory
+} from "@eto-press/platform/render"
+import { editorNotes, persistVerifications, verifyDraft } from "@eto-press/engine-eto/verify"
+import { COMPOSITE_MODEL, MATCH_MODEL } from "@eto-press/platform/config"
+import { ensureSchema } from "@eto-press/platform/db"
+import {
+  FunnelAnomalous,
+  ModelDrifted,
+  ModelMissing,
+  PressStalled
+} from "@eto-press/platform/errors"
+import { ingestAllFeeds } from "@eto-press/platform/feeds"
+import { judgePairs } from "@eto-press/engine-eto/judge"
+import { loadMasthead } from "@eto-press/platform/masthead"
+import { Ollama } from "@eto-press/platform/ollama"
+import { candidatePairs, crossOutletPairCount } from "@eto-press/engine-eto/prefilter"
+import { nominateBelowTheFold } from "@eto-press/engine-eto/nominate"
 import {
   balanceNoteFor,
   dropAlreadyPrinted,
@@ -28,7 +39,7 @@ import {
   previouslyPrintedLinks,
   selectStories,
   STORY_CAP
-} from "./select.js"
+} from "@eto-press/engine-eto/select"
 
 /** The run id is the editor's local calendar date — the morning the brief is
  * for. (Found the hard way: the first live run stamped itself with the UTC

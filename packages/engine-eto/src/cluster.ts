@@ -15,7 +15,8 @@ import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
 import { createHash } from "node:crypto"
 import type { JudgedPair } from "./judge.js"
-import type { Item } from "./normalize.js"
+import type { Item } from "@eto-press/platform/normalize"
+import type { Cluster } from "@eto-press/platform/edition"
 
 /** Below this internal yes-density, a component of >= 3 is treated as a
  * chained blob and its unsupported edges are cut. Chosen against the
@@ -27,14 +28,7 @@ export const DENSITY_MIN = 0.5
  * that survives the ceiling intact stays a blob for stage 5c to refuse. */
 export const SUPPORT_CEILING = 6
 
-export interface Cluster {
-  readonly hash: string
-  readonly items: ReadonlyArray<Item>
-  readonly outlets: ReadonlyArray<string>
-  readonly sides: ReadonlyArray<string>
-  readonly density: number
-  readonly wasSplit: boolean
-}
+export type { Cluster }
 
 class UnionFind {
   private readonly parent = new Map<number, number>()

@@ -9,22 +9,22 @@
  * the mail and write the backups. A paper is a directory; the press is
  * what visits it each morning.
  *
- * Everything else under src/ is the press's internals: the pipeline
- * stages (run.ts and what it orchestrates), the presentation dialects
- * (html.ts, email.ts, feed.ts, render.ts), and the standalone verbs the
- * package ships as executables (render-site, send-edition, correct,
- * export-journal, backup-journal, backup-readers, gen-functions-config).
- * When the engine moves to the monorepo (docs/ROADMAP.md, workstream 1),
- * this module becomes the package entry and the paper's repo keeps only
- * its content and configuration.
+ * Since the generation-2 package split (docs/PROPOSAL-GENERATION-2.md),
+ * this package is the thin binding: @eto-press/platform holds the
+ * machinery of a personal periodical (journal, front-door reading,
+ * dialects, archive, mail, verbs), @eto-press/engine-eto holds the
+ * editorial machinery (prefilter, judge, cluster, select, compositor,
+ * the verification cage). run.ts here is the morning walk that binds
+ * them — it moves behind the Engine joint in a later step. The public
+ * API below is unchanged from generation 1.
  */
 export { nightly } from "./run.js"
-export { Ollama } from "./ollama.js"
+export { Ollama } from "@eto-press/platform/ollama"
 export {
   loadMasthead,
   MastheadSchema,
   SourceSchema,
   type Masthead,
   type Source
-} from "./masthead.js"
-export * as config from "./config.js"
+} from "@eto-press/platform/masthead"
+export * as config from "@eto-press/platform/config"

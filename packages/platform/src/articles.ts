@@ -13,7 +13,7 @@ import { JSDOM, VirtualConsole } from "jsdom"
 import { ArticleUnfetchable, ArticleUnreadable } from "./errors.js"
 import { USER_AGENT } from "./feeds.js"
 import type { Item } from "./normalize.js"
-import type { Story } from "./select.js"
+import type { Account, Story, StoryWithAccounts } from "./edition.js"
 
 const POLITENESS_MS = 300
 const MAX_STORED_CHARS = 20_000
@@ -107,15 +107,7 @@ const fetchArticle = (item: Item) =>
     })
   )
 
-export interface Account {
-  readonly item: Item
-  readonly text: string
-}
-
-export interface StoryWithAccounts {
-  readonly story: Story
-  readonly accounts: ReadonlyArray<Account>
-}
+export type { Account, StoryWithAccounts }
 
 /** Fetch every account of every story. Cached by item id: a rerun refetches
  * only what is missing or previously failed. */

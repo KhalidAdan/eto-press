@@ -14,8 +14,8 @@
  */
 import { Effect, Schedule } from "effect"
 import type { Cluster } from "./cluster.js"
-import { COMPOSITE_MODEL } from "./config.js"
-import { Ollama } from "./ollama.js"
+import { COMPOSITE_MODEL } from "@eto-press/platform/config"
+import { Ollama } from "@eto-press/platform/ollama"
 
 export interface Nomination {
   readonly cluster: Cluster

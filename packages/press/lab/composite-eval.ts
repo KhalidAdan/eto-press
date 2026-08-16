@@ -11,12 +11,12 @@
  */
 import Database from "better-sqlite3"
 import { mkdirSync, writeFileSync } from "node:fs"
-import type { Account } from "../src/articles.js"
-import { parseDraft, selectAccountsForPrompt, sourcesLineFor } from "../src/composite.js"
-import { OLLAMA_URL, COMPOSITE_NUM_CTX } from "../src/config.js"
-import type { Item } from "../src/normalize.js"
-import { compositePrompt } from "../src/prompts.js"
-import { verifyDraft } from "../src/verify.js"
+import type { Account } from "@eto-press/platform/edition"
+import { parseDraft, selectAccountsForPrompt, sourcesLineFor } from "@eto-press/engine-eto/composite"
+import { OLLAMA_URL, COMPOSITE_NUM_CTX } from "@eto-press/platform/config"
+import type { Item } from "@eto-press/platform/normalize"
+import { compositePrompt } from "@eto-press/engine-eto/prompts"
+import { verifyDraft } from "@eto-press/engine-eto/verify"
 
 const model = process.argv[2]
 if (!model) {

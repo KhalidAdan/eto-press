@@ -7,19 +7,13 @@
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
 import { DENSITY_MIN, type Cluster } from "./cluster.js"
-import type { Masthead } from "./masthead.js"
+import type { Masthead } from "@eto-press/platform/masthead"
+import type { Story } from "@eto-press/platform/edition"
 
 /** The brief is finite by construction. */
 export const STORY_CAP = 8
 
-export interface Story {
-  readonly cluster: Cluster
-  readonly rank: number
-  readonly balanceNote: string | null
-  /** Set only on the below-the-fold nomination (stage 6b) — the model's
-   * printed, editor-graded reason. Main stories never carry one. */
-  readonly foldReason: string | null
-}
+export type { Story }
 
 /** Stage 5b: what earlier editions actually printed. Only status
  * 'published' counts — a story selected but dropped never reached the

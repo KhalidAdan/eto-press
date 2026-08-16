@@ -4,7 +4,7 @@
  * prefilter; unrelated pairs and same-outlet pairs must not reach the model.
  */
 import { describe, expect, it } from "vitest"
-import type { Item } from "../src/normalize.js"
+import type { Item } from "@eto-press/platform/normalize"
 import { candidatePairs, capTokens } from "../src/prefilter.js"
 
 let nextId = 1

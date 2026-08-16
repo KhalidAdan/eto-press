@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest"
 import { buildClusters, DENSITY_MIN } from "../src/cluster.js"
 import type { JudgedPair } from "../src/judge.js"
-import type { Item } from "../src/normalize.js"
+import type { Item } from "@eto-press/platform/normalize"
 
 let nextId = 1
 const item = (outlet: string, title: string): Item => ({

@@ -29,10 +29,12 @@
     "access": "public"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@eto-press/platform": "*",
+    "@eto-press/engine-eto": "*",
     "@aws-sdk/client-sesv2": "^3.1095.0",
     "better-sqlite3": "^12.6.2",
     "@effect/platform": "^0.97.0",

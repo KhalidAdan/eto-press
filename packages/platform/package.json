@@ -1,0 +1,37 @@
+{
+  "name": "@eto-press/platform",
+  "version": "2.20260815.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "The machinery of a personal periodical: front-door reading, the journal, the archive, rendering to site and inbox and RSS, the mail, the verbs. None of it knows what news is.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "files": ["src", "README.md"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.1095.0",
+    "better-sqlite3": "^12.6.2",
+    "@effect/platform": "^0.97.0",
+    "@effect/sql": "^0.52.0",
+    "@mozilla/readability": "^0.6.0",
+    "effect": "^3.22.0",
+    "jsdom": "^29.1.1",
+    "rss-parser": "^3.13.0",
+    "smol-toml": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

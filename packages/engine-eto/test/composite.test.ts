@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { Account } from "../src/articles.js"
+import type { Account } from "@eto-press/platform/edition"
 import { parseDraft, selectAccountsForPrompt, sourcesLineFor } from "../src/composite.js"
 
 const good = `HEADLINE: Maine Democrats nominate Troy Jackson for U.S. Senate

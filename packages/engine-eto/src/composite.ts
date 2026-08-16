@@ -6,20 +6,13 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect, Schedule } from "effect"
-import type { Account, StoryWithAccounts } from "./articles.js"
-import { COMPOSITE_MODEL, COMPOSITE_NUM_CTX } from "./config.js"
-import { DraftMalformed } from "./errors.js"
-import { Ollama } from "./ollama.js"
+import type { Account, Draft, StoryWithAccounts } from "@eto-press/platform/edition"
+import { COMPOSITE_MODEL, COMPOSITE_NUM_CTX } from "@eto-press/platform/config"
+import { DraftMalformed } from "@eto-press/platform/errors"
+import { Ollama } from "@eto-press/platform/ollama"
 import { COMPOSITE_PROMPT_HASH, compositePrompt } from "./prompts.js"
 
-export interface Draft {
-  readonly headline: string
-  readonly body: string
-  readonly differ: string
-  readonly sourcesLine: string
-  readonly raw: string
-  readonly attempt: number
-}
+export type { Draft }
 
 /** Pure and testable: pull the four parts out of the model's text, or null.
  * Tolerates markdown bolding and heading marks around the markers. */

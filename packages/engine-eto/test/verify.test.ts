@@ -3,7 +3,7 @@
  * defects: a laundered quote, a sources line naming an unfetched outlet.
  */
 import { describe, expect, it } from "vitest"
-import type { Account } from "../src/articles.js"
+import type { Account } from "@eto-press/platform/edition"
 import type { Draft } from "../src/composite.js"
 import { verifyDraft } from "../src/verify.js"
 

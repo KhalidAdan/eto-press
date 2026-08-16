@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { Cluster } from "../src/cluster.js"
-import type { Masthead } from "../src/masthead.js"
+import type { Masthead } from "@eto-press/platform/masthead"
 import { dropAlreadyPrinted, dropLowDensity, selectStories, STORY_CAP } from "../src/select.js"
 
 const masthead = {

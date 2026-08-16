@@ -4,7 +4,7 @@
  * capitalized tokens, or 1 that is rare across this run's corpus.
  * (Experiment 002: 20,413 cross-outlet pairs -> 539 model questions.)
  */
-import type { Item } from "./normalize.js"
+import type { Item } from "@eto-press/platform/normalize"
 
 const CAP_TOKEN = /\b[A-Z][a-zA-Z]+\b/g
 

@@ -12,11 +12,10 @@
  */
 import { FileSystem } from "@effect/platform"
 import { Effect } from "effect"
-import type { Draft } from "./composite.js"
+import type { Draft, Story } from "./edition.js"
 import { PAPER_MOTTO, PAPER_NAME } from "./config.js"
 import { BriefAlreadyPublished } from "./errors.js"
 import type { FeedOutcome } from "./feeds.js"
-import type { Story } from "./select.js"
 
 export interface PublishedStory {
   readonly story: Story

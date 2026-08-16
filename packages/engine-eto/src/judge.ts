@@ -8,10 +8,10 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect, Schedule } from "effect"
-import { MATCH_MODEL } from "./config.js"
-import { VerdictsSuspicious } from "./errors.js"
+import { MATCH_MODEL } from "@eto-press/platform/config"
+import { VerdictsSuspicious } from "@eto-press/platform/errors"
 import type { CandidatePair } from "./prefilter.js"
-import { Ollama } from "./ollama.js"
+import { Ollama } from "@eto-press/platform/ollama"
 import { SAME_EVENT_PROMPT_HASH, sameEventPrompt } from "./prompts.js"
 
 export interface JudgedPair {
