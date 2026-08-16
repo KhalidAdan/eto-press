@@ -1,0 +1,67 @@
+---
+title: Editing your sources
+description: Dropping an outlet, adding one, and reading the measurements that tell you when.
+---
+
+The source list is the whole reason this is *your* paper. Expect to edit it
+about twice a year — and to understand exactly what you changed each time.
+
+## When to drop an outlet
+
+Two honest reasons, both visible in your editions:
+
+- **It keeps being alone on its own facts.** Stories where one outlet's
+  account can't be corroborated don't run (a single-source item is a rumour
+  with good manners) — so an outlet that is chronically alone contributes
+  chronically nothing, while still costing fetches.
+- **It keeps refusing the front door.** The run report's feed-health line
+  (`Newsmax 0/7 ok`) is the measurement. eto does not disguise itself and
+  does not pick locks: a source that must be tricked into being read is a
+  source eto drops, and the slot is filled from elsewhere on the same side
+  of the aisle. The spectrum has depth; no single outlet is owed a place in
+  it.
+
+Delete its `[[source]]` block. Done. Tomorrow's paper reflects it.
+
+## When to add one
+
+The balance notes tell you. If *no source labeled right covered this story*
+keeps appearing, your masthead is thin on that side, and that gap is yours to
+close — or to keep, knowingly. Add the outlet's front-door feed:
+
+```toml
+[[source]]
+name = "National Review"
+side = "right"
+feeds = ["https://www.nationalreview.com/feed/"]
+```
+
+The audited catalog of every AllSides-charted outlet's front door ships with
+the press (`docs/SOURCES.md` in the repository) — most additions are a
+copy-paste from there.
+
+## Side labels are yours too
+
+The five seeded labels — `left`, `lean-left`, `center`, `lean-right`,
+`right` — come from the AllSides chart, which rates perspective, not
+accuracy. The chart is a cartographer, not an editor: relabel any outlet you
+believe the chart has wrong, and the balance measurements will follow *your*
+map. Custom labels beyond the five are allowed; they render in the spectrum
+and count in balance like any other side.
+
+## What you cannot configure, on purpose
+
+The journalistic standards — the two-outlet minimum, the density gates, the
+word budget, the verification cage — are not knobs. They are the press's
+half of the bargain, the doctrine in executable form. The masthead is yours;
+the standards are the press's.
+
+## After editing
+
+```bash
+eto doctor
+```
+
+confirms every feed answers before the morning does. A flag placed below a
+`[[source]]` block belongs to that source in TOML — the press refuses the
+common mistake by name and tells you where the flag goes.

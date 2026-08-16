@@ -3,33 +3,51 @@ title: The tier ladder
 description: Publicness is a ladder, and you only pay for the rung you stand on.
 ---
 
-
 Most newsletter tooling charges every user the full public-publishing price —
 cloud accounts, DNS, mail providers — even to read their own words. eto's
 installation cost scales with how public your paper is, and the private tier
 is the one everything else is measured against.
 
+| | Tier 1 — yourself | Tier 2 — the web | Tier 3 — a mailing list |
+| --- | --- | --- | --- |
+| Accounts needed | none | a static host | + a mail provider |
+| Secrets | none | none (or a deploy token) | AWS keys, subscribe secret |
+| Recurring cost | electricity | usually free | ~coffee per year at household scale |
+| Readers | you, your LAN | anyone with the URL | inboxes, double-opt-in |
+
 ## Tier 1 — a paper for yourself
 
-Ollama, Node, `sources.toml`. Output is `site/` opened locally or on your LAN.
-Zero accounts, zero secrets, working fifteen minutes after install. This tier
-is the constitution's "it runs on your metal" made literal.
+Ollama, Node, `sources.toml`. Output is `site/` opened locally or served on
+your LAN. Zero accounts, zero secrets, working fifteen minutes after install.
+This tier is the constitution's *it runs on your metal* made literal — and it
+is not a demo. It is the complete product: the same pipeline, the same
+verification cage, the same append-only archive.
+
+**Setup:** the [Quickstart](/docs/quickstart), nothing else.
 
 ## Tier 2 — a paper on the web
 
-Add a static host. Publishing is an adapter named in configuration — Cloudflare
-Pages, Netlify, rsync, or a plain folder — not a workflow you maintain. Your
-archive is static HTML; anything that can serve files can serve your paper.
+Add a static host. Your archive is plain HTML; anything that serves files can
+serve your paper — Cloudflare Pages, Netlify, rsync to a VPS, or a folder
+behind any web server. Publishing is a paper-level choice, not a workflow you
+maintain: the flagship commits and pushes; another paper rsyncs; a third does
+nothing at all.
+
+**Setup:** [Publish to the web](/docs/guides/publish-web).
 
 ## Tier 3 — a paper with a mailing list
 
-Only here does a mail provider enter. `eto mail setup ses` walks the
-provisioning — domain identity, DKIM, the contact list, suppression — and the
-subscribe flow deploys only for this tier. The press's send guards are
-idempotent: a retried morning never mails twice.
+Only here does a mail provider enter. `eto mail` provisioning walks the SES
+ordeal down to one command and two DNS records; the subscribe flow (a form
+endpoint and a confirm link) deploys only for this tier. Sends are idempotent,
+suppression is swept before every send, and there is no tracking of any kind
+in the mail.
 
-## Climbing is optional
+**Setup:** [The morning email](/docs/guides/mail).
 
-A Tier 1 paper is not a demo. It is the complete product: the same pipeline,
-the same verification, the same archive. The ladder exists so that the cost of
-an audience is paid only by papers that want one.
+## Climbing is optional, and so is staying
+
+Nothing about a higher tier changes the paper itself — the same editions, the
+same archive, the same masthead. The ladder exists so that the cost of an
+audience is paid only by papers that want one, and a paper can climb (or step
+back down) any morning it likes.

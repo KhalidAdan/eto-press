@@ -3,43 +3,60 @@ title: What is a paper?
 description: A paper is a directory. The press is what visits it each morning.
 ---
 
-
 A **paper** is an ordinary directory on your disk:
 
-```text
-my-paper/
-├── eto.toml          the nameplate and plumbing — name, motto, accent, models, mail
-├── sources.toml      the editorial line — which outlets, standing where
-├── models.lock.json  pinned model digests — nothing changes your paper's mind silently
-├── desk/             editor-authored copy (optional — see the desk engine)
-├── db/               the journal: every fetch, verdict, and draft, resumable
-├── archive/          one markdown file per edition, append-only, forever
-└── site/             the rendered web edition
-```
+<FileTree>
+- my-paper
+  - eto.toml — the nameplate and plumbing
+  - sources.toml — the editorial line
+  - models.lock.json — pinned model digests
+  - desk/ — editor-authored copy (optional)
+  - db/
+    - eto.sqlite — the journal
+    - exports/ — diffable JSONL of the tables that are truly yours
+  - archive/
+    - 2026-08-15.md — one file per edition, append-only, forever
+    - 2026-08-16.md
+  - site/ — the rendered web edition
+  - logs/ — one log per morning
+</FileTree>
 
 The **press** is software that visits this directory each morning. It reads
 your configuration, prints your edition, and leaves. The press updates like
 any dependency — deliberately, with a changelog, by your hand — and your
-paper's content never lives inside it.
+paper's content never lives inside it. A paper survives any press upgrade
+untouched, and a generation-1 paper keeps printing forever without
+acknowledging generation 2 exists.
 
 ## The two files that are yours
 
-**`sources.toml` is the editorial line.** Which outlets your paper reads and
-where each one stands. The press enforces the balance *you* configured and no
-other; when your sources collapse onto one side of a story, it tells you — a
-measurement, not a correction. Change the file, change the paper.
+**`sources.toml` is the editorial line** — which outlets your paper reads and
+where each stands. The press enforces the balance *you* configured and no
+other. Change the file, change the paper. Full schema:
+[the sources file](/docs/reference/sources-file).
 
-**`eto.toml` is the nameplate.** Name, motto, the single accent color, which
-local models print your paper, how the mail goes out, and — since generation
-2 — which [engine](/docs/concepts/engines) prints it.
+**`eto.toml` is the nameplate** — name, motto, the single accent color, which
+local models print your paper, how the mail goes out, which
+[engine](/docs/concepts/engines) prints it. Every field has a neutral
+default: a paper with no `eto.toml` is an unnamed local paper, never a copy
+of someone else's. Full reference:
+[configuration](/docs/reference/configuration).
+
+## The journal and the archive
+
+**The archive is files; the journal is the newsroom.** Published editions are
+plain markdown in `archive/`, never rewritten. The journal (`db/eto.sqlite`)
+holds every fetch, verdict, draft, and verification — it can be deleted and
+rebuilt from the world, except for two tables that are genuinely yours:
+your corrections and your source-health history. Those are exported as
+diffable JSONL and backed up on every run. See
+[Backups and the journal](/docs/guides/backups).
 
 ## The guarantees the directory carries
 
-- **The archive is fixed.** Yesterday's brief is the record of what was known
-  yesterday. Corrections run in today's edition, dated, pointing back — the
-  old file is never touched.
-- **The journal resumes.** Every expensive unit of work is cached; a crash at
-  minute 28 costs the unit in flight and nothing else. Recovery is always the
-  same command: run it again.
-- **Nothing phones home.** No analytics, no telemetry, no reader tracking, in
-  any tier, on any page, in any email.
+- **The archive is fixed.** Corrections run in today's edition, dated,
+  pointing back — the old file is never touched.
+- **The journal resumes.** Every expensive unit of work is cached; recovery
+  from any crash is the same command, run again.
+- **Nothing phones home.** No analytics, no telemetry, no reader tracking,
+  in any tier, on any page, in any email.

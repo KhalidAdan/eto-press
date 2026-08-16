@@ -3,33 +3,77 @@ title: The morning email
 description: Tier 3 — a mailing list you own, on infrastructure you control.
 ---
 
+A paper with readers sends one email a day, at most. It ends, like the brief
+ends: no tracking pixels, no click wrapping, an unsubscribe link in every
+footer that actually works. On a morning with no edition, nothing is sent.
 
-A paper with readers sends one email a day. It ends, like the brief ends:
-no tracking pixels, no click wrapping, an unsubscribe link in every footer
-that actually works.
-
-## Setting up SES
+## Provision SES
 
 Amazon SES is the recommended provider for a real mailing list — roughly the
-cost of a coffee per year at household scale. The provisioning is one command
-and two DNS records:
+cost of a coffee per year at household scale.
+
+<Callout>
+  The one-command provisioning below is **roadmap phase 3** and not yet in
+  the published CLI. Today the same steps are performed once by hand in the
+  AWS console (domain identity, DKIM, a contact list, a configuration set,
+  an IAM user) — the press automates everything after provisioning: the
+  sends, the guards, the suppression, the backups.
+</Callout>
 
 ```bash
 eto mail setup ses
 ```
 
-This creates the domain identity, DKIM records, the contact list, the
-suppression handling, and the configuration set, then wires the secrets. Flip
-`email_edition = true` in your masthead when the domain verifies.
+<Steps>
+  <Step title="Identity and DKIM">
+    The command creates the domain identity and prints the DKIM records to
+    add at your DNS host. Verification usually lands within the hour.
+  </Step>
+  <Step title="List, suppression, configuration set">
+    The contact list, suppression handling, and the configuration set are
+    created idempotently — rerunning the command repairs rather than
+    duplicates.
+  </Step>
+  <Step title="Secrets">
+    The IAM user's keys land in your paper's `.env` (never committed), and
+    `eto doctor` verifies the mail path end to end.
+  </Step>
+  <Step title="Turn it on">
+    ```toml
+    email_edition = true
+    ```
+    in `sources.toml`, once the domain verifies. Until then, sends fall back
+    to your verified address — loudly, so you notice.
+  </Step>
+</Steps>
+
+## The mail block
+
+```toml
+[mail]
+region = "ca-central-1"
+domain = "example.news"
+from = "example <brief@example.news>"
+contact_list = "example-readers"
+```
+
+Full field reference: [configuration](/docs/reference/configuration#mail).
 
 ## The guards
 
-Sends are idempotent — a retried morning never mails twice. Suppressed
-addresses are swept before every send. Quota pacing respects your provider's
-limits. On a morning with no edition, nothing leaves.
+- **Idempotent sends** — a retried morning never mails twice; the send is
+  guarded per edition.
+- **Suppression swept** before every send; bounces and complaints leave your
+  list automatically.
+- **Quota pacing** respects your provider's send rate.
+- **Test first**: `eto email --test you@example.com` sends today's edition
+  to one address and nobody else.
 
 ## The subscribe flow
 
 Tier 3 deploys a small pair of edge functions: a form endpoint with a
-honeypot, and a confirm link. Readers opt in twice; your list is yours,
-exportable, and never enriched with anything you did not ask for.
+honeypot, and a confirm link — double opt-in, so your list is consent all
+the way down. `eto gen-functions` regenerates the functions' configuration
+from `eto.toml` whenever your masthead changes. The list is yours:
+exportable any time (`eto backup-readers`), never enriched with anything you
+did not ask for.

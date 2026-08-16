@@ -3,23 +3,51 @@ title: The paperboy
 description: The paper prints itself before you wake.
 ---
 
-
 `eto press` is the whole morning as one verb: print the edition, render the
 site, export the journal, send the email, take the backups. `eto schedule`
-installs it into your operating system's scheduler — Task Scheduler on
-Windows, launchd on macOS, cron or systemd on Linux — so it runs before you
-wake.
+installs it into your operating system's scheduler so it runs before you
+wake:
 
-## Retries are safe
+```bash
+eto schedule --time 05:30
+```
 
-Every stage is idempotent by construction. If today's edition already exists,
-the print is skipped but the tail still runs — render, export, email, backups
-— so an hourly retry after a partial morning *finishes* the morning instead of
-failing at a guard.
+Task Scheduler on Windows, launchd on macOS, cron or systemd on Linux —
+whichever your machine has. `--yes` skips the confirmation for scripted
+setups.
 
-## The one caution
+## The morning's order
 
-The pipeline wants your GPU to itself. If other model servers (a speech
-model, a second LLM) share the card at press time, the compositor can starve
-and the press will stop loudly rather than print a hollow edition. `eto
-doctor` names this check; scheduling around your other workloads is the cure.
+1. **Print** — the pipeline, skipped if today's edition already exists.
+2. **Render** — the public site, from the journal.
+3. **Export** — the journal's own tables to diffable JSONL (non-fatal).
+4. **Email** — the edition to your list, guarded against double-sends
+   (non-fatal; the guard makes retries safe).
+5. **Backups** — the journal snapshot and, on tier 3, the reader list.
+
+Fatality mirrors the pipeline's rule: a failed *print* stops the morning
+loudly; a failed export or email logs and continues — the tail steps are all
+idempotent, so the next run finishes whatever this one couldn't.
+
+## Retries are the design
+
+If the press stalls at minute 28, the journal holds everything already done.
+Schedule an hourly retry if you like: a completed morning exits at the
+already-published guard after running the idempotent tail, and a partial
+morning *finishes* instead of starting over. Recovery is always the same
+command.
+
+## Logs
+
+Every morning appends to `logs/press-YYYY-MM-DD.log` — the same lines that
+went to stdout, so the 6 a.m. question ("why is there no edition?") is
+answered by reading one file. The run report inside the edition answers the
+editorial version of the same question.
+
+## One machine, one press
+
+The pipeline wants the GPU to itself at press time. If your machine also
+serves other models — speech-to-text, a second LLM — schedule around them or
+stop them for the morning window; a starved compositor stops the press
+loudly rather than printing a hollow edition. See
+[Troubleshooting](/docs/troubleshooting#the-press-stalls).

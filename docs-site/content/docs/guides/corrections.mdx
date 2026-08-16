@@ -1,0 +1,48 @@
+---
+title: Running a correction
+description: The archive never changes. The correction runs forward.
+---
+
+When a story turns out to have been wrong, the press does what a good paper
+does: it corrects itself in public, in the next edition, without touching the
+record.
+
+## Record the correction
+
+```bash
+eto correct 2026-08-10 2 "The recall figure was 1.6 million dozen, not 1.6 million; the source has issued a correction."
+```
+
+The arguments are the edition date, the story's rank in that edition, and
+your note. The correction is journaled and waits for the next morning.
+
+## What prints
+
+At the top of the next edition — in the archive markdown, on the site, in
+the email, and in the RSS item:
+
+> **Corrections** — In the edition of Monday, August 10, 2026, the story
+> "Massive egg recall in US south and south-west": The recall figure was
+> 1.6 million dozen, not 1.6 million; the source has issued a correction.
+> The original stands unchanged in the archive.
+
+The link points back at the original edition, which is exactly as wrong as
+it was — that is the point. Being able to watch a story be wrong, and then
+be corrected, is most of what it means to trust a paper. A press that
+reached into yesterday's file and fixed it while you slept would be asking
+you to trust its memory instead of its record.
+
+## When the source was wrong, not the press
+
+Most corrections are this kind — an outlet revised its own figure after your
+edition printed. The correction note is yours to phrase; say whose error it
+was. The verification cage guarantees the story faithfully reflected the
+accounts *as fetched that morning*; it cannot guarantee the world stopped
+moving afterward.
+
+## Corrections are journaled forever
+
+The corrections table is one of the two whose contents cannot be rebuilt
+from the world (the other is your source-health history). It is exported as
+diffable JSONL on every run and included in every backup — see
+[Backups and the journal](/docs/guides/backups).

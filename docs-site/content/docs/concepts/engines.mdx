@@ -3,8 +3,19 @@ title: The engines
 description: eto prints the news that disagrees with itself. The desk engine prints you.
 ---
 
+<Callout>
+  Multiple engines are a **generation 2** capability — merged on the
+  `gen2-package` line and shipping with the 2.x releases. Generation-1
+  papers are eto-engine papers, and stay valid forever.
+</Callout>
 
-A paper declares its engine in `eto.toml` — absent means eto:
+An **engine** is the editorial half of the press: it decides what a story is,
+how it must be told, and what a morning with nothing to say should do. The
+[platform](/docs/concepts/press) hands an engine the morning — the date and
+your masthead, nothing else — and the engine hands back an edition, or
+silence.
+
+A paper declares its engine in `eto.toml`; absent means eto:
 
 ```toml
 [engine]
@@ -23,14 +34,17 @@ The flagship doctrine, and the reason the press exists:
    the contradiction is a quieter kind of lying.
 3. **Nothing unattributed ships.** The sources line is the proof of work.
 4. **The model composites. It does not comment.** No adjective it was not
-   given, no motive, no forecast — and a deterministic verification cage that
-   checks every quote, entity, and adjective against the fetched accounts.
+   given, no motive, no forecast — and a deterministic verification cage
+   that checks every quote, entity, and adjective against the fetched
+   accounts.
 5. **Incomplete beats wrong.** Given a gap or a guess, eto prints the gap.
 6. **The masthead is yours.** eto enforces the balance you configured and no
    other, and tells you plainly when your sources collapse onto one side.
 
-It needs two local models — a small judge and an 8B-class compositor — both
-digest-pinned so an `ollama pull` can never silently change your paper's mind.
+It requires a source list (an eto paper without outlets is refused by name),
+needs two local models — a small judge and an 8B-class compositor, both
+digest-pinned — and its whole morning is
+[the twelve-stage pipeline](/docs/concepts/pipeline).
 
 ## The desk engine
 
@@ -41,20 +55,32 @@ files onto the desk —
 desk/2026-08-16-on-quiet-days.md
 ```
 
-— and each entry prints once, as a story, in the next morning's edition. A
-morning with nothing new prints nothing at all. No feeds, no judging, no
-models: a desk paper never needs Ollama, and everything it inherits — the
-append-only archive, the untracked readers, the finite brief, the mail —
-comes from the platform's constitution.
+— and each entry prints once, as a story, in the next morning's edition. The
+first `# heading` line becomes the headline; no heading, and the filename
+serves. A morning with nothing new prints **nothing at all** — no archive
+file, no email, an honest note in the log: *the desk holds nothing new. The
+press rests.*
 
-If you have ever wanted a newsletter and a web presence without renting your
-audience from a platform that tracks them, this is the smallest honest way to
-have one.
+No feeds, no judging, no models: a desk paper never needs Ollama, needs no
+source list, and everything it inherits — the append-only archive, the
+untracked readers, the finite brief, the mail — comes from the platform's
+constitution. If you have ever wanted a newsletter and a web presence without
+renting your audience from a platform that tracks them, this is the smallest
+honest way to have one. Walkthrough:
+[Run a desk paper](/docs/guides/desk-paper).
+
+## Silence versus the quiet page
+
+Engines choose what an empty morning means. The eto engine prints the quiet
+page — *nothing to print today: no event was covered by two or more of your
+sources* — because for a news brief, "nothing qualified" is itself news. The
+desk engine chooses silence, because an empty desk is not an edition. Both
+are honest; the difference is doctrine.
 
 ## The ladder
 
 More engines are planned, each deliberately small, each forcing the next
-piece of the platform into shape: an event-driven letter (prints only when
-its institution speaks), a link digest, a sports paper with columns and
+piece of the platform into shape: an event-driven letter that prints only
+when its institution speaks, a link digest, a sports paper with columns and
 tables. The engine interface stays private until the ladder has enough rungs
-that it is extracted from evidence rather than guessed.
+that it can be extracted from evidence rather than guessed.

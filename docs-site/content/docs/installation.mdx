@@ -1,0 +1,72 @@
+---
+title: Installation
+description: Everything the press needs, and nothing it doesn't.
+---
+
+Tier 1 needs no accounts and no secrets — just a machine that can run a small
+local model. Here is the full bill.
+
+## Requirements
+
+| Requirement | Minimum | Notes |
+| --- | --- | --- |
+| Node.js | 20+ | The press runs TypeScript directly via tsx; no build step. |
+| Ollama | any recent | The local model server. The press can start it if it's installed but not running. |
+| GPU memory | ~8 GB | Enough to hold the 8B-class compositor. Smaller cards work with smaller models, traded against composite quality. |
+| Disk | a few GB | Models dominate; the journal and archive are megabytes. |
+
+The default models are `qwen3:4b-instruct` (the judge — high volume, one-word
+answers) and `qwen3:8b` (the compositor — a handful of stories a day, longer
+deliberation). `eto init` pulls both and pins their digests; you never manage
+them by hand.
+
+<Callout>
+  The pipeline wants the GPU to itself at press time. If other model servers
+  share the card — speech-to-text, a second LLM — the compositor can starve.
+  `eto doctor` names this check. See
+  [Troubleshooting](/docs/troubleshooting#the-press-stalls).
+</Callout>
+
+## Install and initialize
+
+<Steps>
+  <Step title="Install Ollama">
+    Download from [ollama.com](https://ollama.com) and run it once. On
+    Windows and macOS the desktop app keeps it available; on Linux,
+    `ollama serve` under systemd is typical.
+  </Step>
+  <Step title="Create a paper">
+    ```bash
+    npx @eto-press/cli init
+    ```
+    The wizard asks three questions, seeds your source list from the audited
+    AllSides shelf, pulls and pins the models, and runs a sandboxed dry
+    edition from that morning's actual feeds — your own front page before
+    you have created a single account anywhere.
+  </Step>
+  <Step title="Verify the press">
+    ```bash
+    eto doctor
+    ```
+    Models present and matching the lock, GPU sanity, feeds reachable,
+    journal healthy, mail (if configured) verified.
+  </Step>
+</Steps>
+
+## Per-platform notes
+
+- **Windows** — everything runs in PowerShell or any shell; the schedule
+  installs into Task Scheduler. Watch for editors that add a UTF-8 BOM when
+  rewriting TOML files; the press tolerates it, but PowerShell's `>`
+  redirection has burned this project before.
+- **macOS** — the schedule installs a launchd agent. Apple-silicon Macs run
+  the default models comfortably on the unified memory.
+- **Linux** — the schedule installs cron or a systemd timer. If Ollama runs
+  as a service under a different user, make sure the paper directory is
+  readable by whoever runs `eto press`.
+
+## What gets installed where
+
+Nothing global. The CLI runs from `npx`; the press is a dependency of your
+paper; models live in Ollama's store; everything else lives inside the paper
+directory you just created. Uninstalling is deleting a folder.

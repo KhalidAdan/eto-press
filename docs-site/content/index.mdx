@@ -3,7 +3,6 @@ title: eto press
 description: A local-first printing press for a personal newspaper. One story, every side, then it ends.
 ---
 
-
 eto takes a single news event, gathers the accounts of it published by outlets
 that disagree, and writes one piece of prose that holds all of them. It names
 every source it used. Then it stops.
@@ -38,14 +37,45 @@ The third part is old — every honest outlet cites. The fourth is rare. The
 second is the one that does not exist anywhere else, and it is the reason this
 exists.
 
-## Where to start
+## Start here
 
-- **[Quickstart](/docs/quickstart)** — your own front page in about fifteen
-  minutes, before you have created a single account anywhere.
-- **[The tier ladder](/docs/tiers)** — a paper for yourself, a paper on the
-  web, a paper with a mailing list. You only ever pay for the tier you use.
-- **[What is a paper?](/docs/concepts/paper)** — the concepts, from the
-  directory on your disk to the engine that prints it.
+<Columns cols={2}>
+  <Card title="Quickstart" href="/docs/quickstart" icon="rocket">
+    Your own front page in about fifteen minutes, before you have created a
+    single account anywhere.
+  </Card>
+  <Card title="Installation" href="/docs/installation" icon="download">
+    Node, Ollama, and a GPU that can hold an 8B model — everything the press
+    needs, per operating system.
+  </Card>
+  <Card title="The tier ladder" href="/docs/tiers" icon="stairs">
+    A paper for yourself, a paper on the web, a paper with a mailing list.
+    You only pay for the rung you stand on.
+  </Card>
+  <Card title="Your first week" href="/docs/guides/first-week" icon="calendar">
+    How to read the brief, when to check a source, and what the run report
+    is telling you.
+  </Card>
+</Columns>
+
+## Understand it
+
+<Columns cols={2}>
+  <Card title="What is a paper?" href="/docs/concepts/paper" icon="folder">
+    A paper is a directory. The press is what visits it each morning.
+  </Card>
+  <Card title="The pipeline" href="/docs/concepts/pipeline" icon="settings">
+    Twelve stages from raw feeds to a verified edition, resumable at every
+    step.
+  </Card>
+  <Card title="The engines" href="/docs/concepts/engines" icon="cpu">
+    eto prints the news that disagrees with itself. The desk engine prints
+    you.
+  </Card>
+  <Card title="Reference" href="/docs/reference/cli" icon="book">
+    Every verb, every configuration field, every named error.
+  </Card>
+</Columns>
 
 ## What it will never do
 

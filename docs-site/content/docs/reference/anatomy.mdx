@@ -1,0 +1,66 @@
+---
+title: Anatomy reference
+description: The semantic classes every rendered page carries — the skin contract.
+---
+
+<Callout>
+  Semantic anatomy is a **generation 2** capability — the markup contract a
+  [skin](/docs/concepts/skins) styles against.
+</Callout>
+
+Markup names structure; the theme names appearance. These class names are
+the contract: stable, styleable, and never carrying visual decisions
+themselves.
+
+## The voices
+
+| Class | Meaning |
+| --- | --- |
+| `prose` | The news speaking — body text, differ items, correction notes. |
+| `instrument` | The paper speaking — labels, dates, sources, the report. |
+| `instrument--quiet` | The instrument voice, dimmed. |
+| `instrument--label` | Uppercase, letter-spaced label form. |
+| `instrument--strong` | The medium weight for section labels. |
+| `accent` | The paper's single color — differ labels, balance notes, the wordmark's full stop. Never the news. |
+| `link` | Every inline link's underline treatment. |
+
+## The story
+
+| Class | Element |
+| --- | --- |
+| `story` | The article container. |
+| `story__headline` | The headline. |
+| `story__body` | Each body paragraph. |
+| `story__differ-label` | "Where the accounts differ". Absent when the story has no differ block (a desk entry). |
+| `story__differ` / `story__differ--list` / `story__differ-item` | The differ content — paragraphs, or a list and its items. |
+| `story__footer` | The attribution footer. |
+| `story__sources` / `story__source-link` | The sources line and each outlet link. Absent when a story has no sources. |
+| `story__balance` | The balance measurement. |
+
+## The page frame
+
+| Class | Element |
+| --- | --- |
+| `page` / `page__main` / `page__measure` | Body, main, and the reading measure. |
+| `page__nav` / `page__nav--between` / `page__nav-link` | The top navigation. |
+| `masthead` / `masthead__wordmark` / `masthead__stop` / `masthead__motto` / `masthead__date` / `masthead__page-title` | The nameplate block. |
+| `edition__stories` | The story stack with its hairline dividers. |
+| `corrections` / `corrections__label` / `corrections__item` | The corrections section. |
+| `fold` / `fold__label` / `fold__note` / `fold__reason` | The below-the-fold section. |
+| `report` / `report__label` / `report__lines` | The run report. |
+| `page__end` / `page__end--tight` | "The brief ends here." |
+| `page-section` / `page-section--tight` / `section-label` | Home-page sections. |
+| `page__footer` | The page footer block. |
+
+## Home and sources furniture
+
+| Class | Element |
+| --- | --- |
+| `about` | The home page's introduction block. |
+| `cards` / `card` / `card__link` / `card__figure` / `card__image` / `card__credit` / `card__body` / `card__fold-tag` / `card__title` / `card__meta` / `card__meta-sep` | Today's story cards. |
+| `spectrum__side` / `spectrum__sep` / `side--left` … `side--right` | The side spectrum, and the five side colors shared with the sources page. |
+| `side-table` / `side-row` / `side-row__label` / `side-row__outlets` | The sources page's rows. |
+| `subscribe` / `subscribe__input` / `subscribe__button` / `honeypot` / `visually-hidden` | The subscribe form. |
+
+Classes with no rule in the default theme are deliberate skin hooks —
+present in the markup so your stylesheet can reach them.

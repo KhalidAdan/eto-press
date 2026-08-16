@@ -1,0 +1,49 @@
+---
+title: Publish to the web
+description: Tier 2 — your archive is static HTML; anything that serves files can serve your paper.
+---
+
+The press renders your whole site into `site/` — every edition, the home
+page, the sources page, `feed.xml`. Publishing is getting that folder onto a
+host, and how you do it is a paper-level choice, not the press's.
+
+## The site is already built
+
+```bash
+eto render
+```
+
+renders the public site from the journal (the morning run does this
+automatically). The output is self-contained static HTML: no client
+framework, no CDN dependencies, fonts and stylesheet included. The one build
+detail: the stylesheet compiles from `brief.css` —
+
+```bash
+npx tailwindcss -i brief.css -o site/brief.css --minify
+```
+
+— which `eto init` wires into your paper's scripts.
+
+## Pick a host
+
+- **Cloudflare Pages** (the flagship's choice) — connect the paper's git
+  repository, set the output directory to `site/`, done. The paperboy's
+  daily commit doubles as the deploy trigger.
+- **Netlify** — identical shape: repository, `site/`, deploy on push.
+- **rsync to any server** — `rsync -az site/ you@host:/var/www/paper/` at
+  the end of the morning. No git required.
+- **A folder on your LAN** — `site/` behind any web server, or opened
+  directly in a browser. Tier 2 is optional; this is still a complete paper.
+
+## The subscribe form
+
+The home page renders a subscribe form either way. It POSTs to `/subscribe`,
+which exists only when you deploy the tier-3 edge functions — until then it
+is inert markup, and the page reads fine without it. When you are ready for
+readers' inboxes, continue to [the morning email](/docs/guides/mail).
+
+## Custom pages
+
+Anything you place in `site/` beside the rendered files ships with it — a
+`404.html`, an about page. Pages the press renders are regenerated each
+morning; pages it doesn't are left alone.

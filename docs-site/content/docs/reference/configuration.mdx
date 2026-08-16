@@ -1,0 +1,72 @@
+---
+title: Configuration — eto.toml
+description: Every field, every default. A missing file is a valid paper.
+---
+
+`eto.toml` is the paper's nameplate and plumbing. **Every field is
+optional**, and every default is neutral: a paper with no `eto.toml` at all
+is an unnamed Tier-1 local paper — never a copy of any real paper's
+identity, address, or machine.
+
+## `[paper]`
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `name` | `"your paper"` | The wordmark, the email sender name, the `<title>`. |
+| `motto` | *(a prompt to write one)* | Rendered under the wordmark and in the email header. |
+| `description` | *(the generic brief description)* | Meta description, RSS channel description, subscribe copy. |
+| `site_url` | `"http://localhost"` | Canonical URLs, RSS links, the email's "read on the web" link. |
+| `accent` | `"#7f1d1d"` | The single accent color — spent only on the paper's own voice (the differ label, balance notes, the wordmark's full stop), never on the news. |
+
+```toml
+[paper]
+name = "eto"
+motto = "Each story. Every side."
+site_url = "https://eto.news"
+accent = "#7f1d1d"
+```
+
+## `[engine]`
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `use` | `"eto"` | Which engine prints this paper — a name from the press's built-in registry (`eto`, `desk`). Generation 2. |
+
+## `[models]`
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `ollama_url` | `"http://localhost:11434"` | Where the local model server answers. |
+| `match` | `"qwen3:4b-instruct"` | The judge: high-volume, one-word answers, no thinking mode. |
+| `composite` | `"qwen3:8b"` | The compositor: low-volume, longer deliberation. |
+| `composite_num_ctx` | `8192` | The compositor's context window. |
+
+Digests for the named models are pinned in `models.lock.json` on first run;
+drift stops the press. Change a model name here and the press re-judges and
+re-composites as needed — the caches key on model and prompt.
+
+## `[mail]` — tier 3 only
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `region` | `"ca-central-1"` | The SES region. |
+| `domain` | *(empty)* | The sending domain. Empty means mail is unconfigured. |
+| `from` | *(empty)* | The From header, e.g. `"eto <brief@eto.news>"`. |
+| `from_fallback` | *(empty)* | A verified address used loudly until the domain identity verifies. |
+| `contact_list` | `"eto-readers"` | SES contact list name (a press convention, not identity). |
+| `topic` | `"morning-edition"` | The list topic readers subscribe to. |
+| `config_set` | `"eto-mail"` | SES configuration set. |
+
+## `[backup]`
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `dir` | `"backups"` | Where journal snapshots land. The default is inside the paper — point it at a different disk when you configure it for real. |
+| `keep` | `14` | How many rotating snapshots to keep. |
+
+## What is deliberately absent
+
+The algorithm's tunables — the story cap, the density floor, the word
+budgets, the pair-judging thresholds — are not configuration. They are the
+engine's doctrine in executable form: the paper's journalistic standards,
+not knobs. The masthead is yours; the standards are the press's.

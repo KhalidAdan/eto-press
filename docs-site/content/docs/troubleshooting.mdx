@@ -1,0 +1,83 @@
+---
+title: Troubleshooting
+description: The mornings that go wrong, and what each one is telling you.
+---
+
+Start every debugging session in two places: the **run report** at the end
+of the edition (the editorial view) and `logs/press-YYYY-MM-DD.log` (the
+mechanical view). The press is designed so the 6 a.m. question is answered
+by reading, not by stack-trace archaeology. `eto doctor` checks most of the
+below in one pass.
+
+## The press stalls
+
+**Symptom:** `PressStalled` after repeated five-minute composite timeouts.
+
+**Almost always:** something else is using the GPU. The compositor needs the
+whole card; a speech-to-text sidecar or second model server sharing VRAM
+slows one composite call by 100× and the press stops loudly rather than
+print a hollow edition. Stop the other workload, or schedule around it.
+This failure once printed a 0-story edition — that class of silent failure
+is designed out; the loud stop is the fix.
+
+## No edition this morning
+
+Check in order:
+
+1. **`logs/press-…`** — did the run start at all? A scheduler that didn't
+   fire is an OS problem; `eto schedule` reinstalls.
+2. **`BriefAlreadyPublished`** — a retry reaching this guard is a morning
+   that already finished. Not an error.
+3. **The quiet page** — an edition that says *nothing to print today* is an
+   honest edition: no event was covered by two or more of your sources.
+4. **A NoEdition note** (desk papers) — the desk held nothing new. The
+   press rested, on purpose.
+
+## A model error
+
+- `ModelMissing` — `eto models pull` restores exactly the pinned digests.
+- `ModelDrifted` — something updated a model underneath you. If you meant
+  to upgrade, `eto models pin` re-pins deliberately; if you didn't, pull the
+  pinned digest back.
+- `OllamaDown` — the press tries to start Ollama itself; if it can't, start
+  it the way your OS expects (app, service, `ollama serve`).
+
+## A feed keeps failing
+
+`FeedUnreachable` with a 403 or 404 is a closed front door, not a flaky one
+— the press will not disguise itself to get in. Watch the feed-health line
+for a week; a persistent refuser is a candidate for
+[replacement from the same side of the aisle](/docs/guides/editing-sources).
+Timeouts and 5xx retry themselves.
+
+## TOML gotchas
+
+- **A flag below a `[[source]]` block** belongs to that source; the press
+  refuses known flags there by name. Keep paper-wide flags at the top of
+  the file.
+- **BOM and encoding** — some Windows tools rewrite TOML with a UTF-8 BOM
+  or re-encode em-dashes. The masthead loader reports the exact line of
+  anything it cannot parse.
+
+## The funnel tripped
+
+`FunnelAnomalous` or `VerdictsSuspicious` mean the morning's *distribution*
+looked broken — zero candidate pairs from hundreds of items, or a hundred
+unanimous verdicts. These abort before model time is wasted. The usual
+causes: a prompt edit, a model swap, or a source list reduced to outlets
+that never overlap. The run report's funnel line shows where the numbers
+fell off a cliff.
+
+## Email didn't send
+
+- `email_edition` still `false`, or the domain identity hasn't verified
+  (sends fall back to your verified address, loudly).
+- The sent-guard: an edition emails once. `eto email --test you@…` exercises
+  the path without touching the list.
+
+## Still stuck
+
+Every error in the log is in [the error reference](/docs/reference/errors)
+with its meaning and blast radius. If you hit one that isn't, that is a bug
+in the press — the catalog is exhaustive by intent. Open an issue with the
+log line.
