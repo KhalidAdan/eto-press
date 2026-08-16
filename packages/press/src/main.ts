@@ -6,6 +6,7 @@ import { Effect, Layer } from "effect"
 import { mkdirSync } from "node:fs"
 import { deskEngine } from "@eto-press/engine-desk/engine"
 import { etoEngine } from "@eto-press/engine-eto/engine"
+import { letterEngine } from "@eto-press/engine-letter/engine"
 import { ENGINE } from "@eto-press/platform/config"
 import { Desk } from "@eto-press/platform/desk"
 import type { Engine } from "@eto-press/platform/engine"
@@ -26,7 +27,8 @@ type PressServices =
 // loading; that interface waits for more rungs on the ladder.
 const engines: Record<string, Engine<any, PressServices>> = {
   eto: etoEngine,
-  desk: deskEngine
+  desk: deskEngine,
+  letter: letterEngine
 }
 const engine = engines[ENGINE]
 if (engine === undefined) {

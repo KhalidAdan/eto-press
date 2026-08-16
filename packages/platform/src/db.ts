@@ -108,6 +108,18 @@ const TABLES = [
     recipients INTEGER NOT NULL,
     failures   INTEGER NOT NULL
   )`,
+  // The FrontDoor's document journal: every distinct version of every
+  // watched page, keyed by content hash — how a letter engine knows a
+  // statement is new, and what the door said before.
+  `CREATE TABLE IF NOT EXISTS documents (
+    url          TEXT NOT NULL,
+    content_hash TEXT NOT NULL,
+    run_id       TEXT NOT NULL,          -- run that first saw this version
+    title        TEXT,
+    text         TEXT NOT NULL,
+    fetched_at   TEXT NOT NULL,
+    PRIMARY KEY (url, content_hash)
+  )`,
   // The published-edition store: the archive's queryable shadow, written by
   // the FRAME after the archive write succeeds, read by the site/email/RSS
   // dialects. Engine-agnostic on purpose — engines return a document; the

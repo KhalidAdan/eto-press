@@ -92,6 +92,16 @@ export class DraftMalformed extends Data.TaggedError("DraftMalformed")<{
   readonly raw: string
 }> {}
 
+/** A watched document's front door did not answer — timeouts and 5xx are
+ * transient and retried; a 4xx is a closed door and fails fast. Degrades
+ * (the door is absent from the morning, and the report says so). */
+export class DocumentUnfetchable extends Data.TaggedError("DocumentUnfetchable")<{
+  readonly source: string
+  readonly url: string
+  readonly cause: unknown
+  readonly transient: boolean
+}> {}
+
 /** Verification violations survived the one revision pass — the cage's
  * terminal verdict for a story, never for the run. The story drops with
  * the violations journaled as its reason; a gap over a guess (§5). Named
