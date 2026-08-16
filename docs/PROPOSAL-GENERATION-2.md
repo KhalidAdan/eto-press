@@ -139,4 +139,46 @@ every later decision cheaper and no current behavior different.
 
 ---
 
+## Addendum: As Built (2026-08-16) — drafted for the editor's review
+
+*The header above still reads "not adopted"; that ruling is the editor's.
+This addendum records what the build proved and where it amended the
+proposal, so the ruling can be made against reality rather than the
+sketch.*
+
+The five-step sequence merged to main (PR #2), each step gated
+byte-identical or computed-style-identical. Where reality amended the
+proposal:
+
+1. **The outcome union grew a third case.** `NoEdition` — true silence, no
+   file, no mail — is distinct from the quiet page, and the engine chooses.
+   The 2026-08-02 incident made the distinction load-bearing.
+2. **The Desk became a capability.** Editor-authored copy needed a door
+   that was not the filesystem; the platform now provides read-only desk/
+   access, and engines remain without ambient authority.
+3. **Anatomy became optional.** The desk engine forced differ blocks and
+   sources lines from "always present" to "present when the doctrine
+   guarantees them" — the vocabulary generalization this proposal predicted
+   would come from n=2, arriving at n=2.
+4. **The source list became engine law.** The platform accepts an empty
+   masthead; the eto engine refuses it by name; the desk engine never
+   looks. Item 3's instinct (engine-declared schema) was right; this is
+   its first installment.
+5. **The ladder reordered.** The deliberately-small second engine was the
+   desk engine, not a weekly digest — smaller than proposed, with a larger
+   audience (every writer), and it proved the platform stands alone with
+   zero model roles. The event-driven letter is next, then digest, then
+   sports.
+6. **A finding for the next rung.** The journal's published-edition tables
+   (`stories`, `drafts`) are the de-facto interface the site and mail
+   dialects reconstruct editions from; the desk engine writes them
+   directly. Abstracting that store is the first gen-2 follow-up.
+7. **Open questions, updated.** Skin API: stylesheet-only shipped, as
+   recommended, amended to "a stylesheet plus assets" for real skins. The
+   engine name, the North Star split, and the certification norm remain on
+   the editor's desk, and the engine registry is static (`eto`, `desk`)
+   with the plugin interface still deliberately unpublished.
+
+---
+
 *One machine, many doctrines, every masthead its own.*

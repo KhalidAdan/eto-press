@@ -228,4 +228,44 @@ as the chart revises.
 
 ---
 
+## Generation 2 — Built (2026-08-16)
+
+The proposal (PROPOSAL-GENERATION-2.md) was executed as a five-step
+sequence, merged to main as PR #2, every step gated:
+
+1. **The package split** — `packages/platform`, `packages/engine-eto`,
+   press as the thin binding. Byte-identical against published
+   `1.20260814.1` across three sandboxed pipeline runs.
+2. **The typed Edition** — one document, two constructors (pipeline,
+   journal), four dialects. Site, feed, and email byte-identical; the
+   markdown renderer proven on hermetic fixtures.
+3. **Structure vs skin** — semantic anatomy in the markup, the default
+   theme in `brief.css` via `@apply`. Computed-style-identical in a real
+   browser, every element, light and dark.
+4. **The Engine joint** — `edition(day)` returning Edition or NoEdition;
+   classification crossed to the engine; the report engine-authored.
+5. **The desk engine (ladder rung 1)** — desk/*.md in, editions out,
+   NoEdition when dry, zero model roles. The forcing function worked:
+   differ/sources became optional anatomy, source-list emptiness became
+   engine law, and the journal's published-edition tables surfaced as the
+   next interface to abstract.
+
+Also standing: `docs-site/` — the blume documentation site (operator path
+plus Internals), with docs-accuracy tests pinning its reference pages to
+the code. Whether the design documents in `docs/` fold into it is an open
+structural call.
+
+**Next rungs, in order:** the published-edition store abstraction (rung
+1's finding); the event-driven letter engine (forces cadence
+configuration and the first stat-line vocabulary); the link digest; the
+sports paper. The public engine interface is extracted only after the
+ladder has rungs enough to extract from.
+
+**Interaction with phase 4:** the 2.x npm publish waits on the license
+ruling and the engine-naming decision — both editorial, both open.
+Generation-1 papers are untouched either way; the pin is the ownership
+guarantee, unchanged.
+
+---
+
 *The press moves out. The paper stays home.*
