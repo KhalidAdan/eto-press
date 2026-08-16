@@ -36,72 +36,23 @@ import {
   SITE_URL
 } from "./config.js"
 
-export interface SourceLink {
-  readonly name: string
-  readonly href: string | null
-}
+import type { EditionCorrection, EditionStory, SourceLink } from "./edition.js"
+export {
+  resolveSourceLinks,
+  splitDiffer,
+  splitParagraphs,
+  type SourceLink
+} from "./edition.js"
 
-export interface HtmlStory {
-  readonly headline: string
-  readonly bodyParagraphs: ReadonlyArray<string>
-  readonly differBullets: ReadonlyArray<string>
-  readonly differParagraphs: ReadonlyArray<string>
-  readonly sources: ReadonlyArray<SourceLink>
-  readonly balanceNote: string | null
-  /** The stage-6b nomination reason; null on front-page stories. */
-  readonly foldReason: string | null
-}
+/** The site's story shape IS the edition document's — one waist. */
+export type HtmlStory = EditionStory
+export type HtmlCorrection = EditionCorrection
 
 export interface HtmlReport {
   readonly feedsLine: string
   readonly funnelLine: string
   readonly droppedLines: ReadonlyArray<string>
   readonly healthLines?: ReadonlyArray<string>
-}
-
-/** Split composed prose into paragraphs (blank-line separated, with
- * single-newline fallback). */
-export const splitParagraphs = (text: string): Array<string> => {
-  const byBlank = text.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean)
-  if (byBlank.length > 1) return byBlank
-  return text.split(/\n/).map((t) => t.trim()).filter(Boolean)
-}
-
-/** The differ section arrives as either bullets or paragraphs. */
-export const splitDiffer = (
-  differ: string
-): { bullets: Array<string>; paragraphs: Array<string> } => {
-  const lines = differ.split(/\n/).map((l) => l.trim()).filter(Boolean)
-  const bulletLines = lines.filter((l) => /^[*•-]\s+/.test(l))
-  if (bulletLines.length > 0 && bulletLines.length >= lines.length / 2) {
-    return {
-      bullets: lines.map((l) => l.replace(/^[*•-]\s+/, "")),
-      paragraphs: []
-    }
-  }
-  return { bullets: [], paragraphs: splitParagraphs(differ) }
-}
-
-/** Map the sources line's outlet names to the account URLs actually read.
- * Names come from the compositor; links come from the journal — fuzzy
- * containment matching, same posture as the verifier. */
-export const resolveSourceLinks = (
-  sourcesLine: string,
-  linkByOutlet: ReadonlyMap<string, string>
-): Array<SourceLink> => {
-  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim()
-  return sourcesLine
-    .split(/[-·,•|]/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-    .map((name) => {
-      for (const [outlet, href] of linkByOutlet) {
-        if (norm(outlet).includes(norm(name)) || norm(name).includes(norm(outlet))) {
-          return { name, href }
-        }
-      }
-      return { name, href: null }
-    })
 }
 
 const esc = (s: string): string =>
@@ -410,12 +361,6 @@ ${rows}
 </body>
 </html>
 `
-}
-
-export interface HtmlCorrection {
-  readonly edition: string
-  readonly headline: string
-  readonly note: string
 }
 
 export const renderEditionHtml = (opts: {

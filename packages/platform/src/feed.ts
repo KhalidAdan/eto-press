@@ -7,7 +7,8 @@
  * Item content is semantic HTML with no styling: feed readers set their
  * own type, and that is exactly as it should be.
  */
-import { SITE_DESCRIPTION, type HtmlCorrection, type HtmlStory, longDate } from "./html.js"
+import { SITE_DESCRIPTION, longDate } from "./html.js"
+import type { EditionDocument, EditionStory } from "./edition.js"
 import { PAPER_NAME, SITE_URL } from "./config.js"
 
 const escXml = (s: string): string =>
@@ -22,7 +23,7 @@ const escHtml = escXml
 /** CDATA-safe: a literal "]]>" inside content would end the section. */
 const cdata = (s: string): string => `<![CDATA[${s.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`
 
-const storyHtml = (s: HtmlStory): string => {
+const storyHtml = (s: EditionStory): string => {
   const differ =
     s.differBullets.length > 0
       ? `<ul>${s.differBullets.map((b) => `<li>${escHtml(b)}</li>`).join("")}</ul>`
@@ -45,11 +46,8 @@ const storyHtml = (s: HtmlStory): string => {
     .join("\n")
 }
 
-export interface FeedEdition {
-  readonly runId: string
-  readonly stories: ReadonlyArray<HtmlStory>
-  readonly corrections: ReadonlyArray<HtmlCorrection>
-}
+/** The feed renders the edition document itself — no private shape. */
+export type FeedEdition = EditionDocument
 
 export const renderFeedXml = (editions: ReadonlyArray<FeedEdition>): string => {
   const items = editions

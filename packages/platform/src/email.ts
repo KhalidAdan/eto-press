@@ -9,6 +9,7 @@
  * a courtesy: SES substitutes {{amazonSESUnsubscribeUrl}} per recipient.
  */
 import { ACCENT, PAPER_MOTTO, PAPER_NAME, SITE_HOST, SITE_URL } from "./config.js"
+import type { EditionCorrection } from "./edition.js"
 import { longDate, type HtmlStory } from "./html.js"
 
 const INK = "#0a0a0a"
@@ -73,11 +74,7 @@ const storyBlock = (s: HtmlStory): string => {
   </div>`
 }
 
-export interface EmailCorrection {
-  readonly edition: string
-  readonly headline: string
-  readonly note: string
-}
+export type EmailCorrection = EditionCorrection
 
 export const renderEmailEdition = (opts: {
   readonly runId: string

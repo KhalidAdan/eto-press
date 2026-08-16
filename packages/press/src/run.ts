@@ -6,7 +6,11 @@ import { FileSystem } from "@effect/platform"
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
 import { fetchArticlesForStories } from "@eto-press/platform/articles"
-import type { StoryWithAccounts } from "@eto-press/platform/edition"
+import {
+  editionStoryFrom,
+  type EditionStory,
+  type StoryWithAccounts
+} from "@eto-press/platform/edition"
 import { buildClusters, persistClusters } from "@eto-press/engine-eto/cluster"
 import { compositeStory } from "@eto-press/engine-eto/composite"
 import {
@@ -248,6 +252,7 @@ export const nightly = Effect.gen(function* () {
 
   // -- Stages 8-9: composite, then verify — the model writes, the code checks
   const published: Array<PublishedStory> = []
+  const editionStories: Array<EditionStory> = []
   for (const swa of composable) {
     const hash = swa.story.cluster.hash
     const first = yield* compositeStory(swa).pipe(Effect.either)
@@ -293,6 +298,23 @@ export const nightly = Effect.gen(function* () {
 
     yield* markStory(runId, hash, "published", null)
     published.push({ story: swa.story, draft, advisories: verdict.advisories })
+    // Longest account wins the outlet's link — the same tiebreak the
+    // journal-side constructor uses (assemble.ts).
+    const linkByOutlet = new Map<string, string>()
+    for (const a of [...swa.accounts].sort((x, y) => x.text.length - y.text.length)) {
+      linkByOutlet.set(a.item.outlet, a.item.link)
+    }
+    editionStories.push(
+      editionStoryFrom({
+        headline: draft.headline,
+        body: draft.body,
+        differ: draft.differ,
+        sourcesLine: draft.sourcesLine,
+        balanceNote: swa.story.balanceNote,
+        foldReason: swa.story.foldReason,
+        linkByOutlet
+      })
+    )
     yield* Effect.logInfo(
       `  story #${swa.story.rank} verified: ${draft.headline.slice(0, 70)}` +
         (verdict.advisories.length > 0 ? ` (${verdict.advisories.length} advisories)` : "")
@@ -361,9 +383,11 @@ export const nightly = Effect.gen(function* () {
     )
   }
 
+  const advisoryLines = published.flatMap((p) =>
+    p.advisories.map((a) => `${p.draft.headline.slice(0, 40)}…: ${a}`)
+  )
   const content = renderBrief(
-    runId,
-    published,
+    { runId, stories: editionStories, corrections },
     {
       feedOutcomes: outcomes,
       funnel: {
@@ -384,7 +408,7 @@ export const nightly = Effect.gen(function* () {
       dropped: droppedRows.map((d) => ({ rank: d.rank, reason: d.reason })),
       healthLines
     },
-    corrections
+    advisoryLines
   )
   const briefPath = yield* archiveBrief(runId, content)
   for (const c of pendingCorrections) {

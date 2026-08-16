@@ -4,12 +4,7 @@
  * for what a published story looks like outside the press.
  */
 import Database from "better-sqlite3"
-import {
-  resolveSourceLinks,
-  splitDiffer,
-  splitParagraphs,
-  type HtmlStory
-} from "./html.js"
+import { editionStoryFrom, type EditionStory } from "./edition.js"
 
 export type Journal = InstanceType<typeof Database>
 
@@ -77,7 +72,7 @@ export const healthLines = (db: Journal): Array<string> => {
 }
 
 export interface AssembledStory {
-  readonly story: HtmlStory
+  readonly story: EditionStory
   readonly clusterHash: string
 }
 
@@ -127,19 +122,18 @@ export const assembleStories = (
       linkByOutlet.set(a.outlet, a.link)
     }
 
-    const differ = splitDiffer(draft.differ)
     return [
       {
         clusterHash: row.cluster_hash,
-        story: {
+        story: editionStoryFrom({
           headline: draft.headline,
-          bodyParagraphs: splitParagraphs(draft.body),
-          differBullets: differ.bullets,
-          differParagraphs: differ.paragraphs,
-          sources: resolveSourceLinks(draft.sources_line, linkByOutlet),
+          body: draft.body,
+          differ: draft.differ,
+          sourcesLine: draft.sources_line,
           balanceNote: row.balance_note,
-          foldReason: row.fold_reason
-        }
+          foldReason: row.fold_reason,
+          linkByOutlet
+        })
       }
     ]
   })

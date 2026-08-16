@@ -12,7 +12,13 @@
  */
 import { FileSystem } from "@effect/platform"
 import { Effect } from "effect"
-import type { Draft, Story } from "./edition.js"
+import type {
+  Draft,
+  EditionCorrection,
+  EditionDocument,
+  EditionStory,
+  Story
+} from "./edition.js"
 import { PAPER_MOTTO, PAPER_NAME } from "./config.js"
 import { BriefAlreadyPublished } from "./errors.js"
 import type { FeedOutcome } from "./feeds.js"
@@ -23,12 +29,7 @@ export interface PublishedStory {
   readonly advisories: ReadonlyArray<string>
 }
 
-export interface CorrectionNotice {
-  readonly edition: string
-  readonly storyRank: number
-  readonly headline: string
-  readonly note: string
-}
+export type CorrectionNotice = EditionCorrection
 
 export interface RunReport {
   readonly feedOutcomes: ReadonlyArray<FeedOutcome>
@@ -64,13 +65,12 @@ const longDate = (runId: string): string =>
   })
 
 export const renderBrief = (
-  runId: string,
-  published: ReadonlyArray<PublishedStory>,
+  doc: EditionDocument,
   report: RunReport,
-  corrections: ReadonlyArray<CorrectionNotice> = []
+  advisoryLines: ReadonlyArray<string> = []
 ): string => {
   const parts: Array<string> = [
-    `# ${PAPER_NAME} — ${longDate(runId)}`,
+    `# ${PAPER_NAME} — ${longDate(doc.runId)}`,
     "",
     `*${PAPER_MOTTO}*`,
     ""
@@ -78,9 +78,9 @@ export const renderBrief = (
 
   // Corrections lead the edition (NORTH-STAR §9): dated, pointing back,
   // never reaching into the archive.
-  if (corrections.length > 0) {
+  if (doc.corrections.length > 0) {
     parts.push("---", "", "## Corrections", "")
-    for (const c of corrections) {
+    for (const c of doc.corrections) {
       parts.push(
         `In the edition of ${longDate(c.edition)}, the story "${c.headline}": ${c.note} ` +
           `The original stands unchanged in [the archive](${c.edition}.md).`
@@ -89,22 +89,24 @@ export const renderBrief = (
     }
   }
 
-  const mains = published.filter((p) => p.story.foldReason === null)
-  const fold = published.find((p) => p.story.foldReason !== null)
+  const mains = doc.stories.filter((s) => s.foldReason === null)
+  const fold = doc.stories.find((s) => s.foldReason !== null)
 
-  const pushStory = (p: PublishedStory) => {
-    parts.push(`## ${p.draft.headline}`, "", p.draft.body, "")
-    parts.push("**Where the accounts differ**", "", p.draft.differ, "")
-    parts.push(`**Sources**  ${p.draft.sourcesLine}`)
-    if (p.story.balanceNote !== null) {
-      parts.push("", `*${p.story.balanceNote}*`)
+  // The archive prints the compositor's text verbatim — the raw fields,
+  // never the split form. The record is what was written, not a re-layout.
+  const pushStory = (s: EditionStory) => {
+    parts.push(`## ${s.headline}`, "", s.body, "")
+    parts.push("**Where the accounts differ**", "", s.differ, "")
+    parts.push(`**Sources**  ${s.sourcesLine}`)
+    if (s.balanceNote !== null) {
+      parts.push("", `*${s.balanceNote}*`)
     }
     parts.push("")
   }
 
-  for (const p of mains) {
+  for (const s of mains) {
     parts.push("---", "")
-    pushStory(p)
+    pushStory(s)
   }
 
   if (fold !== undefined) {
@@ -112,11 +114,11 @@ export const renderBrief = (
     parts.push(
       "*One nomination from outside the front page. The model's printed reason — judge it:*"
     )
-    parts.push(`*${fold.story.foldReason}*`, "")
+    parts.push(`*${fold.foldReason}*`, "")
     pushStory(fold)
   }
 
-  if (published.length === 0) {
+  if (doc.stories.length === 0) {
     parts.push("---", "", "Nothing to print today: no event was covered by")
     parts.push("two or more of your sources within the window. That is a")
     parts.push("measurement, not a malfunction.", "")
@@ -150,12 +152,9 @@ export const renderBrief = (
   for (const line of report.healthLines ?? []) {
     parts.push(`- ${line}`)
   }
-  const advisories = published.flatMap((p) =>
-    p.advisories.map((a) => `${p.draft.headline.slice(0, 40)}…: ${a}`)
-  )
-  if (advisories.length > 0) {
+  if (advisoryLines.length > 0) {
     parts.push(`- Advisories (recorded, not enforced):`)
-    for (const a of advisories) parts.push(`    - ${a}`)
+    for (const a of advisoryLines) parts.push(`    - ${a}`)
   }
   parts.push("", "*The brief ends here.*", "")
   return parts.join("\n")
