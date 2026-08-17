@@ -32,6 +32,15 @@ const storyHtml = (s: EditionStory): string => {
   const sources = s.sources
     .map((x) => (x.href ? `<a href="${escHtml(x.href)}">${escHtml(x.name)}</a>` : escHtml(x.name)))
     .join(" · ")
+  const dataList =
+    (s.data ?? []).length === 0
+      ? ""
+      : `<ul>${(s.data ?? [])
+          .map(
+            (d) =>
+              `<li><strong>${escHtml(d.label)}</strong> ${escHtml(d.value)}${d.note !== null ? ` <em>${escHtml(d.note)}</em>` : ""}</li>`
+          )
+          .join("")}</ul>`
   const linkList =
     (s.links ?? []).length === 0
       ? ""
@@ -48,6 +57,7 @@ const storyHtml = (s: EditionStory): string => {
     `<h2>${escHtml(s.headline)}</h2>`,
     s.byline === undefined || s.byline === null ? "" : `<p><em>By ${escHtml(s.byline)}</em></p>`,
     ...s.bodyParagraphs.map((p) => `<p>${escHtml(p)}</p>`),
+    dataList,
     linkList,
     hasDiffer ? `<h3>Where the accounts differ</h3>` : "",
     differ,

@@ -22,12 +22,13 @@ export const openJournal = (): Journal => {
     headline TEXT NOT NULL, body TEXT NOT NULL, differ TEXT NOT NULL,
     sources_line TEXT NOT NULL, source_links TEXT NOT NULL,
     balance_note TEXT, fold_reason TEXT, engine_ref TEXT,
-    byline TEXT, link_items TEXT,
+    byline TEXT, link_items TEXT, data_items TEXT,
     PRIMARY KEY (run_id, position)
   )`)
   for (const migration of [
     `ALTER TABLE published_stories ADD COLUMN byline TEXT`,
-    `ALTER TABLE published_stories ADD COLUMN link_items TEXT`
+    `ALTER TABLE published_stories ADD COLUMN link_items TEXT`,
+    `ALTER TABLE published_stories ADD COLUMN data_items TEXT`
   ]) {
     try {
       db.exec(migration)

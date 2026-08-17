@@ -73,6 +73,14 @@ export interface LinkItem {
   readonly note: string | null
 }
 
+/** One row of a story's data list — a market wrap's whole anatomy: a
+ * labeled figure and, optionally, its motion since the last edition. */
+export interface DataItem {
+  readonly label: string
+  readonly value: string
+  readonly note: string | null
+}
+
 export interface EditionStory {
   readonly headline: string
   readonly body: string
@@ -96,6 +104,9 @@ export interface EditionStory {
   /** Optional anatomy: the story's link list (a digest section's whole
    * body; any engine's further-reading). Empty means absent. */
   readonly links?: ReadonlyArray<LinkItem>
+  /** Optional anatomy: the story's data list (a wrap board's whole body
+   * — labeled figures with their motion). Empty means absent. */
+  readonly data?: ReadonlyArray<DataItem>
 }
 
 export interface EditionCorrection {
@@ -169,6 +180,7 @@ export const editionStoryFrom = (opts: {
   readonly engineRef?: string | null
   readonly byline?: string | null
   readonly links?: ReadonlyArray<LinkItem>
+  readonly data?: ReadonlyArray<DataItem>
 }): EditionStory => {
   const differ = splitDiffer(opts.differ)
   return {
@@ -184,6 +196,7 @@ export const editionStoryFrom = (opts: {
     foldReason: opts.foldReason,
     engineRef: opts.engineRef ?? null,
     byline: opts.byline ?? null,
-    links: opts.links ?? []
+    links: opts.links ?? [],
+    data: opts.data ?? []
   }
 }

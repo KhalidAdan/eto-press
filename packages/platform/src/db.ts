@@ -137,6 +137,7 @@ const TABLES = [
     fold_reason  TEXT,
     engine_ref   TEXT,                  -- the engine's opaque story ref, for cache enrichment
     byline       TEXT,                  -- optional anatomy: the human author
+    data_items   TEXT,                  -- optional anatomy: JSON [{label, value, note|null}]
     link_items   TEXT,                  -- optional anatomy: JSON [{title, href, note|null}]
     PRIMARY KEY (run_id, position)
   )`,
@@ -160,6 +161,7 @@ const MIGRATIONS = [
   `ALTER TABLE stories ADD COLUMN fold_reason TEXT`,
   `ALTER TABLE published_stories ADD COLUMN byline TEXT`,
   `ALTER TABLE published_stories ADD COLUMN link_items TEXT`,
+  `ALTER TABLE published_stories ADD COLUMN data_items TEXT`,
   // The outlet's own designated link-preview image (og:image), captured at
   // article fetch time. Hotlinked with credit, never rehosted.
   `ALTER TABLE articles ADD COLUMN og_image TEXT`

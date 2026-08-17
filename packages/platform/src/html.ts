@@ -118,6 +118,16 @@ const storySection = (story: HtmlStory, index: number): string => {
     .map((p) => `        <p class="story__body prose">${esc(p)}</p>`)
     .join("\n")
 
+  const data =
+    (story.data ?? []).length === 0
+      ? ""
+      : `\n        <ul role="list" class="story__data">\n${(story.data ?? [])
+          .map(
+            (d) =>
+              `          <li class="story__data-row"><span class="story__data-label instrument instrument--quiet">${esc(d.label)}</span> <span class="story__data-value instrument">${esc(d.value)}</span>${d.note !== null ? `<span class="story__data-note instrument instrument--quiet"> ${esc(d.note)}</span>` : ""}</li>`
+          )
+          .join("\n")}\n        </ul>`
+
   const links =
     (story.links ?? []).length === 0
       ? ""
@@ -158,7 +168,7 @@ const storySection = (story: HtmlStory, index: number): string => {
 
   return `      <article id="${storyAnchor(index)}" class="story">
         <h2 class="story__headline">${esc(story.headline)}</h2>${byline}
-${body}${links}${differ}${footer}
+${body}${data}${links}${differ}${footer}
       </article>`
 }
 
