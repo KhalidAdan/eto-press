@@ -109,9 +109,24 @@ const sourceAnchor = (s: SourceLink): string =>
 export const storyAnchor = (index: number): string => `s${index}`
 
 const storySection = (story: HtmlStory, index: number): string => {
+  const byline =
+    story.byline === undefined || story.byline === null
+      ? ""
+      : `\n        <p class="story__byline instrument instrument--quiet">By ${esc(story.byline)}</p>`
+
   const body = story.bodyParagraphs
     .map((p) => `        <p class="story__body prose">${esc(p)}</p>`)
     .join("\n")
+
+  const links =
+    (story.links ?? []).length === 0
+      ? ""
+      : `\n        <ul role="list" class="story__links">\n${(story.links ?? [])
+          .map(
+            (l) =>
+              `          <li class="story__links-item prose"><a href="${esc(l.href)}" class="link">${esc(l.title)}</a>${l.note !== null ? `<span class="story__link-note instrument instrument--quiet"> — ${esc(l.note)}</span>` : ""}</li>`
+          )
+          .join("\n")}\n        </ul>`
 
   const hasDiffer = story.differBullets.length > 0 || story.differParagraphs.length > 0
   const differ = !hasDiffer
@@ -142,8 +157,8 @@ const storySection = (story: HtmlStory, index: number): string => {
         </footer>`
 
   return `      <article id="${storyAnchor(index)}" class="story">
-        <h2 class="story__headline">${esc(story.headline)}</h2>
-${body}${differ}${footer}
+        <h2 class="story__headline">${esc(story.headline)}</h2>${byline}
+${body}${links}${differ}${footer}
       </article>`
 }
 

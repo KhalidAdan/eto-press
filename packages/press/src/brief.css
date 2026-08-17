@@ -52,6 +52,7 @@ html { @apply antialiased; }
 .story { @apply flex flex-col gap-5 py-12 scroll-mt-6; }
 .story__headline { @apply text-pretty text-2xl font-semibold tracking-tight sm:text-3xl; }
 .story__differ--list { @apply flex flex-col gap-3; }
+.story__links { @apply flex flex-col gap-2; }
 .story__footer { @apply flex flex-col gap-2 pt-1; }
 .fold { @apply flex flex-col gap-3 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
 .fold__reason { @apply italic; }

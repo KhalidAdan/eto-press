@@ -65,6 +65,14 @@ export interface SourceLink {
   readonly href: string | null
 }
 
+/** One entry in a story's link list — a digest's whole anatomy, and any
+ * engine's "further reading". */
+export interface LinkItem {
+  readonly title: string
+  readonly href: string
+  readonly note: string | null
+}
+
 export interface EditionStory {
   readonly headline: string
   readonly body: string
@@ -82,6 +90,12 @@ export interface EditionStory {
    * — card metadata, preview images — when the ref still resolves.
    * Never interpreted by the platform. */
   readonly engineRef?: string | null
+  /** Optional anatomy: who wrote this, when a human did (a desk column's
+   * author). Engines that never carry bylines never set it. */
+  readonly byline?: string | null
+  /** Optional anatomy: the story's link list (a digest section's whole
+   * body; any engine's further-reading). Empty means absent. */
+  readonly links?: ReadonlyArray<LinkItem>
 }
 
 export interface EditionCorrection {
@@ -153,6 +167,8 @@ export const editionStoryFrom = (opts: {
   readonly foldReason: string | null
   readonly linkByOutlet: ReadonlyMap<string, string>
   readonly engineRef?: string | null
+  readonly byline?: string | null
+  readonly links?: ReadonlyArray<LinkItem>
 }): EditionStory => {
   const differ = splitDiffer(opts.differ)
   return {
@@ -166,6 +182,8 @@ export const editionStoryFrom = (opts: {
     sources: resolveSourceLinks(opts.sourcesLine, opts.linkByOutlet),
     balanceNote: opts.balanceNote,
     foldReason: opts.foldReason,
-    engineRef: opts.engineRef ?? null
+    engineRef: opts.engineRef ?? null,
+    byline: opts.byline ?? null,
+    links: opts.links ?? []
   }
 }

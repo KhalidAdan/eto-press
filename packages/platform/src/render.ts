@@ -98,7 +98,15 @@ export const renderBrief = (
   // Differ and sources are anatomy some engines guarantee (eto's cage
   // does) and others never produce (a desk entry has no accounts).
   const pushStory = (s: EditionStory) => {
-    parts.push(`## ${s.headline}`, "", s.body, "")
+    parts.push(`## ${s.headline}`, "")
+    if (s.byline !== undefined && s.byline !== null) {
+      parts.push(`*By ${s.byline}*`, "")
+    }
+    if (s.body.trim() !== "") parts.push(s.body, "")
+    for (const link of s.links ?? []) {
+      parts.push(`- [${link.title}](${link.href})${link.note !== null ? ` — ${link.note}` : ""}`)
+    }
+    if ((s.links ?? []).length > 0) parts.push("")
     if (s.differ.trim() !== "") {
       parts.push("**Where the accounts differ**", "", s.differ, "")
     }
