@@ -1,14 +1,16 @@
 {
   "name": "@eto-press/platform",
-  "version": "2.20260815.0",
-  "private": true,
+  "version": "2.20260816.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The machinery of a personal periodical: front-door reading, the journal, the archive, rendering to site and inbox and RSS, the mail, the verbs. None of it knows what news is.",
   "exports": {
     "./*": "./src/*.ts"
   },
-  "files": ["src", "README.md"],
+  "files": [
+    "src",
+    "README.md"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -33,5 +35,8 @@
     "@types/node": "^24.13.3",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

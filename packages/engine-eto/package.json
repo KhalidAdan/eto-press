@@ -1,14 +1,16 @@
 {
   "name": "@eto-press/engine-eto",
-  "version": "2.20260815.0",
-  "private": true,
+  "version": "2.20260816.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The eto engine: the editorial machinery that decides what a story is and how it must be told. Prefilter, judge, cluster, the density gates, selection, the compositor, the verification cage.",
   "exports": {
     "./*": "./src/*.ts"
   },
-  "files": ["src", "README.md"],
+  "files": [
+    "src",
+    "README.md"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -19,11 +21,14 @@
   "dependencies": {
     "@effect/sql": "^0.52.0",
     "effect": "^3.22.0",
-    "@eto-press/platform": "*"
+    "@eto-press/platform": "^2.20260816.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

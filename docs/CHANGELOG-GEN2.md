@@ -1,9 +1,8 @@
-# Generation 2 — the changelog draft
+# Generation 2 — the changelog
 
-*Drafted for the 2.x publish; not a release note yet. Two editorial
-rulings gate the publish itself: the license, and whether the engine
-package names stand (they are effectively permanent after first
-publish).*
+*Release `2.20260816.0`. The two gating editorial rulings were made
+2026-08-16: the license stays **AGPL-3.0-only**, and the engine package
+names stand.*
 
 ## What generation 2 is
 

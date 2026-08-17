@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/press",
-  "version": "1.20260814.1",
+  "version": "2.20260816.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "A local-first printing press for a personal newspaper: each story is one event told through outlets that disagree, every source named, and the brief ends.",
@@ -21,7 +21,10 @@
     "./schedule": "./src/schedule.ts",
     "./brief.css": "./src/brief.css"
   },
-  "files": ["src", "README.md"],
+  "files": [
+    "src",
+    "README.md"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -33,13 +36,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@eto-press/platform": "*",
-    "@eto-press/engine-eto": "*",
-    "@eto-press/engine-desk": "*",
-    "@eto-press/engine-letter": "*",
-    "@eto-press/engine-digest": "*",
-    "@eto-press/engine-sports": "*",
-    "@eto-press/engine-wrap": "*",
+    "@eto-press/platform": "^2.20260816.0",
+    "@eto-press/engine-eto": "^2.20260816.0",
+    "@eto-press/engine-desk": "^2.20260816.0",
+    "@eto-press/engine-letter": "^2.20260816.0",
+    "@eto-press/engine-digest": "^2.20260816.0",
+    "@eto-press/engine-sports": "^2.20260816.0",
+    "@eto-press/engine-wrap": "^2.20260816.0",
     "@aws-sdk/client-sesv2": "^3.1095.0",
     "better-sqlite3": "^12.6.2",
     "@effect/platform": "^0.97.0",

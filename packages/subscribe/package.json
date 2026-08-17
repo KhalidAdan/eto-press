@@ -1,10 +1,13 @@
 {
   "name": "@eto-press/subscribe",
-  "version": "1.20260814.1",
+  "version": "2.20260816.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The mail slot: double-opt-in subscribe flow for a paper's mailing list, as Cloudflare Pages Functions. Stateless — the reader list lives in SES.",
-  "files": ["functions", "README.md"],
+  "files": [
+    "functions",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
