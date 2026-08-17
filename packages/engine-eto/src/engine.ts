@@ -277,7 +277,8 @@ const edition = (day: Day) =>
           sourcesLine: draft.sourcesLine,
           balanceNote: swa.story.balanceNote,
           foldReason: swa.story.foldReason,
-          linkByOutlet
+          linkByOutlet,
+          engineRef: hash
         })
       )
       yield* Effect.logInfo(

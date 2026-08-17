@@ -77,6 +77,11 @@ export interface EditionStory {
   readonly balanceNote: string | null
   /** The stage-6b nomination reason; null on front-page stories. */
   readonly foldReason: string | null
+  /** The engine's own opaque reference for this story (eto: the cluster
+   * hash). Lets the dialects enrich a published story from engine caches
+   * — card metadata, preview images — when the ref still resolves.
+   * Never interpreted by the platform. */
+  readonly engineRef?: string | null
 }
 
 export interface EditionCorrection {
@@ -147,6 +152,7 @@ export const editionStoryFrom = (opts: {
   readonly balanceNote: string | null
   readonly foldReason: string | null
   readonly linkByOutlet: ReadonlyMap<string, string>
+  readonly engineRef?: string | null
 }): EditionStory => {
   const differ = splitDiffer(opts.differ)
   return {
@@ -159,6 +165,7 @@ export const editionStoryFrom = (opts: {
     differParagraphs: differ.paragraphs,
     sources: resolveSourceLinks(opts.sourcesLine, opts.linkByOutlet),
     balanceNote: opts.balanceNote,
-    foldReason: opts.foldReason
+    foldReason: opts.foldReason,
+    engineRef: opts.engineRef ?? null
   }
 }

@@ -10,6 +10,7 @@ import { FileSystem } from "@effect/platform"
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
 import type { Day, Engine, EngineOutcome } from "@eto-press/platform/engine"
+import { persistPublishedStories } from "@eto-press/platform/published"
 import { archiveBrief, renderBrief, type CorrectionNotice } from "@eto-press/platform/render"
 import { ensureSchema } from "@eto-press/platform/db"
 import { ModelDrifted, ModelMissing } from "@eto-press/platform/errors"
@@ -109,16 +110,25 @@ export const pressRun = <R>(engine: Engine<any, R>) =>
     }>`SELECT id, edition, story_rank, note FROM corrections WHERE printed_in IS NULL ORDER BY id`
     const corrections: Array<CorrectionNotice> = []
     for (const c of pendingCorrections) {
-      const h = yield* sql<{ headline: string | null }>`
-        SELECT d.headline AS headline FROM stories s
-        LEFT JOIN drafts d ON d.cluster_hash = s.cluster_hash
-        WHERE s.run_id = ${c.edition} AND s.rank = ${c.story_rank} AND s.status = 'published'
-        GROUP BY s.cluster_hash LIMIT 1
+      // The published-edition store is the engine-agnostic lookup; the
+      // legacy engine-table join covers editions published before it.
+      const stored = yield* sql<{ headline: string }>`
+        SELECT headline FROM published_stories
+        WHERE run_id = ${c.edition} AND position = ${c.story_rank} LIMIT 1
       `
+      const legacy =
+        stored.length > 0
+          ? []
+          : yield* sql<{ headline: string | null }>`
+              SELECT d.headline AS headline FROM stories s
+              LEFT JOIN drafts d ON d.cluster_hash = s.cluster_hash
+              WHERE s.run_id = ${c.edition} AND s.rank = ${c.story_rank} AND s.status = 'published'
+              GROUP BY s.cluster_hash LIMIT 1
+            `
       corrections.push({
         edition: c.edition,
         storyRank: c.story_rank,
-        headline: h[0]?.headline ?? `story #${c.story_rank}`,
+        headline: stored[0]?.headline ?? legacy[0]?.headline ?? `story #${c.story_rank}`,
         note: c.note
       })
     }
@@ -129,6 +139,9 @@ export const pressRun = <R>(engine: Engine<any, R>) =>
       outcome.advisoryLines
     )
     const briefPath = yield* archiveBrief(runId, content)
+    // The store is the archive's queryable shadow: written only after the
+    // archive write succeeded, idempotently, so the two can never disagree.
+    yield* persistPublishedStories(runId, outcome.stories)
     for (const c of pendingCorrections) {
       yield* sql`UPDATE corrections SET printed_in = ${runId} WHERE id = ${c.id}`
     }

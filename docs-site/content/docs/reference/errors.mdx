@@ -31,6 +31,7 @@ brief quietly and honestly.**
 | `OllamaCallFailed` | judge, cluster | Retried with backoff; then the unit abstains or drops. At composite, escalates to `PressStalled`. |
 | `VerdictUnparseable` | judge | The answer wasn't yes/no. One re-ask at temperature 0, then recorded as an abstention — stored distinctly so a rash of them is visible. |
 | `ArticleUnfetchable` / `ArticleUnreadable` | accounts | The account drops out of the composite — the sources line names only accounts actually read. Below two accounts, the story drops. |
+| `DocumentUnfetchable` | front door | A watched document's door didn't answer (letter engine). Timeouts and 5xx retry; a 4xx is a closed door and fails fast. The door is absent from the morning, and the report says so. |
 | `DraftMalformed` | composite | The four-part shape didn't parse. One re-ask; then the story drops. The press does not ship a brief whose shape it had to guess at. |
 | `BriefUnverifiable` | verify | Violations survived the one revision pass. Terminal for the story, never for the run: the story drops with its violations journaled as the reason, printed in the run report. A gap over a guess, every time. |
 

@@ -45,22 +45,19 @@ const edition = (day: Day) =>
     const sql = yield* SqlClient.SqlClient
     const desk = yield* Desk
 
-    yield* sql`CREATE TABLE IF NOT EXISTS desk_printed (
-      file TEXT NOT NULL,
-      content_hash TEXT NOT NULL,
-      run_id TEXT NOT NULL,
-      PRIMARY KEY (file, content_hash)
-    )`
-
     const entries = yield* desk.entries
+    // "Printed" is the published-edition store's truth, not private
+    // bookkeeping: an entry is due when no published edition carries its
+    // content hash. A morning that failed before the archive write
+    // self-heals — the entry prints on the next successful run.
     const unprinted: Array<{ entry: DeskEntry; hash: string }> = []
     for (const entry of entries) {
       const hash = sha256(entry.content)
-      const seen = yield* sql<{ n: number }>`
-        SELECT COUNT(*) AS n FROM desk_printed
-        WHERE file = ${entry.file} AND content_hash = ${hash}
+      const printed = yield* sql<{ one: number }>`
+        SELECT 1 AS one FROM published_stories
+        WHERE engine_ref = ${`desk:${hash}`} LIMIT 1
       `
-      if ((seen[0]?.n ?? 0) === 0) unprinted.push({ entry, hash })
+      if (printed.length === 0) unprinted.push({ entry, hash })
     }
 
     if (unprinted.length === 0) {
@@ -81,40 +78,10 @@ const edition = (day: Day) =>
           sourcesLine: "",
           balanceNote: null,
           foldReason: null,
-          linkByOutlet: NO_LINKS
+          linkByOutlet: NO_LINKS,
+          engineRef: `desk:${hash}`
         })
       )
-      // The journal's published-edition tables are what the site and mail
-      // dialects reconstruct an edition from, so the desk engine writes
-      // them too. (That these tables ARE the reconstruction interface is
-      // rung 1's finding — a cleaner abstraction waits for rung 2.)
-      const clusterHash = `desk:${hash}`
-      yield* sql`INSERT INTO drafts ${sql.insert({
-        cluster_hash: clusterHash,
-        model: "none",
-        prompt_hash: "desk",
-        attempt: 0,
-        headline,
-        body,
-        differ: "",
-        sources_line: "",
-        raw: entry.content,
-        created_at: new Date().toISOString()
-      })} ON CONFLICT (cluster_hash, model, prompt_hash, attempt) DO NOTHING`
-      yield* sql`INSERT INTO stories ${sql.insert({
-        run_id: day.runId,
-        cluster_hash: clusterHash,
-        rank: stories.length,
-        balance_note: null,
-        fold_reason: null,
-        status: "published",
-        reason: null
-      })} ON CONFLICT (run_id, cluster_hash) DO NOTHING`
-      yield* sql`INSERT INTO desk_printed ${sql.insert({
-        file: entry.file,
-        content_hash: hash,
-        run_id: day.runId
-      })}`
       yield* Effect.logInfo(`  from the desk: ${headline.slice(0, 70)} (${entry.file})`)
     }
 

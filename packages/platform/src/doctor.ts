@@ -15,8 +15,14 @@ import { GetAccountCommand, SESv2Client } from "@aws-sdk/client-sesv2"
 import Database from "better-sqlite3"
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import * as TOML from "smol-toml"
-import { COMPOSITE_MODEL, MAIL, MATCH_MODEL, OLLAMA_URL } from "./config.js"
+import { COMPOSITE_MODEL, ENGINE, MAIL, MATCH_MODEL, OLLAMA_URL } from "./config.js"
 import { loadEnv } from "./env.js"
+
+/** Engines that call no models. Doctor is a platform verb and cannot ask
+ * the engine registry (that lives in the press binding), so this list is
+ * maintained here beside the checks it gates. */
+const MODELLESS = new Set(["desk", "letter"])
+const needsModels = !MODELLESS.has(ENGINE)
 
 type Status = "ok" | "warn" | "fail" | "skip"
 interface Check {
@@ -56,7 +62,12 @@ if (!existsSync("sources.toml")) {
     )
     const bad = sources.filter((s) => !s.name || !s.side || !s.feeds?.length)
     if (sources.length === 0) {
-      report("paper", "fail", "sources.toml has no [[source]] blocks")
+      if (ENGINE === "desk") {
+        report("paper", "ok", `a desk paper (engine "${ENGINE}") — sources not needed`)
+      } else {
+        report("paper", "fail",
+          `sources.toml has no [[source]] blocks — the ${ENGINE} engine will refuse to print`)
+      }
     } else if (bad.length > 0) {
       report("paper", "fail", `${bad.length} source(s) missing name/side/feeds`)
     } else {
@@ -71,15 +82,30 @@ if (!existsSync("sources.toml")) {
   }
 }
 
+// -- the desk (desk engine only) ---------------------------------------------
+if (ENGINE === "desk") {
+  if (!existsSync("desk")) {
+    report("desk", "warn", "no desk/ directory yet — nothing will print until one exists")
+  } else {
+    const entries = readdirSync("desk").filter((f) => f.endsWith(".md")).length
+    report("desk", "ok",
+      `${entries} entr${entries === 1 ? "y" : "ies"} on the desk (printed ones are skipped)`)
+  }
+}
+
 // -- ollama ------------------------------------------------------------------
 let ollamaUp = false
-try {
-  const res = await get(`${OLLAMA_URL}/api/version`, 5000)
-  const body = (await res.json()) as { version?: string }
-  ollamaUp = res.ok
-  report("ollama", res.ok ? "ok" : "fail", `${body.version ?? "?"} at ${OLLAMA_URL}`)
-} catch {
-  report("ollama", "fail", `no answer at ${OLLAMA_URL} — is ollama running?`)
+if (!needsModels) {
+  report("ollama", "skip", `the ${ENGINE} engine calls no models — no Ollama, no GPU`)
+} else {
+  try {
+    const res = await get(`${OLLAMA_URL}/api/version`, 5000)
+    const body = (await res.json()) as { version?: string }
+    ollamaUp = res.ok
+    report("ollama", res.ok ? "ok" : "fail", `${body.version ?? "?"} at ${OLLAMA_URL}`)
+  } catch {
+    report("ollama", "fail", `no answer at ${OLLAMA_URL} — is ollama running?`)
+  }
 }
 
 // -- models + the lock -------------------------------------------------------

@@ -5,6 +5,7 @@
  */
 import Database from "better-sqlite3"
 import { editionStoryFrom, type EditionStory } from "./edition.js"
+import { fromRow, type PublishedRow } from "./published.js"
 
 export type Journal = InstanceType<typeof Database>
 
@@ -15,6 +16,13 @@ export const openJournal = (): Journal => {
     id INTEGER PRIMARY KEY AUTOINCREMENT, edition TEXT NOT NULL,
     story_rank INTEGER NOT NULL, note TEXT NOT NULL,
     created_at TEXT NOT NULL, printed_in TEXT
+  )`)
+  db.exec(`CREATE TABLE IF NOT EXISTS published_stories (
+    run_id TEXT NOT NULL, position INTEGER NOT NULL,
+    headline TEXT NOT NULL, body TEXT NOT NULL, differ TEXT NOT NULL,
+    sources_line TEXT NOT NULL, source_links TEXT NOT NULL,
+    balance_note TEXT, fold_reason TEXT, engine_ref TEXT,
+    PRIMARY KEY (run_id, position)
   )`)
   return db
 }
@@ -73,13 +81,18 @@ export const healthLines = (db: Journal): Array<string> => {
 
 export interface AssembledStory {
   readonly story: EditionStory
-  readonly clusterHash: string
+  /** The engine's opaque story ref (eto: the cluster hash) — used to
+   * enrich cards from engine caches when it still resolves; null when
+   * the engine left none. */
+  readonly clusterHash: string | null
 }
 
 export const publishedRuns = (db: Journal): Array<string> =>
   (db
     .prepare(
-      "SELECT DISTINCT run_id FROM stories WHERE status = 'published' ORDER BY run_id DESC"
+      `SELECT run_id FROM published_stories
+       UNION SELECT run_id FROM stories WHERE status = 'published'
+       ORDER BY run_id DESC`
     )
     .all() as Array<{ run_id: string }>).map((r) => r.run_id)
 
@@ -87,6 +100,18 @@ export const assembleStories = (
   db: Journal,
   runId: string
 ): Array<AssembledStory> => {
+  // The published-edition store is the source of truth for everything the
+  // frame printed since it exists; the legacy engine-table reconstruction
+  // below remains for editions published before the store did.
+  const stored = db
+    .prepare("SELECT * FROM published_stories WHERE run_id = ? ORDER BY position")
+    .all(runId) as Array<PublishedRow>
+  if (stored.length > 0) {
+    return stored.map((row) => ({
+      story: fromRow(row),
+      clusterHash: row.engine_ref
+    }))
+  }
   const rows = db
     .prepare(
       "SELECT cluster_hash, rank, balance_note, fold_reason FROM stories WHERE run_id = ? AND status = 'published' ORDER BY rank"
