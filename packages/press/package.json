@@ -39,6 +39,7 @@
     "@eto-press/engine-letter": "*",
     "@eto-press/engine-digest": "*",
     "@eto-press/engine-sports": "*",
+    "@eto-press/engine-wrap": "*",
     "@aws-sdk/client-sesv2": "^3.1095.0",
     "better-sqlite3": "^12.6.2",
     "@effect/platform": "^0.97.0",

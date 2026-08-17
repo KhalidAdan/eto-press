@@ -8,6 +8,7 @@ import { deskEngine } from "@eto-press/engine-desk/engine"
 import { digestEngine } from "@eto-press/engine-digest/engine"
 import { etoEngine } from "@eto-press/engine-eto/engine"
 import { letterEngine } from "@eto-press/engine-letter/engine"
+import { wrapEngine } from "@eto-press/engine-wrap/engine"
 import { sportsEngine } from "@eto-press/engine-sports/engine"
 import { ENGINE } from "@eto-press/platform/config"
 import { Desk } from "@eto-press/platform/desk"
@@ -32,7 +33,8 @@ const engines: Record<string, Engine<any, PressServices>> = {
   desk: deskEngine,
   letter: letterEngine,
   digest: digestEngine,
-  sports: sportsEngine
+  sports: sportsEngine,
+  wrap: wrapEngine
 }
 const engine = engines[ENGINE]
 if (engine === undefined) {
