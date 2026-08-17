@@ -62,6 +62,21 @@ const storyBlock = (s: HtmlStory): string => {
   const balance =
     s.balanceNote === null ? "" : monoLine(esc(s.balanceNote), CLARET)
 
+  const byline =
+    s.byline === undefined || s.byline === null
+      ? ""
+      : `${monoLine(`By ${esc(s.byline)}`)}
+    `
+  const linkList =
+    (s.links ?? []).length === 0
+      ? ""
+      : `${(s.links ?? [])
+          .map(
+            (l) =>
+              `<p style="margin:0 0 10px 0;font-family:${SERIF};font-size:16px;line-height:1.65;color:${INK};"><a href="${esc(l.href)}" style="color:${INK};">${esc(l.title)}</a>${l.note !== null ? `<span style="font-family:${MONO};font-size:13px;color:${QUIET};"> — ${esc(l.note)}</span>` : ""}</p>`
+          )
+          .join("")}
+    `
   const hasDiffer = s.differBullets.length > 0 || s.differParagraphs.length > 0
   const differSection = !hasDiffer
     ? ""
@@ -74,8 +89,8 @@ const storyBlock = (s: HtmlStory): string => {
   <div style="border-top:1px solid ${HAIRLINE};padding:26px 0 12px 0;">
     ${fold}
     <h2 style="margin:0 0 14px 0;font-family:${SERIF};font-size:21px;line-height:1.35;font-weight:600;color:${INK};">${esc(s.headline)}</h2>
-    ${s.bodyParagraphs.map(para).join("")}
-    ${differSection}${sourcesLine}${balance}
+    ${byline}${s.bodyParagraphs.map(para).join("")}
+    ${linkList}${differSection}${sourcesLine}${balance}
   </div>`
 }
 
@@ -129,8 +144,12 @@ ${opts.stories.map(storyBlock).join("\n")}
       "———",
       s.foldReason === null ? "" : `BELOW THE FOLD — nominated because: ${s.foldReason}`,
       s.headline.toUpperCase(),
+      s.byline === undefined || s.byline === null ? "" : `By ${s.byline}`,
       "",
       ...s.bodyParagraphs,
+      ...(s.links ?? []).map(
+        (l) => `- ${l.title} <${l.href}>${l.note !== null ? ` — ${l.note}` : ""}`
+      ),
       "",
       ...(s.differBullets.length > 0 || s.differParagraphs.length > 0
         ? [

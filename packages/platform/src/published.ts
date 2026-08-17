@@ -10,7 +10,7 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
-import type { EditionStory, SourceLink } from "./edition.js"
+import type { EditionStory, LinkItem, SourceLink } from "./edition.js"
 import { editionStoryFrom } from "./edition.js"
 
 export interface PublishedRow {
@@ -24,6 +24,8 @@ export interface PublishedRow {
   readonly balance_note: string | null
   readonly fold_reason: string | null
   readonly engine_ref: string | null
+  readonly byline: string | null
+  readonly link_items: string | null
 }
 
 export const toRow = (
@@ -40,7 +42,12 @@ export const toRow = (
   source_links: JSON.stringify(story.sources),
   balance_note: story.balanceNote,
   fold_reason: story.foldReason,
-  engine_ref: story.engineRef ?? null
+  engine_ref: story.engineRef ?? null,
+  byline: story.byline ?? null,
+  link_items:
+    story.links !== undefined && story.links.length > 0
+      ? JSON.stringify(story.links)
+      : null
 })
 
 /** Rebuild the full story from a row. The split forms are re-derived by the
@@ -56,7 +63,12 @@ export const fromRow = (row: PublishedRow): EditionStory => {
     balanceNote: row.balance_note,
     foldReason: row.fold_reason,
     linkByOutlet: new Map(),
-    engineRef: row.engine_ref
+    engineRef: row.engine_ref,
+    byline: row.byline,
+    links:
+      row.link_items === null
+        ? []
+        : (JSON.parse(row.link_items) as ReadonlyArray<LinkItem>)
   })
   return { ...derived, sources: links }
 }

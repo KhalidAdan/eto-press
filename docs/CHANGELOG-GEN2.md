@@ -11,10 +11,12 @@ The press split along the platform/engine boundary. The **platform**
 (`@eto-press/platform`) is the machinery of a personal periodical — the
 journal, front-door reading, the four dialects, the archive, the mail —
 and knows nothing of news. An **engine** is an editorial doctrine behind
-one joint, `edition(day)`. Three engines ship: **eto** (the news brief),
-**desk** (you write, it prints), and **letter** (watch an institution's
-door, print when it speaks). A paper declares its engine in `eto.toml`;
-absent means eto, so every generation-1 paper is already valid.
+one joint, `edition(day)`. Five engines ship: **eto** (the news brief),
+**desk** (you write, it prints), **letter** (watch an institution's
+door, print when it speaks), **digest** (a reading list, not a
+retelling), and **sports** (signed columns plus the leagues' own links).
+A paper declares its engine in `eto.toml`; absent means eto, so every
+generation-1 paper is already valid.
 
 ## Breaking, and how it lands
 
@@ -53,6 +55,10 @@ absent means eto, so every generation-1 paper is already valid.
 - `@eto-press/engine-desk` — the null engine; sub-minute init to first
   edition, no GPU.
 - `@eto-press/engine-letter` — event-driven; NoEdition mornings rest.
+- `@eto-press/engine-digest` — sections from the masthead's map, the
+  day's first-seen links with the feeds' own blurbs.
+- `@eto-press/engine-sports` — bylined desk columns and league link
+  sections in one edition; the first two-corpus engine.
 - `@eto-press/press` — the binding: preflight from `engine.models`, the
   registry, the tail.
 - `@eto-press/cli` — `init` asks which engine; `doctor` examines the
@@ -60,7 +66,8 @@ absent means eto, so every generation-1 paper is already valid.
 
 ## Not in this release, on purpose
 
-A public engine/plugin API (the interface is private until the ladder
-has more rungs), dynamic engine loading, the link-digest and sports
-engines, vocabulary blocks beyond the core anatomy, cadence
-configuration beyond daily-plus-NoEdition.
+A public engine/plugin API (the interface stays private until the
+contract settles across the five engines), dynamic engine loading,
+score tables and figures and the email image pipeline (they arrive when
+papers demand them), cadence configuration beyond
+daily-plus-NoEdition.

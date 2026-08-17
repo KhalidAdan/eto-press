@@ -32,12 +32,23 @@ const storyHtml = (s: EditionStory): string => {
   const sources = s.sources
     .map((x) => (x.href ? `<a href="${escHtml(x.href)}">${escHtml(x.name)}</a>` : escHtml(x.name)))
     .join(" · ")
+  const linkList =
+    (s.links ?? []).length === 0
+      ? ""
+      : `<ul>${(s.links ?? [])
+          .map(
+            (l) =>
+              `<li><a href="${escHtml(l.href)}">${escHtml(l.title)}</a>${l.note !== null ? ` — ${escHtml(l.note)}` : ""}</li>`
+          )
+          .join("")}</ul>`
   return [
     s.foldReason !== null
       ? `<p><strong>Below the fold</strong> — the model's one nomination, reason printed: <em>${escHtml(s.foldReason)}</em></p>`
       : "",
     `<h2>${escHtml(s.headline)}</h2>`,
+    s.byline === undefined || s.byline === null ? "" : `<p><em>By ${escHtml(s.byline)}</em></p>`,
     ...s.bodyParagraphs.map((p) => `<p>${escHtml(p)}</p>`),
+    linkList,
     hasDiffer ? `<h3>Where the accounts differ</h3>` : "",
     differ,
     s.sources.length > 0 ? `<p><strong>Sources</strong> ${sources}</p>` : "",
