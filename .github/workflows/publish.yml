@@ -24,11 +24,16 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+      # No registry-url here, deliberately: setup-node's registry-url
+      # writes an .npmrc auth line fed by NODE_AUTH_TOKEN, and exports a
+      # PLACEHOLDER token when none is provided — and any token at all
+      # makes npm skip the OIDC exchange and publish unauthenticated
+      # (the v2.20260816.0 run's E404). With no token in sight, npm
+      # negotiates trusted publishing on its own.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          registry-url: https://registry.npmjs.org
       # Trusted publishing needs a newer npm than node 22 bundles.
       - run: npm install -g npm@latest
       - run: npm ci

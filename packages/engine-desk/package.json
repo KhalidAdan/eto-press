@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/engine-desk",
-  "version": "2.20260816.0",
+  "version": "2.20260816.1",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The desk engine: the editor writes, the press prints. No feeds, no models, no machinery — the null engine that proves the platform is honest machinery and keeps every writer's paper on the same constitution.",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@effect/sql": "^0.52.0",
     "effect": "^3.22.0",
-    "@eto-press/platform": "^2.20260816.0"
+    "@eto-press/platform": "^2.20260816.1"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

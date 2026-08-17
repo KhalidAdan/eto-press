@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/engine-letter",
-  "version": "2.20260816.0",
+  "version": "2.20260816.1",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The letter engine: watch an institution's front door, print when it speaks. Event-driven by construction — a morning with no new statements is NoEdition, not filler.",
@@ -22,7 +22,7 @@
     "@effect/platform": "^0.97.0",
     "@effect/sql": "^0.52.0",
     "effect": "^3.22.0",
-    "@eto-press/platform": "^2.20260816.0"
+    "@eto-press/platform": "^2.20260816.1"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

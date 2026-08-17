@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/engine-wrap",
-  "version": "2.20260816.0",
+  "version": "2.20260816.1",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The wrap engine: the numbers speak, the wrap arranges them. Watched data doors, labeled figures with their motion since the last edition, and no edition when nothing moved.",
@@ -22,7 +22,7 @@
     "@effect/platform": "^0.97.0",
     "@effect/sql": "^0.52.0",
     "effect": "^3.22.0",
-    "@eto-press/platform": "^2.20260816.0"
+    "@eto-press/platform": "^2.20260816.1"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

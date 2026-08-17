@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/engine-sports",
-  "version": "2.20260816.0",
+  "version": "2.20260816.1",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The sports engine: signed columns from the desk, the day's results and stories from the leagues' own feeds — one paper, two corpus origins, zero models.",
@@ -22,7 +22,7 @@
     "@effect/platform": "^0.97.0",
     "@effect/sql": "^0.52.0",
     "effect": "^3.22.0",
-    "@eto-press/platform": "^2.20260816.0"
+    "@eto-press/platform": "^2.20260816.1"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
