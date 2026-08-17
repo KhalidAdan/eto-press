@@ -45,9 +45,19 @@ jobs:
       # package, from the package's own directory. Platform leads so a
       # first-publish auth failure stops the train before any dependent
       # ships without its dependencies.
+      # Already-published versions are skipped, not fatal: a rerun after a
+      # partial train (or after a first-publish done by hand — npm's
+      # trusted publishing cannot mint credentials for a package that does
+      # not exist yet, so every NEW package's first publish is a human
+      # act) finishes the train instead of derailing at the guard.
       - run: |
           set -e
           for p in platform engine-eto engine-desk engine-letter engine-digest engine-sports engine-wrap press cli subscribe; do
-            echo "── publishing @eto-press/$p"
+            v=$(node -p "require('./packages/$p/package.json').version")
+            if npm view "@eto-press/$p@$v" version > /dev/null 2>&1; then
+              echo "── @eto-press/$p@$v already published, skipping"
+              continue
+            fi
+            echo "── publishing @eto-press/$p@$v"
             (cd packages/$p && npm publish)
           done
