@@ -39,4 +39,15 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npm publish --workspaces
+      # Per-package, from each package directory, in dependency order:
+      # `npm publish --workspaces` skipped the OIDC exchange entirely
+      # (the v2.20260816.1 ENEEDAUTH) — trusted publishing negotiates per
+      # package, from the package's own directory. Platform leads so a
+      # first-publish auth failure stops the train before any dependent
+      # ships without its dependencies.
+      - run: |
+          set -e
+          for p in platform engine-eto engine-desk engine-letter engine-digest engine-sports engine-wrap press cli subscribe; do
+            echo "── publishing @eto-press/$p"
+            (cd packages/$p && npm publish)
+          done

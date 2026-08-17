@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/engine-digest",
-  "version": "2.20260816.1",
+  "version": "2.20260816.2",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The digest engine: a reading list, not a retelling. The day's new links, grouped into the masthead's sections, each one the outlet's own front door.",
@@ -22,7 +22,7 @@
     "@effect/platform": "^0.97.0",
     "@effect/sql": "^0.52.0",
     "effect": "^3.22.0",
-    "@eto-press/platform": "^2.20260816.1"
+    "@eto-press/platform": "^2.20260816.2"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

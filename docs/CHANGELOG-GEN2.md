@@ -1,6 +1,6 @@
 # Generation 2 — the changelog
 
-*Release `2.20260816.1`. The two gating editorial rulings were made
+*Release `2.20260816.2`. The two gating editorial rulings were made
 2026-08-16: the license stays **AGPL-3.0-only**, and the engine package
 names stand.*
 

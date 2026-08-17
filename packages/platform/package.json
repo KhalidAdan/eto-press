@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/platform",
-  "version": "2.20260816.1",
+  "version": "2.20260816.2",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The machinery of a personal periodical: front-door reading, the journal, the archive, rendering to site and inbox and RSS, the mail, the verbs. None of it knows what news is.",
