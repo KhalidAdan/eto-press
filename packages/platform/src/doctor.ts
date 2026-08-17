@@ -21,7 +21,7 @@ import { loadEnv } from "./env.js"
 /** Engines that call no models. Doctor is a platform verb and cannot ask
  * the engine registry (that lives in the press binding), so this list is
  * maintained here beside the checks it gates. */
-const MODELLESS = new Set(["desk", "letter"])
+const MODELLESS = new Set(["desk", "letter", "digest", "sports"])
 const needsModels = !MODELLESS.has(ENGINE)
 
 type Status = "ok" | "warn" | "fail" | "skip"

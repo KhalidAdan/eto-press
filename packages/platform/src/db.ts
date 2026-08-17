@@ -136,6 +136,8 @@ const TABLES = [
     balance_note TEXT,
     fold_reason  TEXT,
     engine_ref   TEXT,                  -- the engine's opaque story ref, for cache enrichment
+    byline       TEXT,                  -- optional anatomy: the human author
+    link_items   TEXT,                  -- optional anatomy: JSON [{title, href, note|null}]
     PRIMARY KEY (run_id, position)
   )`,
   // Stage 4+ tables are declared now so the journal's shape is complete:
@@ -156,6 +158,8 @@ const TABLES = [
  * wild. Errors from already-applied ALTERs are expected and ignored. */
 const MIGRATIONS = [
   `ALTER TABLE stories ADD COLUMN fold_reason TEXT`,
+  `ALTER TABLE published_stories ADD COLUMN byline TEXT`,
+  `ALTER TABLE published_stories ADD COLUMN link_items TEXT`,
   // The outlet's own designated link-preview image (og:image), captured at
   // article fetch time. Hotlinked with credit, never rehosted.
   `ALTER TABLE articles ADD COLUMN og_image TEXT`

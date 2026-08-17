@@ -1,0 +1,30 @@
+{
+  "name": "@eto-press/engine-digest",
+  "version": "2.20260815.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "The digest engine: a reading list, not a retelling. The day's new links, grouped into the masthead's sections, each one the outlet's own front door.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "files": ["src", "README.md"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.97.0",
+    "@effect/sql": "^0.52.0",
+    "effect": "^3.22.0",
+    "@eto-press/platform": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}
