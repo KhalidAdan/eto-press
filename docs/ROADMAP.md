@@ -261,10 +261,10 @@ configuration and the first stat-line vocabulary); the link digest; the
 sports paper. The public engine interface is extracted only after the
 ladder has rungs enough to extract from.
 
-**Interaction with phase 4:** the 2.x npm publish waits on the license
-ruling and the engine-naming decision — both editorial, both open.
-Generation-1 papers are untouched either way; the pin is the ownership
-guarantee, unchanged.
+**Interaction with phase 4:** both editorial rulings landed 2026-08-16 —
+the license stays AGPL-3.0-only and the engine names stand — and
+`2.20260816.2` published the same day. Generation-1 papers are untouched;
+the pin is the ownership guarantee, unchanged.
 
 ---
 

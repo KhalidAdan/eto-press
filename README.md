@@ -49,9 +49,9 @@ history (editions stripped). The flagship — eto.news — is customer #1 and
 consumes these packages like any other paper.
 
 The **1.x line** is published on npm (`1.20260814.1`) and frozen; papers
-pinned to it keep printing untouched. The **generation-2 line** lives on
-`main` — merged 2026-08-16 — and is unpublished until the 2.x release is
-cut deliberately.
+pinned to it keep printing untouched. The **generation-2 line** is
+published (`2.20260816.2`, cut 2026-08-16): ten packages — the platform,
+six engines, the press, the CLI, and the subscribe worker.
 
 License: **AGPL-3.0-only** — run it, change it, redistribute it; if you
 serve readers with a modified press, they are owed the source. The press
