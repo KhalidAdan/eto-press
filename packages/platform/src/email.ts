@@ -67,6 +67,16 @@ const storyBlock = (s: HtmlStory): string => {
       ? ""
       : `${monoLine(`By ${esc(s.byline)}`)}
     `
+  const dataList =
+    (s.data ?? []).length === 0
+      ? ""
+      : `${(s.data ?? [])
+          .map(
+            (d) =>
+              `<p style="margin:0 0 8px 0;font-family:${MONO};font-size:13px;line-height:1.6;color:${INK};"><span style="color:${QUIET};">${esc(d.label)}</span> ${esc(d.value)}${d.note !== null ? `<span style="color:${QUIET};"> ${esc(d.note)}</span>` : ""}</p>`
+          )
+          .join("")}
+    `
   const linkList =
     (s.links ?? []).length === 0
       ? ""
@@ -90,7 +100,7 @@ const storyBlock = (s: HtmlStory): string => {
     ${fold}
     <h2 style="margin:0 0 14px 0;font-family:${SERIF};font-size:21px;line-height:1.35;font-weight:600;color:${INK};">${esc(s.headline)}</h2>
     ${byline}${s.bodyParagraphs.map(para).join("")}
-    ${linkList}${differSection}${sourcesLine}${balance}
+    ${dataList}${linkList}${differSection}${sourcesLine}${balance}
   </div>`
 }
 
@@ -147,6 +157,9 @@ ${opts.stories.map(storyBlock).join("\n")}
       s.byline === undefined || s.byline === null ? "" : `By ${s.byline}`,
       "",
       ...s.bodyParagraphs,
+      ...(s.data ?? []).map(
+        (d) => `${d.label}: ${d.value}${d.note !== null ? ` (${d.note})` : ""}`
+      ),
       ...(s.links ?? []).map(
         (l) => `- ${l.title} <${l.href}>${l.note !== null ? ` — ${l.note}` : ""}`
       ),

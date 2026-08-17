@@ -11,12 +11,13 @@ The press split along the platform/engine boundary. The **platform**
 (`@eto-press/platform`) is the machinery of a personal periodical — the
 journal, front-door reading, the four dialects, the archive, the mail —
 and knows nothing of news. An **engine** is an editorial doctrine behind
-one joint, `edition(day)`. Five engines ship: **eto** (the news brief),
+one joint, `edition(day)`. Six engines ship: **eto** (the news brief),
 **desk** (you write, it prints), **letter** (watch an institution's
 door, print when it speaks), **digest** (a reading list, not a
-retelling), and **sports** (signed columns plus the leagues' own links).
-A paper declares its engine in `eto.toml`; absent means eto, so every
-generation-1 paper is already valid.
+retelling), **sports** (signed columns plus the leagues' own links),
+and **wrap** (labeled figures with their motion; nothing moved, no
+edition). A paper declares its engine in `eto.toml`; absent means eto,
+so every generation-1 paper is already valid.
 
 ## Breaking, and how it lands
 
@@ -59,6 +60,8 @@ generation-1 paper is already valid.
   day's first-seen links with the feeds' own blurbs.
 - `@eto-press/engine-sports` — bylined desk columns and league link
   sections in one edition; the first two-corpus engine.
+- `@eto-press/engine-wrap` — boards of watched data doors, every figure
+  printed with its motion against the last edition.
 - `@eto-press/press` — the binding: preflight from `engine.models`, the
   registry, the tail.
 - `@eto-press/cli` — `init` asks which engine; `doctor` examines the

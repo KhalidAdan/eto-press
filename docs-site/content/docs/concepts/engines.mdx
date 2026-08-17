@@ -94,6 +94,25 @@ the source named and linked, a provenance note when a statement replaces
 an earlier one. A morning where no door spoke is NoEdition. No models:
 the institution speaks for itself.
 
+## The wrap engine
+
+The numbers speak; the wrap arranges them. The masthead's sources are
+**boards** — `side = "Rates"` — and each feed is a data door: a JSON or
+plain-text endpoint, with an optional `#dot.path` naming the value inside:
+
+```toml
+[[source]]
+name = "10Y Treasury"
+side = "Rates"
+feeds = ["https://api.example.org/rates.json#data.tenYear"]
+```
+
+Every figure prints labeled and with its motion since the last edition —
+`4.44 (▲ +0.13 since last edition)` — measured against what the reader
+last *saw*, not what the engine last fetched. Nothing moved anywhere
+means NoEdition: a flat morning is a quiet inbox. Charts arrive with the
+email image pipeline, when wrap papers demand them.
+
 ## Silence versus the quiet page
 
 Engines choose what an empty morning means. The eto engine prints the quiet
@@ -104,10 +123,11 @@ are honest; the difference is doctrine.
 
 ## The ladder
 
-Five engines exist — eto, desk, letter, digest, sports — each deliberately
-small, each having forced a piece of the platform into shape: optional
-anatomy, the published-edition store, the FrontDoor, the byline and the
-link list. What remains is vocabulary that arrives on demand (score
-tables, figures, the email image pipeline) and, once the contract has
-settled across these consumers, the extraction of a public engine
-interface — from evidence rather than guesswork.
+Six engines exist — eto, desk, letter, digest, sports, wrap — each
+deliberately small, each having forced a piece of the platform into
+shape: optional anatomy, the published-edition store, the FrontDoor and
+its data doors, the byline, the link list, the data list. What remains is
+the expensive vocabulary tail (score tables, figures, the email image
+pipeline) and, once the contract has settled across these consumers, the
+extraction of a public engine interface — from evidence rather than
+guesswork.

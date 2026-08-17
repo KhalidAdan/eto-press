@@ -10,7 +10,7 @@
  */
 import { SqlClient } from "@effect/sql"
 import { Effect } from "effect"
-import type { EditionStory, LinkItem, SourceLink } from "./edition.js"
+import type { DataItem, EditionStory, LinkItem, SourceLink } from "./edition.js"
 import { editionStoryFrom } from "./edition.js"
 
 export interface PublishedRow {
@@ -26,6 +26,7 @@ export interface PublishedRow {
   readonly engine_ref: string | null
   readonly byline: string | null
   readonly link_items: string | null
+  readonly data_items: string | null
 }
 
 export const toRow = (
@@ -47,6 +48,10 @@ export const toRow = (
   link_items:
     story.links !== undefined && story.links.length > 0
       ? JSON.stringify(story.links)
+      : null,
+  data_items:
+    story.data !== undefined && story.data.length > 0
+      ? JSON.stringify(story.data)
       : null
 })
 
@@ -68,7 +73,11 @@ export const fromRow = (row: PublishedRow): EditionStory => {
     links:
       row.link_items === null
         ? []
-        : (JSON.parse(row.link_items) as ReadonlyArray<LinkItem>)
+        : (JSON.parse(row.link_items) as ReadonlyArray<LinkItem>),
+    data:
+      row.data_items === null
+        ? []
+        : (JSON.parse(row.data_items) as ReadonlyArray<DataItem>)
   })
   return { ...derived, sources: links }
 }

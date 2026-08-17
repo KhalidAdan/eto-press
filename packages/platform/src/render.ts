@@ -103,6 +103,10 @@ export const renderBrief = (
       parts.push(`*By ${s.byline}*`, "")
     }
     if (s.body.trim() !== "") parts.push(s.body, "")
+    for (const row of s.data ?? []) {
+      parts.push(`- **${row.label}**  ${row.value}${row.note !== null ? ` (${row.note})` : ""}`)
+    }
+    if ((s.data ?? []).length > 0) parts.push("")
     for (const link of s.links ?? []) {
       parts.push(`- [${link.title}](${link.href})${link.note !== null ? ` — ${link.note}` : ""}`)
     }

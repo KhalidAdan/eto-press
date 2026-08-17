@@ -97,14 +97,70 @@ export const fetchDocument = (source: string, url: string) =>
     Effect.withSpan("frontdoor.fetchDocument", { attributes: { url } })
   )
 
+/** A raw door: the body as served, untouched — for JSON and plain-text
+ * data endpoints where HTML prose extraction would mangle the payload. */
+export const fetchRaw = (source: string, url: string) =>
+  Effect.gen(function* () {
+    const http = (yield* HttpClient.HttpClient).pipe(HttpClient.followRedirects(3))
+    const response = yield* http
+      .execute(
+        HttpClientRequest.get(url).pipe(
+          HttpClientRequest.setHeader("User-Agent", USER_AGENT)
+        )
+      )
+      .pipe(
+        Effect.timeout("30 seconds"),
+        Effect.mapError(
+          (cause) => new DocumentUnfetchable({ source, url, cause, transient: true })
+        )
+      )
+    if (response.status >= 400) {
+      return yield* new DocumentUnfetchable({
+        source,
+        url,
+        cause: `HTTP ${response.status}`,
+        transient: response.status >= 500
+      })
+    }
+    return yield* response.text.pipe(
+      Effect.mapError(
+        (cause) => new DocumentUnfetchable({ source, url, cause, transient: true })
+      )
+    )
+  }).pipe(
+    Effect.scoped,
+    Effect.retry({ schedule: transientRetry, while: (e) => e.transient }),
+    Effect.withSpan("frontdoor.fetchRaw", { attributes: { url } })
+  )
+
+/** Pull one value out of a raw body: a dot path into JSON ("data.rate"),
+ * or the whole trimmed body when no path is given. Returns null when the
+ * path misses or the body isn't JSON but a path was asked for. */
+export const valueAtPath = (raw: string, path: string | null): string | null => {
+  if (path === null || path === "") return raw.trim() === "" ? null : raw.trim()
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return null
+  }
+  let cursor: unknown = parsed
+  for (const key of path.split(".")) {
+    if (cursor === null || typeof cursor !== "object") return null
+    cursor = (cursor as Record<string, unknown>)[key]
+  }
+  if (cursor === undefined || cursor === null) return null
+  return typeof cursor === "string" ? cursor : JSON.stringify(cursor)
+}
+
 /** Journal the fetched version. Returns whether this content is new for
  * the url, and the previously seen version if any — the engine's "what
  * did this door last say, and when?". */
 export const recordDocument = (runId: string, doc: FetchedDocument) =>
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
-    const previous = yield* sql<{ content_hash: string; fetched_at: string }>`
-      SELECT content_hash, fetched_at FROM documents
+    const previous = yield* sql<{ content_hash: string; fetched_at: string; text: string }>`
+      SELECT content_hash, fetched_at, text FROM documents
       WHERE url = ${doc.url} ORDER BY fetched_at DESC LIMIT 1
     `
     const isNew = previous.length === 0 || previous[0]!.content_hash !== doc.contentHash
@@ -121,7 +177,11 @@ export const recordDocument = (runId: string, doc: FetchedDocument) =>
     return {
       isNew,
       previous: previous.length > 0
-        ? { contentHash: previous[0]!.content_hash, fetchedAt: previous[0]!.fetched_at }
+        ? {
+            contentHash: previous[0]!.content_hash,
+            fetchedAt: previous[0]!.fetched_at,
+            text: previous[0]!.text
+          }
         : null
     }
   }).pipe(Effect.withSpan("frontdoor.recordDocument"))
