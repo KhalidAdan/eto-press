@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-// The eto CLI, generation 1: the paperboy's verbs, run in the current
-// directory — which is to say, in a paper. Each verb loads the press's
-// TypeScript directly via tsx's loader; the compile-and-dist story
-// arrives with a later generation. init and doctor arrive with roadmap
-// phase 2.
+// The eto CLI: the paperboy's verbs, init, and doctor, run in the
+// current directory — which is to say, in a paper. Each verb loads the
+// press's TypeScript directly via tsx's loader; the compile-and-dist
+// story arrives with a later generation.
 import { register } from "tsx/esm/api"
 
 const VERBS = {

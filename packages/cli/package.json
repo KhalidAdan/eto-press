@@ -3,7 +3,7 @@
   "version": "2.20260816.2",
   "license": "AGPL-3.0-only",
   "type": "module",
-  "description": "The eto command — verbs over the press. Generation 1: the paperboy's verbs; init and doctor arrive with roadmap phase 2.",
+  "description": "The eto command — verbs over the press. The paperboy's verbs, init, and doctor; the compile-and-dist story arrives with a later generation.",
   "bin": {
     "eto": "./bin/eto.mjs"
   },
