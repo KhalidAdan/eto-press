@@ -13,6 +13,7 @@ import { sportsEngine } from "@eto-press/engine-sports/engine"
 import { ENGINE } from "@eto-press/platform/config"
 import { Desk } from "@eto-press/platform/desk"
 import type { Engine } from "@eto-press/platform/engine"
+import { Inference } from "@eto-press/platform/inference"
 import { Ollama } from "@eto-press/platform/ollama"
 import { pressRun } from "./run.js"
 
@@ -22,7 +23,7 @@ type PressServices =
   | SqlClient.SqlClient
   | HttpClient.HttpClient
   | FileSystem.FileSystem
-  | Ollama
+  | Inference
   | Desk
 
 // The engine registry: static, not dynamic — an engine is a dependency
@@ -50,11 +51,15 @@ mkdirSync("db", { recursive: true })
 
 const SqlLive = SqliteClient.layer({ filename: "db/eto.sqlite" })
 
+// Ollama is the provider's transport, not an engine capability: it is
+// provided TO the inference boundary and appears nowhere in the ceiling.
+const OllamaLive = Ollama.Default.pipe(Layer.provide(NodeHttpClient.layer))
+
 const MainLive = Layer.mergeAll(
   NodeContext.layer,
   NodeHttpClient.layer,
   SqlLive,
-  Ollama.Default.pipe(Layer.provide(NodeHttpClient.layer)),
+  Inference.Default.pipe(Layer.provide(OllamaLive)),
   Desk.Default.pipe(Layer.provide(NodeContext.layer))
 )
 

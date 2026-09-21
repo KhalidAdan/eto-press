@@ -365,9 +365,9 @@ frame:   corrections ← render ← ┘ ← Edition | NoEdition
   with zero stories (the quiet page, which prints). The 2026-08-02
   incident is why the distinction is load-bearing.
 - **Capabilities, not ambient authority.** An engine runs with the journal
-  (SQL), the platform's front-door fetch libraries, the pinned Ollama
-  service, and the Desk. It is never handed the filesystem, the archive,
-  the mail, or the readers.
+  (SQL), the platform's front-door fetch libraries, the pinned inference
+  boundary (see Cross-cutting machinery), and the Desk. It is never handed
+  the filesystem, the archive, the mail, or the readers.
 - The `Engine` interface is **private to the monorepo** until the engine
   ladder has enough rungs to extract a public contract from.
 
@@ -380,6 +380,29 @@ services (HTTP, SQLite, Ollama, clock) are Layers — the test suite swaps in
 fakes, which is how prompt probes and failure-path tests run without a GPU or
 a network. Every stage and unit of work is a span; spans carry the ids that
 the tables use, so a trace, a log line, and a row can always be joined.
+
+**The inference boundary.** The stages never talk to a model; they ask the
+`Inference` service one of a closed set of typed questions — same event
+(stage 4), the below-the-fold nomination (6b), the composite (8, and 9's
+revision pass) — and get typed answers back. There is deliberately no
+generic "chat" on that interface: a future provider that returns typed
+decisions instead of text must still be able to satisfy it, so the boundary
+speaks in questions, never in prompts. Prompts, completion parsers, and
+per-model knobs are the Ollama provider's business
+(`platform/src/inference-ollama.ts`); what stays in the stages is every
+policy around an answer — retries, the re-ask-then-abstain rule,
+journaling, attempt numbering, tripwires. The journal keys don't change:
+`model` is the provider's model identity and `prompt_hash` is the hash of
+the provider's question spec, so resume and invalidate-on-change work as
+they always have. Each verdict also carries a `confidence` column — NULL
+from text models, a calibrated probability from any provider that has one.
+Preflight pins through the provider's `pin()`: it answers with each model
+and the strongest identity it can promise (Ollama: a content digest; a
+provider that cannot promise one returns null, which is logged as
+"unpinnable" and never locked — the §10 gap made visible instead of
+silent). One provider exists, so there is no selection surface yet: the
+registry is code, and the eto.toml key for choosing from it arrives with
+the second provider, the same restraint the engine registry practices.
 
 **Tripwires are first-class.** `FunnelAnomalous`, `VerdictsSuspicious` — the
 pipeline carries statistical self-checks that abort early when a stage's

@@ -2,46 +2,22 @@
  * Stage 8: composite each story's accounts into the four-part brief.
  * The model merges, compresses, attributes — and contributes nothing
  * (NORTH-STAR §4). Drafts are journaled by (cluster_hash, model,
- * prompt_hash, attempt); stage 9's verifier is the cage around this stage.
+ * prompt_hash, attempt) — the boundary's composite identity — and stage
+ * 9's verifier is the cage around this stage. Which accounts go into the
+ * ask, and the printed sources line, are this stage's arithmetic; the
+ * prompt and the four-part parsing are the inference boundary's.
  */
 import { SqlClient } from "@effect/sql"
 import { Effect, Schedule } from "effect"
 import type { Account, Draft, StoryWithAccounts } from "@eto-press/platform/edition"
-import { COMPOSITE_MODEL, COMPOSITE_NUM_CTX } from "@eto-press/platform/config"
 import { DraftMalformed } from "@eto-press/platform/errors"
-import { Ollama } from "@eto-press/platform/ollama"
-import { COMPOSITE_PROMPT_HASH, compositePrompt } from "./prompts.js"
+import { Inference } from "@eto-press/platform/inference"
 
 export type { Draft }
 
-/** Pure and testable: pull the four parts out of the model's text, or null.
- * Tolerates markdown bolding and heading marks around the markers. */
-export const parseDraft = (raw: string, attempt: number): Draft | null => {
-  const cleaned = raw.replace(/\*\*/g, "").replace(/^#+\s*/gm, "")
-  const grab = (start: string, enders: ReadonlyArray<string>): string | null => {
-    const re = new RegExp(`^\\s*${start}\\s*:?\\s*`, "im")
-    const m = re.exec(cleaned)
-    if (!m) return null
-    const from = m.index + m[0].length
-    let to = cleaned.length
-    for (const end of enders) {
-      const er = new RegExp(`^\\s*${end}\\s*:?`, "im")
-      const em = er.exec(cleaned.slice(from))
-      if (em && from + em.index < to) to = from + em.index
-    }
-    return cleaned.slice(from, to).trim()
-  }
-
-  const headline = grab("HEADLINE", ["BODY"])
-  const body = grab("BODY", ["WHERE THE ACCOUNTS DIFFER"])
-  const differ = grab("WHERE THE ACCOUNTS DIFFER", ["SOURCES"])
-  const sourcesLine = grab("SOURCES", [])
-
-  if (!headline || !body || !differ || !sourcesLine) return null
-  // SOURCES is the last line; anything substantial after it violates "it ends".
-  if (sourcesLine.split("\n").length > 2) return null
-  return { headline, body, differ, sourcesLine, raw, attempt }
-}
+/** The production parser, re-exported from its home behind the boundary
+ * for lab/composite-eval.ts and the tests. */
+export { parseDraft } from "@eto-press/platform/inference-ollama"
 
 /** The context window is finite; a 9-account cluster is not. One account
  * per outlet first (longest text wins), then extras by length, capped. */
@@ -83,6 +59,8 @@ export const selectAccountsForPrompt = (
 const loadCachedDraft = (clusterHash: string) =>
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
+    const inference = yield* Inference
+    const { model, questionHash } = inference.identities.composite
     const rows = yield* sql<{
       headline: string
       body: string
@@ -93,7 +71,7 @@ const loadCachedDraft = (clusterHash: string) =>
     }>`
       SELECT headline, body, differ, sources_line, raw, attempt FROM drafts
       WHERE cluster_hash = ${clusterHash}
-        AND model = ${COMPOSITE_MODEL} AND prompt_hash = ${COMPOSITE_PROMPT_HASH}
+        AND model = ${model} AND prompt_hash = ${questionHash}
       ORDER BY attempt DESC LIMIT 1
     `
     const r = rows[0]
@@ -112,11 +90,13 @@ const loadCachedDraft = (clusterHash: string) =>
 export const persistDraft = (clusterHash: string, draft: Draft) =>
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
+    const inference = yield* Inference
+    const { model, questionHash } = inference.identities.composite
     yield* sql`
       INSERT INTO drafts ${sql.insert({
         cluster_hash: clusterHash,
-        model: COMPOSITE_MODEL,
-        prompt_hash: COMPOSITE_PROMPT_HASH,
+        model,
+        prompt_hash: questionHash,
         attempt: draft.attempt,
         headline: draft.headline,
         body: draft.body,
@@ -132,7 +112,7 @@ export const persistDraft = (clusterHash: string, draft: Draft) =>
  * after two shapeless attempts — the story drops, never the run. */
 export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
   Effect.gen(function* () {
-    const ollama = yield* Ollama
+    const inference = yield* Inference
     const hash = swa.story.cluster.hash
     const promptAccounts = selectAccountsForPrompt(swa.accounts)
     // Applied on every return path, including journal reloads: drafts
@@ -152,27 +132,23 @@ export const compositeStory = (swa: StoryWithAccounts, extraNotes?: string) =>
       }
     }
 
-    const basePrompt = compositePrompt(
-      promptAccounts.map((a) => ({
-        outlet: a.item.outlet,
-        title: a.item.title,
-        text: a.text
-      }))
-    )
-    const prompt =
-      extraNotes === undefined
-        ? basePrompt
-        : `${basePrompt}\n\nEDITOR'S NOTES on your previous draft — fix these and output the corrected brief in full:\n${extraNotes}`
+    const askAccounts = promptAccounts.map((a) => ({
+      outlet: a.item.outlet,
+      title: a.item.title,
+      text: a.text
+    }))
 
     const cached = yield* loadCachedDraft(hash)
     const nextAttempt = cached === null ? 0 : cached.attempt + 1
 
     for (let attempt = nextAttempt; attempt < nextAttempt + 2; attempt++) {
-      const raw = yield* ollama.chat(COMPOSITE_MODEL, prompt, `composite ${hash}`, {
-        numCtx: COMPOSITE_NUM_CTX,
-        think: false
-      }).pipe(Effect.retry({ schedule: callRetry }))
-      const draft = parseDraft(raw, attempt)
+      const draft = yield* inference
+        .composite(askAccounts, {
+          attempt,
+          revisionNotes: extraNotes,
+          unit: `composite ${hash}`
+        })
+        .pipe(Effect.retry({ schedule: callRetry }))
       if (draft !== null) {
         yield* persistDraft(hash, draft)
         return withSources(draft)
