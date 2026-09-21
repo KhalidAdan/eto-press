@@ -13,9 +13,9 @@ import type { Day, Engine, EngineOutcome } from "@eto-press/platform/engine"
 import { persistPublishedStories } from "@eto-press/platform/published"
 import { archiveBrief, renderBrief, type CorrectionNotice } from "@eto-press/platform/render"
 import { ensureSchema } from "@eto-press/platform/db"
-import { ModelDrifted, ModelMissing } from "@eto-press/platform/errors"
+import { ModelDrifted } from "@eto-press/platform/errors"
+import { Inference } from "@eto-press/platform/inference"
 import { loadMasthead } from "@eto-press/platform/masthead"
-import { Ollama } from "@eto-press/platform/ollama"
 import { etoEngine } from "@eto-press/engine-eto/engine"
 
 /** The run id is the editor's local calendar date — the morning the brief is
@@ -34,25 +34,26 @@ export const pressRun = <R>(engine: Engine<any, R>) =>
     const sql = yield* SqlClient.SqlClient
 
     // Model presence and digest pinning (§10): an `ollama pull` must never
-    // silently change the paper's mind. The engine declares which models it
-    // calls; an engine that declares none needs no Ollama at all.
+    // silently change the paper's mind. The engine declares whether it asks
+    // models anything at all; the inference provider answers with its
+    // models and the strongest identity it can promise for each. A null
+    // digest is an honest "unpinnable" — logged, never locked.
     if (engine.models.length > 0) {
-      const ollama = yield* Ollama
-      const installed = yield* ollama.installedModels
-      const names = installed.map((m) => m.name)
-      for (const model of engine.models) {
-        if (!names.includes(model)) {
-          return yield* new ModelMissing({ model, installed: names })
-        }
-      }
+      const inference = yield* Inference
+      const pinned = yield* inference.pin()
 
       const fs = yield* FileSystem.FileSystem
       const LOCK = "models.lock.json"
-      const current = Object.fromEntries(
-        installed
-          .filter((m) => engine.models.includes(m.name))
-          .map((m) => [m.name, m.digest])
-      )
+      const current: Record<string, string> = {}
+      for (const p of pinned) {
+        if (p.digest === null) {
+          yield* Effect.logInfo(
+            `model ${p.model}: the ${inference.provider} provider exposes no digest — unpinnable`
+          )
+        } else {
+          current[p.model] = p.digest
+        }
+      }
       if (yield* fs.exists(LOCK).pipe(Effect.orDie)) {
         const locked = JSON.parse(
           yield* fs.readFileString(LOCK).pipe(Effect.orDie)

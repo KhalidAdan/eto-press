@@ -11,25 +11,21 @@
  *   lazy ranking prompt).
  * - No nomination is a fine outcome: on any failure the brief simply has
  *   no below-the-fold today, and the report says so.
+ *
+ * The deck — pool, shuffle, labels — is this stage's; how the question is
+ * put to a model is the inference boundary's.
  */
 import { Effect, Schedule } from "effect"
+import { Inference } from "@eto-press/platform/inference"
 import type { Cluster } from "./cluster.js"
-import { COMPOSITE_MODEL } from "@eto-press/platform/config"
-import { Ollama } from "@eto-press/platform/ollama"
+
+/** The production parser, re-exported from its home behind the boundary
+ * for the tests and probes that grade it. */
+export { parseNomination } from "@eto-press/platform/inference-ollama"
 
 export interface Nomination {
   readonly cluster: Cluster
   readonly reason: string
-}
-
-/** Pure and probed: pull "cX — reason" out of the model's reply. */
-export const parseNomination = (
-  raw: string
-): { id: string; reason: string } | null => {
-  const m = raw.match(/\b(c\d+)\s*[—–:-]+\s*(.+)/s)
-  if (!m) return null
-  const reason = m[2]!.split(/\n/)[0]!.trim()
-  return reason.length < 10 ? null : { id: m[1]!, reason }
 }
 
 const shuffled = <T>(arr: ReadonlyArray<T>, seed: number): Array<T> => {
@@ -49,7 +45,7 @@ export const nominateBelowTheFold = (
 ) =>
   Effect.gen(function* () {
     if (pool.length === 0) return null
-    const ollama = yield* Ollama
+    const inference = yield* Inference
 
     const seed = [...runId].reduce((n, ch) => n * 31 + ch.charCodeAt(0), 7)
     const deck = shuffled(pool, seed).map((c, i) => ({
@@ -60,20 +56,11 @@ export const nominateBelowTheFold = (
         c.items.slice(0, 2).map((it) => it.title).join(" | ")
     }))
 
-    const prompt =
-      "You are the editor's scout for a daily news brief. The front page is " +
-      "already chosen; you cannot change it. Below, in random order, are the " +
-      "day's remaining multi-outlet stories — candidates for ONE 'below the " +
-      "fold' slot: a story whose real-world consequence exceeds the " +
-      "attention it got. Prefer concrete consequence for many people " +
-      "(health, money, rights, safety, war and peace). Avoid celebrity, " +
-      "sports, punditry, and palace politics.\n\n" +
-      deck.map((d) => d.line).join("\n") +
-      "\n\nOutput exactly one line, nothing else:\n" +
-      "cX — one sentence naming the concrete consequence that earns the slot\n"
-
-    const raw = yield* ollama
-      .chat(COMPOSITE_MODEL, prompt, "below-the-fold nomination", { numCtx: 8192 })
+    const { pick, raw } = yield* inference
+      .nominate(
+        deck.map((d) => ({ id: d.id, line: d.line })),
+        "below-the-fold nomination"
+      )
       .pipe(
         Effect.retry({
           schedule: Schedule.exponential("1 second").pipe(
@@ -83,15 +70,14 @@ export const nominateBelowTheFold = (
         })
       )
 
-    const parsed = parseNomination(raw)
-    if (parsed === null) {
+    if (pick === null) {
       yield* Effect.logWarning(`below-the-fold: unparseable nomination: ${raw.slice(0, 80)}`)
       return null
     }
-    const picked = deck.find((d) => d.id === parsed.id)
+    const picked = deck.find((d) => d.id === pick.id)
     if (picked === undefined) {
-      yield* Effect.logWarning(`below-the-fold: nominated unknown id ${parsed.id}`)
+      yield* Effect.logWarning(`below-the-fold: nominated unknown id ${pick.id}`)
       return null
     }
-    return { cluster: picked.cluster, reason: parsed.reason } satisfies Nomination
+    return { cluster: picked.cluster, reason: pick.reason } satisfies Nomination
   }).pipe(Effect.withSpan("stage6b.nominateBelowTheFold"))

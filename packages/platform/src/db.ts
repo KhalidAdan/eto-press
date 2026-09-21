@@ -164,7 +164,11 @@ const MIGRATIONS = [
   `ALTER TABLE published_stories ADD COLUMN data_items TEXT`,
   // The outlet's own designated link-preview image (og:image), captured at
   // article fetch time. Hotlinked with credit, never rehosted.
-  `ALTER TABLE articles ADD COLUMN og_image TEXT`
+  `ALTER TABLE articles ADD COLUMN og_image TEXT`,
+  // A calibrated probability from the inference provider, when it gives
+  // one. The local text models never do (always NULL); the column exists
+  // so a provider that calibrates has somewhere honest to put it.
+  `ALTER TABLE verdicts ADD COLUMN confidence REAL`
 ] as const
 
 export const ensureSchema = Effect.gen(function* () {

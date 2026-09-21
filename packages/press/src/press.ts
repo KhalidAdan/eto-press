@@ -19,6 +19,7 @@
  * API below is unchanged from generation 1.
  */
 export { nightly } from "./run.js"
+export { Inference } from "@eto-press/platform/inference"
 export { Ollama } from "@eto-press/platform/ollama"
 export {
   loadMasthead,

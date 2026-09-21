@@ -3,33 +3,25 @@
  *
  * The verdicts table's primary key (item_a, item_b, model, prompt_hash) is
  * the resume story of the whole pipeline: a rerun skips every judged pair,
- * and changing the model or prompt automatically re-judges. A crash costs
- * the one pair in flight.
+ * and changing the model or the question spec automatically re-judges. A
+ * crash costs the one pair in flight. The key's values come from the
+ * inference boundary's identities — this stage never sees a prompt.
  */
 import { SqlClient } from "@effect/sql"
 import { Effect, Schedule } from "effect"
-import { MATCH_MODEL } from "@eto-press/platform/config"
 import { VerdictsSuspicious } from "@eto-press/platform/errors"
+import { Inference } from "@eto-press/platform/inference"
 import type { CandidatePair } from "./prefilter.js"
-import { Ollama } from "@eto-press/platform/ollama"
-import { SAME_EVENT_PROMPT_HASH, sameEventPrompt } from "./prompts.js"
+
+/** The production parser, re-exported from its home behind the boundary
+ * for lab/judge-eval.ts — candidates must be graded by the same parser
+ * production uses. */
+export { parseVerdict } from "@eto-press/platform/inference-ollama"
 
 export interface JudgedPair {
   readonly pair: CandidatePair
   readonly same: boolean
   readonly cached: boolean
-}
-
-/** The verdict is the last word of the completion, whatever else came out.
- * Exported for lab/judge-eval.ts: candidates must be graded by the same
- * parser production uses. */
-export const parseVerdict = (raw: string): "yes" | "no" | null => {
-  const afterThink = raw.includes("</think>")
-    ? raw.slice(raw.lastIndexOf("</think>") + 8)
-    : raw
-  const words = afterThink.toLowerCase().match(/[a-z]+/g)
-  const last = words?.at(-1)
-  return last === "yes" || last === "no" ? last : null
 }
 
 const callRetry = Schedule.exponential("1 second").pipe(
@@ -44,7 +36,8 @@ const TRIPWIRE_AT = 100
 export const judgePairs = (pairs: ReadonlyArray<CandidatePair>) =>
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
-    const ollama = yield* Ollama
+    const inference = yield* Inference
+    const { model, questionHash } = inference.identities.sameEvent
 
     const results: Array<JudgedPair> = []
     let fresh = 0
@@ -61,42 +54,42 @@ export const judgePairs = (pairs: ReadonlyArray<CandidatePair>) =>
       const existing = yield* sql<{ answer: string }>`
         SELECT answer FROM verdicts
         WHERE item_a = ${lo} AND item_b = ${hi}
-          AND model = ${MATCH_MODEL} AND prompt_hash = ${SAME_EVENT_PROMPT_HASH}
+          AND model = ${model} AND prompt_hash = ${questionHash}
       `
       if (existing.length > 0) {
         results.push({ pair, same: existing[0]!.answer === "yes", cached: true })
         continue
       }
 
-      const prompt = sameEventPrompt(pair.a, pair.b)
-      const askOnce = ollama
-        .chat(MATCH_MODEL, prompt, `pair ${pairId}`)
+      const askOnce = inference
+        .sameEvent(pair.a, pair.b, `pair ${pairId}`)
         .pipe(Effect.retry({ schedule: callRetry }))
 
       const t0 = Date.now()
-      let raw = yield* askOnce
-      let verdict = parseVerdict(raw)
-      if (verdict === null) {
+      let verdict = yield* askOnce
+      if (verdict.answer === null) {
         // One re-ask, then record an abstention — visible, not silent.
-        raw = yield* askOnce
-        verdict = parseVerdict(raw)
+        verdict = yield* askOnce
       }
-      const answer = verdict ?? "abstain"
+      const answer = verdict.answer ?? "abstain"
 
       yield* sql`INSERT INTO verdicts ${sql.insert({
         item_a: lo,
         item_b: hi,
-        model: MATCH_MODEL,
-        prompt_hash: SAME_EVENT_PROMPT_HASH,
+        model,
+        prompt_hash: questionHash,
         answer,
-        raw: raw.slice(0, 200),
+        confidence: verdict.confidence,
+        raw: verdict.raw.slice(0, 200),
         ms: Date.now() - t0,
         judged_at: new Date().toISOString()
       })} ON CONFLICT (item_a, item_b, model, prompt_hash) DO NOTHING`
 
       if (answer === "abstain") {
         abstained++
-        yield* Effect.logWarning(`verdict unparseable for pair ${pairId}: ${raw.slice(0, 60)}`)
+        yield* Effect.logWarning(
+          `verdict unparseable for pair ${pairId}: ${verdict.raw.slice(0, 60)}`
+        )
       }
       results.push({ pair, same: answer === "yes", cached: false })
       fresh++
