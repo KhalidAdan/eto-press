@@ -5,6 +5,7 @@
   "type": "module",
   "description": "The machinery of a personal periodical: front-door reading, the journal, the archive, rendering to site and inbox and RSS, the mail, the verbs. None of it knows what news is.",
   "exports": {
+    "./brief.css": "./src/brief.css",
     "./*": "./src/*.ts"
   },
   "files": [
@@ -20,14 +21,18 @@
   },
   "dependencies": {
     "@aws-sdk/client-sesv2": "^3.1095.0",
-    "better-sqlite3": "^12.6.2",
     "@effect/platform": "^0.97.0",
     "@effect/sql": "^0.52.0",
+    "@fontsource-variable/lora": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@mozilla/readability": "^0.6.0",
+    "@tailwindcss/cli": "^4.3.3",
+    "better-sqlite3": "^12.6.2",
     "effect": "^3.22.0",
     "jsdom": "^29.1.1",
     "rss-parser": "^3.13.0",
-    "smol-toml": "^1.7.0"
+    "smol-toml": "^1.7.0",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

@@ -2,10 +2,15 @@
  * Stage 12, standalone: render the whole public site from the journal —
  * every published edition at site/<date>.html, the home page at
  * site/index.html (North Star for readers, today's stories, past
- * editions), and sources.html from the masthead file.
- * Run: npm run render  (builds CSS first)
+ * editions), sources.html from the masthead file — and the stylesheet
+ * and fonts beside them, so site/ is the whole paper and depends on
+ * nothing outside it.
+ * Run: eto render
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { spawnSync } from "node:child_process"
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { createRequire } from "node:module"
+import { dirname, join } from "node:path"
 import * as TOML from "smol-toml"
 import {
   assembleStories,
@@ -166,6 +171,40 @@ for (const s of masthead.source) {
   }
 }
 writeFileSync("site/sources.html", renderSourcesPage(bySide, masthead.seed ?? null), "utf8")
+
+// The stylesheet: the paper's own brief.css if it has one (its skin —
+// usually an @import of the default theme plus its own rules), else the
+// default theme itself. Compiled here so no paper needs a build step.
+const require = createRequire(import.meta.url)
+const skin = existsSync("brief.css") ? "brief.css" : require.resolve("@eto-press/platform/brief.css")
+const tailwind = join(dirname(require.resolve("@tailwindcss/cli/package.json")), "dist", "index.mjs")
+const css = spawnSync(process.execPath, [tailwind, "-i", skin, "-o", "site/brief.css", "--minify"], {
+  stdio: ["ignore", "ignore", "inherit"]
+})
+if (css.status !== 0) {
+  console.error(`stylesheet failed to compile from ${skin}`)
+  process.exit(1)
+}
+
+// The type, self-hosted: the woff2 files the default theme's @font-face
+// rules name, copied from the OFL packages into site/fonts. A skin that
+// uses other fonts simply never references these.
+const FONT_FILES = [
+  ["@fontsource-variable/lora", "lora-latin-wght-normal.woff2"],
+  ["@fontsource-variable/lora", "lora-latin-wght-italic.woff2"],
+  ["@fontsource-variable/lora", "lora-latin-ext-wght-normal.woff2"],
+  ["@fontsource-variable/lora", "lora-latin-ext-wght-italic.woff2"],
+  ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-400-normal.woff2"],
+  ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-400-italic.woff2"],
+  ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-500-normal.woff2"],
+  ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-ext-400-normal.woff2"],
+  ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-ext-400-italic.woff2"],
+  ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-ext-500-normal.woff2"]
+] as const
+mkdirSync("site/fonts", { recursive: true })
+for (const [pkg, file] of FONT_FILES) {
+  copyFileSync(join(dirname(require.resolve(`${pkg}/package.json`)), "files", file), `site/fonts/${file}`)
+}
 
 console.log(
   `rendered ${editions.length} edition(s), index.html, sources.html — latest: ${editions[0]} ` +

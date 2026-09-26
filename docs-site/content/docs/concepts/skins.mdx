@@ -13,7 +13,9 @@ that say what things are, never how they look:
   <p class="story__body prose">…</p>
   <h3 class="story__differ-label instrument accent">Where the accounts differ</h3>
   <p class="story__differ prose">…</p>
-  <p class="story__sources instrument">Sources …</p>
+  <footer class="story__footer">
+    <p class="story__sources instrument instrument--quiet">Sources …</p>
+  </footer>
 </article>
 ```
 
@@ -26,15 +28,26 @@ label, the balance notes, the full stop after the wordmark).
 
 The press ships one stylesheet — Lora and claret, the hairlines, a 68ch
 measure — so the zero-effort path is beautiful. It is just CSS over the
-anatomy above.
+anatomy above. `eto render` compiles it into `site/brief.css` and copies the
+two typefaces (Lora and IBM Plex Mono) into `site/fonts/`, so a rendered page
+makes no request to anyone: no font service, no CDN, no script.
 
 ## Your skin
 
-Replace the stylesheet. That is the entire mechanism: no fork, no template
-override, no permission. Your paper keeps the engine's structure — the differ
-block, the sources line, the end marker are guaranteed by the engine, present
-and checkable in every page — and you have full editorial CSS rights over how
-that structure looks.
+Write `brief.css` at the root of your paper. That is the entire mechanism:
+no fork, no template override, no permission. When the file exists, `eto
+render` compiles it instead of the default theme. It may be plain CSS, or it
+may start from the default and add rules:
+
+```css
+@import "@eto-press/platform/brief.css";
+
+.story__headline { font-variant: small-caps; }
+```
+
+Your paper keeps the engine's structure — the differ block, the sources line,
+the end marker are guaranteed by the engine, present and checkable in every
+page — and you have full editorial CSS rights over how that structure looks.
 
 A skin that styles its attribution invisible has not defeated the engine; it
 has stopped being an eto-engine paper. Enforcement is checkability, not locks

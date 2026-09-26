@@ -13,13 +13,13 @@ brief quietly and honestly.**
 
 | Error | Stage | Meaning |
 | --- | --- | --- |
-| `MastheadInvalid` | preflight | `sources.toml` failed validation — bad TOML, a misplaced flag, or (eto engine) an empty source list. The reason names the fix. |
-| `OllamaDown` | preflight | The model server is unreachable. `eto press` tries to start it first. |
-| `ModelMissing` | preflight | A model the engine declares isn't installed. `eto models pull` restores it. |
+| `MastheadInvalid` | preflight, the joint | `sources.toml` failed validation — bad TOML or a misplaced flag at preflight; an empty source list, raised by the eto engine when its morning begins. The reason names the fix. |
+| `OllamaDown` | preflight | The model server is unreachable. For an engine that declares models, `eto press` tries to start it first; `eto print` does not. |
+| `ModelMissing` | preflight | A model the inference provider is configured with isn't installed. `eto models pull` restores it. |
 | `ModelDrifted` | preflight | An installed model's digest no longer matches `models.lock.json`. An `ollama pull` must never silently change the paper's mind; re-pinning is deliberate (`eto models pin`). |
-| `BriefAlreadyPublished` | preflight, archive | Today's file already exists. A retry that reaches this is finished, not broken. |
-| `FunnelAnomalous` | prefilter | The funnel is wildly off profile (zero pairs from hundreds of items, or 20× the usual). Misconfiguration, caught before model time is spent. |
-| `VerdictsSuspicious` | judge | The first hundred verdicts were unanimous. A one-sided stream means a broken prompt or model, not a quiet news day. |
+| `BriefAlreadyPublished` | archive | Today's file already exists when the archive write reaches it. A retry that gets this far is finished, not broken. |
+| `FunnelAnomalous` | prefilter | More than 20 news items but zero candidate pairs, or candidate pairs over 20× the news items. Misconfiguration, caught before model time is spent. |
+| `VerdictsSuspicious` | judge | The first hundred fresh verdicts (cached ones don't count) were unanimous. A one-sided stream means a broken prompt or model, not a quiet news day. |
 | `PressStalled` | composite | The compositor stopped answering after retries. The press stops loudly rather than absorbing timeouts as story drops and printing a hollow edition. |
 
 ## Degrading — the brief shrinks, honestly
@@ -28,16 +28,19 @@ brief quietly and honestly.**
 | --- | --- | --- |
 | `FeedUnreachable` | fetch | Retried on timeouts and 5xx (a 403 is a closed door and fails fast). The outlet's items are absent; the report says so. |
 | `FeedMalformed` | normalize | The parser produced nothing. Logged, counted, never fatal. |
-| `OllamaCallFailed` | judge, cluster | Retried with backoff; then the unit abstains or drops. At composite, escalates to `PressStalled`. |
-| `VerdictUnparseable` | judge | The answer wasn't yes/no. One re-ask at temperature 0, then recorded as an abstention — stored distinctly so a rash of them is visible. |
+| `OllamaCallFailed` | judge, nominate, composite | The provider's transport failed on one question. Retried with backoff. At nominate, the brief has no below-the-fold today. At composite, escalates to `PressStalled`. At judge, exhausted retries stop the run; the next retry resumes from the journal. |
 | `ArticleUnfetchable` / `ArticleUnreadable` | accounts | The account drops out of the composite — the sources line names only accounts actually read. Below two accounts, the story drops. |
 | `DocumentUnfetchable` | front door | A watched document's door didn't answer (letter engine). Timeouts and 5xx retry; a 4xx is a closed door and fails fast. The door is absent from the morning, and the report says so. |
 | `DraftMalformed` | composite | The four-part shape didn't parse. One re-ask; then the story drops. The press does not ship a brief whose shape it had to guess at. |
 | `BriefUnverifiable` | verify | Violations survived the one revision pass. Terminal for the story, never for the run: the story drops with its violations journaled as the reason, printed in the run report. A gap over a guess, every time. |
 
+An answer that will not parse is not an error. At judge, the pair is asked
+once more, then journaled with `abstain` as its answer — visible, so a rash
+of them shows. At nominate, the brief has no below-the-fold today.
+
 ## Honest outcomes that are not errors
 
 | Outcome | Meaning |
 | --- | --- |
-| `NothingToPrint` | No event was covered by two or more of your sources in the window. The quiet page prints and says so — a measurement, not a malfunction. |
+| The quiet page | An edition with zero stories: no event was covered by two or more of your sources in the window. It prints and says so — a measurement, not a malfunction. |
 | `NoEdition` | The engine chose silence (an empty desk). No file, no mail, one honest note in the runs table. Generation 2. |

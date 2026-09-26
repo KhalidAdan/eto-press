@@ -3,7 +3,7 @@
  * to the code they document. Documentation that drifts fails CI here, not
  * in front of a reader.
  */
-import { readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import {
@@ -72,7 +72,7 @@ describe("error reference matches the tagged errors", () => {
     .map((m) => m[1]!)
   const doc = read("docs-site", "content", "docs", "reference", "errors.mdx")
   // Outcomes documented beside the errors but defined elsewhere.
-  const notErrors = new Set(["NoEdition", "NothingToPrint"])
+  const notErrors = new Set(["NoEdition"])
   const namesInDoc = [...new Set([...doc.matchAll(/`([A-Z][A-Za-z]+)`/g)].map((m) => m[1]!))]
     .filter((n) => !notErrors.has(n))
 
@@ -95,7 +95,7 @@ describe("error reference matches the tagged errors", () => {
 
 describe("anatomy reference matches the markup and theme", () => {
   const html = read("packages", "platform", "src", "html.ts")
-  const theme = read("packages", "press", "src", "brief.css")
+  const theme = read("packages", "platform", "src", "brief.css")
   const doc = read("docs-site", "content", "docs", "reference", "anatomy.mdx")
 
   const classesInDoc = [...new Set(
@@ -117,5 +117,55 @@ describe("anatomy reference matches the markup and theme", () => {
     for (const cls of classesInTheme) {
       expect(doc, `theme class "${cls}" undocumented`).toContain(cls)
     }
+  })
+})
+
+describe("the engine registry matches the pages that enumerate engines", () => {
+  const registry = read("packages", "press", "src", "engines.ts")
+  const enginesInCode = [...registry.matchAll(/^\s+([a-z]+): [a-z]+Engine,?$/gm)].map((m) => m[1]!)
+
+  it("found a plausible registry", () => {
+    expect(enginesInCode.length).toBeGreaterThanOrEqual(2)
+  })
+
+  for (const page of [
+    ["docs-site", "content", "docs", "concepts", "engines.mdx"],
+    ["docs-site", "content", "docs", "internals", "architecture.mdx"],
+    ["docs", "CHANGELOG-GEN2.md"]
+  ]) {
+    it(`${page[page.length - 1]} names every registered engine`, () => {
+      const doc = read(...page)
+      for (const name of enginesInCode) {
+        expect(doc, `engine "${name}" absent from ${page.join("/")}`).toMatch(
+          new RegExp(`\\b${name}\\b`)
+        )
+      }
+    })
+  }
+})
+
+describe("the package roster matches what ships", () => {
+  const packages = readdirSync(join(ROOT, "packages")).filter((p) =>
+    existsSync(join(ROOT, "packages", p, "package.json"))
+  )
+
+  it("every package publishes a README", () => {
+    for (const p of packages) {
+      expect(existsSync(join(ROOT, "packages", p, "README.md")), `packages/${p}/README.md missing`).toBe(true)
+    }
+  })
+
+  it("the root README's package table names every package", () => {
+    const readme = read("README.md")
+    for (const p of packages) {
+      expect(readme, `@eto-press/${p} absent from README.md`).toContain(`@eto-press/${p}`)
+    }
+  })
+
+  it("every package is at the same version", () => {
+    const versions = new Set(
+      packages.map((p) => (JSON.parse(read("packages", p, "package.json")) as { version: string }).version)
+    )
+    expect([...versions]).toHaveLength(1)
   })
 })

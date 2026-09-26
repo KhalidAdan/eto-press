@@ -16,18 +16,31 @@ swap in fakes — the same mechanism production uses to wire the real ones.
 
 ## What the unit suites cover
 
-- **Pure engine logic** — classification, prefiltering, cluster building
-  and the density gate, selection and the story cap, draft parsing, the
-  verification checks. These are the doctrine's executable form, so they
-  are tested as functions with plain fixtures.
-- **Platform machinery** — feed parsing against hostile encodings, the
-  masthead loader (including the misplaced-flag refusal), configuration
-  defaults, renderer behavior for present *and absent* anatomy.
-- **Docs accuracy** — the reference pages of this site are pinned to the
-  code they document: the CLI table to the real verb registry, the
-  configuration defaults to `config.ts`, the error catalog to the tagged
-  errors in `errors.ts`, the anatomy reference to the classes the markup
-  and theme actually use. Documentation that drifts fails CI, not readers.
+- **The eto engine** (`packages/engine-eto/test`) — `classify`, `prefilter`,
+  `cluster` (the density gate and the shear), `select` (the story cap, the
+  cross-edition dedupe, the density floor), `nominate`, `composite` (account
+  selection, the arithmetic sources line, and `parseDraft` through its
+  re-export), `verify` (every check of the cage). These are the doctrine's
+  executable form, so they are tested as functions with plain fixtures.
+- **Platform machinery** (`packages/platform/test`) — `articles`, `errors`,
+  `feeds` (stage 2b: full text served in the feed itself), `masthead`
+  (including the misplaced-flag refusal), `paper-config` (the defaults),
+  `published` (the store's row round-trip), and `inference-ollama` — the
+  provider exercised through the boundary with a fake Ollama service: the
+  prompts it builds, the parsers it applies, the identities it reports,
+  and what `pin` does with a missing model.
+- **The other engines** — `engine-desk/test/parse`, `engine-digest`,
+  `engine-letter/test/frontdoor`, `engine-sports/test/column`,
+  `engine-wrap`: each engine's parsing and decisions as pure functions.
+- **Docs accuracy** (`packages/press/test/docs`) — the reference pages of
+  this site are pinned to the code they document: the CLI table to the real
+  verb registry, the configuration defaults to `config.ts`, the error
+  catalog to the tagged errors in `errors.ts`, the anatomy reference to the
+  classes the markup and theme actually use. Documentation that drifts
+  fails CI, not readers.
+
+There is no renderer test suite. The renderer's bar is the hermetic proof
+described below, run when the renderer changes.
 
 ## The refactor gates
 
@@ -58,6 +71,16 @@ all reusable:
 ## Writing tests for a new engine
 
 The desk engine's suite is the template: test your parsing and decisions as
-pure functions; let the frame's own tests carry the joint. If your engine
-grows a model call, give its prompt known-answer probes — a prompt is a
-versioned artifact here, and experiment 002's twenty lost minutes are why.
+pure functions; let the frame's own tests carry the joint.
+
+Engines own no prompts, so an engine suite never probes one. If your engine
+needs to ask a model something the boundary does not already ask, the
+question goes in `inference.ts` and its answer in the provider, and its
+tests go in `inference-ollama.test.ts` beside the others — a fake Ollama
+service handed to the real provider, so the prompt it builds and the parser
+it applies are exercised without a GPU. A question is a versioned artifact
+here, and experiment 002's twenty lost minutes are why.
+
+The known-answer probes against live models live in `packages/press/lab/`
+(`probe-prompts.ts`, `judge-eval.ts`, `composite-eval.ts`) and are run
+directly with `tsx`; there is no `npm run probe` script in the monorepo.

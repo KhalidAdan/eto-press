@@ -14,9 +14,10 @@
  * machinery of a personal periodical (journal, front-door reading,
  * dialects, archive, mail, verbs), @eto-press/engine-eto holds the
  * editorial machinery (prefilter, judge, cluster, select, compositor,
- * the verification cage). run.ts here is the morning walk that binds
- * them — it moves behind the Engine joint in a later step. The public
- * API below is unchanged from generation 1.
+ * the verification cage), and four more engines stand beside it. run.ts
+ * here is the frame of the morning: preflight, the joint (the engine's
+ * whole middle, one call), and the tail. The public API below is
+ * unchanged from generation 1, plus the inference boundary.
  */
 export { nightly } from "./run.js"
 export { Inference } from "@eto-press/platform/inference"

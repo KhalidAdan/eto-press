@@ -3,11 +3,14 @@
 Every outlet on the AllSides Media Bias Chart v11.3, audited through the
 front door (NORTH-STAR §8) on **2026-07-25** from this machine, with eto's
 honest user-agent. Ratings are AllSides', captured the same day — they are a
-cartographer's opinion, not eto's and not necessarily yours. The active
-masthead is `sources.toml`; this file is the shelf you stock it from.
+cartographer's opinion, not eto's and not necessarily yours. This file is
+the shelf; the seed drawn from it is `packages/platform/src/seed-masthead.toml`,
+which `eto init` copies into a new paper as its `sources.toml` — the active
+masthead is always the paper's own.
 
-Raw audit data: `lab/output/feed-audit-full.json`. Re-audit any time with
-`npx tsx lab/feed-audit-full.ts`.
+Re-audit any time with `packages/press/lab/feed-audit-full.ts` (run with
+`tsx`); it writes `lab/output/feed-audit-full.json` relative to the current
+directory, and the output is not committed.
 
 **Updated 2026-07-27** after the deeper-feed probes: section feeds added
 for BBC, The Hill, Washington Examiner, and National Review; UPI added
@@ -18,8 +21,11 @@ every path and dropped for good.
 **Caveats.** An open feed is not a readable article: paywalled outlets (WSJ,
 NYT, The Atlantic, The Economist…) may serve full headlines but teaser-only
 article pages, in which case stage 7 drops their accounts and they contribute
-clustering signal, never composite text. The `articles` table measures this
-per outlet over time — check it before judging a source's worth. Feeds also
+clustering signal, never composite text. (Partly mitigated since stage 2b:
+a feed that carries the full article in `content:encoded` — Axios, for one
+— is journaled as the account of record at ingest and never fetched.) The
+`articles` table measures this per outlet over time — check it before
+judging a source's worth. Feeds also
 break and un-break (Washington Times served this machine at 20:00 and 403'd
 by 21:51); status here is a snapshot, and `feed_fetches` is the running
 health record.

@@ -13,17 +13,32 @@ requirements first, see [Installation](/docs/installation).
     ```bash
     npx @eto-press/cli init
     ```
-    The wizard asks for your paper's name, seeds `sources.toml` from the
-    audited AllSides shelf, pulls and pins the models
-    (`models.lock.json` is generated, never hand-edited), and runs a
-    sandboxed dry edition so your first real morning is not your first test.
+    The wizard asks five questions — name, motto, web address, accent
+    color, engine — and writes the paper: `eto.toml`, `sources.toml` seeded
+    from the audited AllSides shelf, `.env.example`, `.gitignore`. Nothing
+    else happens yet; it ends by printing the commands that follow.
+  </Step>
+  <Step title="Install the press into it">
+    ```bash
+    npm init -y && npm install @eto-press/press @eto-press/cli
+    ```
+    From here on, `eto` runs from the paper's own `node_modules`.
+  </Step>
+  <Step title="Pull the models">
+    ```bash
+    eto models pull
+    ```
+    Downloads the judge and the compositor into Ollama and pins their
+    digests to `models.lock.json` — generated, never hand-edited. Skip
+    this for a desk paper.
   </Step>
   <Step title="Check the press">
     ```bash
     eto doctor
     ```
-    Preflight as a command: Ollama reachable, models matching the lock, VRAM
-    sanity, feeds answering, the last edition's status.
+    Preflight as a command: Ollama reachable, models matching the lock, no
+    foreign models resident on the GPU, feeds answering, the last edition's
+    status.
   </Step>
   <Step title="Print a morning">
     ```bash
@@ -36,30 +51,32 @@ requirements first, see [Installation](/docs/installation).
   </Step>
   <Step title="Make it a habit">
     ```bash
-    eto schedule --time 05:30
+    eto schedule --time 05:30 --yes
     ```
     Installs the morning into your operating system's scheduler — Task
-    Scheduler on Windows, launchd on macOS, cron or systemd on Linux.
+    Scheduler on Windows, launchd on macOS, cron on Linux. Without `--yes`
+    it only prints what it would install.
   </Step>
 </Steps>
 
 Your edition is now three things at once: a markdown file in `archive/`
-(the permanent record), a web page in `site/`, and — if you climb the
-[tier ladder](/docs/tiers) — an email in your readers' inboxes.
+(the permanent record), a web page in `site/` — styled and self-contained,
+no build step of yours — and, if you climb the [tier ladder](/docs/tiers),
+an email in your readers' inboxes.
 
 ## What just happened
 
 The wizard created a **paper**: an ordinary directory holding your masthead
-(`eto.toml`), your editorial line (`sources.toml`), your journal (`db/`), and
-your archive. The press visits it each morning, prints, and leaves.
-Everything about that directory is yours — see
-[What is a paper?](/docs/concepts/paper)
+(`eto.toml`) and your editorial line (`sources.toml`). The first print added
+the journal (`db/`); the first edition added the archive. The press visits
+that directory each morning, prints, and leaves. Everything in it is yours —
+see [What is a paper?](/docs/concepts/paper)
 
 While it printed, the press fetched every feed through the front door with an
 honest user-agent, asked a small local model which items describe the same
 event, clustered the matches, selected the broadest stories, fetched the full
 accounts, composited each story from outlets that disagree, and then checked
-every quote, entity, and adjective against the fetched text before letting it
+every quote and the sources line against the fetched text before letting it
 ship. The whole walk is in [The pipeline](/docs/concepts/pipeline).
 
 ## Where to go next

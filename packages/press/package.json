@@ -3,7 +3,7 @@
   "version": "2.20260825.0",
   "license": "AGPL-3.0-only",
   "type": "module",
-  "description": "A local-first printing press for a personal newspaper: each story is one event told through outlets that disagree, every source named, and the brief ends.",
+  "description": "A local-first printing press for a personal newspaper: the frame of the morning that binds an engine (the news brief, the desk, the letter, the digest, the sports page, the wrap) to a paper directory and prints it.",
   "exports": {
     ".": "./src/press.ts",
     "./main": "./src/main.ts",

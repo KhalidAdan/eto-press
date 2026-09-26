@@ -22,8 +22,8 @@ import {
 
 const q = (s: string): string => JSON.stringify(s)
 
-const out = `// GENERATED from eto.toml by src/gen-functions-config.ts — do not edit.
-// Refreshed by \`npm run render\`; commit alongside the edition.
+const out = `// GENERATED from eto.toml by \`eto gen-functions\` — do not edit.
+// Refresh it after changing eto.toml; commit alongside the edition.
 export const NAME = ${q(PAPER_NAME)}
 export const MOTTO = ${q(PAPER_MOTTO)}
 export const MOTTO_INLINE = ${q(PAPER_MOTTO_INLINE)}

@@ -6,7 +6,8 @@ note (stated in the masthead, never inferred from behavior)? Baseline: the
 breadth ranking (outlets × sides × items) that stage 6 ships today.
 **Setup:** llama3.1:8b, temperature 0, the day's real 50 clusters, three desk
 notes (control / statecraft / human-impact), one-line printed reason required
-per pick. Code: `lab/rank_003.ts`; data: `lab/output/rank-003-2026-07-26.json`.
+per pick. Code: `packages/press/lab/rank_003.ts`; data:
+`lab/output/rank-003-2026-07-26.json` (lab output is not committed).
 **Verdict: breadth ranking stays. The model gets, at most, one advisory slot.**
 
 ## Settled before the experiment

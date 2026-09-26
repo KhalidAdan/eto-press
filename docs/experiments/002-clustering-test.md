@@ -3,7 +3,7 @@
 **Date:** 2026-07-25
 **Question:** Given only RSS feeds and a local model on consumer hardware, can eto find "the same event, told by outlets that disagree" without a human matching stories (the step experiment 001 did by eye)?
 **Hardware:** RTX 2070 (8 GB VRAM), Ollama 0.32.4, qwen3:4b-instruct.
-**Code:** `lab/cluster_002.py` · full run data: `lab/output/run-20260725-2053.json`
+**Code:** `packages/press/lab/cluster_002.py` · full run data: `lab/output/run-20260725-2053.json` (lab output is not committed)
 **Verdict: Yes — with two fixable failure modes.**
 
 ---
@@ -37,7 +37,7 @@ Roughly half the clusters are publication-grade event groups. One outright false
 
 ## The prompt lesson (cost: one wasted 20-minute run)
 
-The first run returned **0 matches in 300+ pairs**. Cause: the pair-prompt included a strictness clause ("same broad topic is NOT enough — must be the same concrete event, same time and place"). A 4B instruct model treats over-constrained criteria as permission to always answer no — including on a known-positive pair it had answered "yes" to under plainer wording. Proven by a three-case probe (`lab/probe_prompts.py`): bare and gently-clarified prompts pass all cases; the strict prompt fails the positive.
+The first run returned **0 matches in 300+ pairs**. Cause: the pair-prompt included a strictness clause ("same broad topic is NOT enough — must be the same concrete event, same time and place"). A 4B instruct model treats over-constrained criteria as permission to always answer no — including on a known-positive pair it had answered "yes" to under plainer wording. Proven by a three-case probe (`lab/probe_prompts.py` then; its descendant is `packages/press/lab/probe-prompts.ts`): bare and gently-clarified prompts pass all cases; the strict prompt fails the positive.
 
 **Standing rule this buys:** every model prompt in eto gets a known-answer probe, run like a unit test, before it judges real data. Prompt wording is a defect surface.
 

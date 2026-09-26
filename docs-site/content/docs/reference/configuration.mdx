@@ -41,8 +41,9 @@ accent = "#7f1d1d"
 | `composite` | `"qwen3:8b"` | The compositor: low-volume, longer deliberation. |
 | `composite_num_ctx` | `8192` | The compositor's context window. |
 
-Digests for the named models are pinned in `models.lock.json` on first run;
-drift stops the press. Change a model name here and the press re-judges and
+Digests for the named models are pinned in `models.lock.json` by the first
+`eto models pull` (or the first print, if no lock exists yet); drift stops
+the press. Change a model name here and the press re-judges and
 re-composites as needed — the caches key on model and prompt.
 
 ## `[mail]` — tier 3 only
@@ -70,3 +71,7 @@ The algorithm's tunables — the story cap, the density floor, the word
 budgets, the pair-judging thresholds — are not configuration. They are the
 engine's doctrine in executable form: the paper's journalistic standards,
 not knobs. The masthead is yours; the standards are the press's.
+
+There is also no provider-selection key yet. One inference provider exists,
+Ollama, and `[models]` is what it reads; a key to choose between providers
+arrives with the second one.
