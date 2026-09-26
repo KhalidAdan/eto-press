@@ -10,7 +10,13 @@ import { MastheadInvalid } from "./errors.js"
 export const SourceSchema = Schema.Struct({
   name: Schema.NonEmptyString,
   side: Schema.NonEmptyString,
-  feeds: Schema.NonEmptyArray(Schema.String)
+  feeds: Schema.NonEmptyArray(Schema.String),
+  /** What the URLs are (generation 3, optional): `feed` — RSS/Atom, the
+   * default and what every engine before the ledger assumed; `door` — a
+   * data door, a JSON or plain-text endpoint carrying figures, with an
+   * optional `#dot.path` (the wrap engine's convention). Only an engine
+   * that reads both kinds in one masthead looks at it. */
+  kind: Schema.optional(Schema.Literal("feed", "door"))
 })
 export type Source = typeof SourceSchema.Type
 
@@ -43,7 +49,7 @@ export const MastheadSchema = Schema.Struct({
 export type Masthead = typeof MastheadSchema.Type
 
 const ROOT_KEYS = new Set(["below_the_fold", "email_edition", "seed", "source"])
-const SOURCE_KEYS = new Set(["name", "side", "feeds"])
+const SOURCE_KEYS = new Set(["name", "side", "feeds", "kind"])
 
 /** TOML scoping quietly attaches a root key typed below the last [[source]]
  * to that source — a flag the editor believes is set, silently ignored.

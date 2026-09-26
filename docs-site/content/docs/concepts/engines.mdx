@@ -134,6 +134,24 @@ by the judge model — and that deck is refused if it runs past two
 sentences or contains a number, a name or a quoted phrase the post does
 not. A refused deck prints as no deck. No new posts means no section.
 
+## The ledger engine
+
+The lay of the land as of yesterday (generation 3): the business desk and
+the sports desk in one engine. One masthead, two kinds of source, three
+anatomies in a fixed order. **Boards**: sources with `kind = "door"` are
+data doors (a JSON or plain-text endpoint, an optional `#dot.path`) and
+`side` names the board; every figure prints with its motion since the
+last edition. **Columns**: the section's desk entries, bylined — a byline
+always means a human. **Shelves**: the other sources are feeds and `side`
+names the shelf; every new post prints as a decked row, the outlet's own
+summary or the desk's caged deck, ten to a shelf.
+
+Nothing is composited. Nothing moved and nothing new is NoEdition; when
+anything prints, every board prints, so the section shows the whole
+state of the world it watches. A keyless scoreboard served to a league's
+own readers is a front door, and it is a door here: the sports masthead
+names the leagues' scoreboards as boards and the writers as shelves.
+
 ## Silence versus the quiet page
 
 Engines choose what an empty morning means. The eto engine prints the quiet
@@ -144,11 +162,11 @@ are honest; the difference is doctrine.
 
 ## The ladder
 
-Seven engines exist — eto, desk, letter, digest, sports, wrap, shelf —
-each deliberately small, each having forced a piece of the platform into
-shape: optional anatomy, the published-edition store, the FrontDoor and
-its data doors, the byline, the link list, the data list, the deck and
-its cage. What remains is
+Eight engines exist — eto, desk, letter, digest, sports, wrap, shelf,
+ledger — each deliberately small, each having forced a piece of the
+platform into shape: optional anatomy, the published-edition store, the
+FrontDoor and its data doors, the byline, the link list, the data list,
+the deck and its cage, a source's `kind`. What remains is
 the expensive vocabulary tail (score tables, figures, the email image
 pipeline) and, once the contract has settled across these consumers, the
 extraction of a public engine interface — from evidence rather than
