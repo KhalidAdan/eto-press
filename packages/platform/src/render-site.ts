@@ -24,6 +24,7 @@ import {
 } from "./assemble.js"
 import { SECTIONS } from "./config.js"
 import { renderFeedXml } from "./feed.js"
+import { buildIndex, renderIndex } from "./index-dialect.js"
 import {
   renderEditionHtml,
   renderHomePage,
@@ -85,24 +86,62 @@ for (const runId of editions) {
   )
 }
 const latestAssembled: Array<AssembledStory> = assembledByRun.get(editions[0]!) ?? []
+// The front page: the lead section's stories as cards, then the index of
+// every other desk (generation 3). A single-section paper has no index.
+const latestGroups = groupBySection(latestAssembled)
+const leadAssembled: ReadonlyArray<AssembledStory> = latestGroups[0]?.stories ?? []
+const indexHtml = renderIndex(
+  buildIndex(
+    latestGroups.slice(1).map((g) => ({
+      slug: g.slug,
+      name: g.name,
+      stories: g.stories.map((a) => a.story)
+    })),
+    { editionHref: `./${editions[0]}.html`, first: leadAssembled.length + 1 }
+  )
+)
 
-// The RSS feed: one item per edition, whole brief inside, newest first.
+// The RSS feed at the link readers have always had: one item per edition,
+// the paper's FIRST section inside (the brief, on the flagship), newest
+// first. On a single-section paper that is the whole edition, unchanged.
+const recent = editions.slice(0, 14)
+const sectionStories = (runId: string, slug: string | null) => {
+  const groups = groupBySection(assembledByRun.get(runId) ?? [])
+  const group = slug === null ? groups[0] : groups.find((g) => g.slug === slug)
+  return (group?.stories ?? []).map((a) => a.story)
+}
 writeFileSync(
   "site/feed.xml",
   renderFeedXml(
-    editions.slice(0, 14).map((runId) => ({
+    recent.map((runId) => ({
       runId,
-      stories: (assembledByRun.get(runId) ?? []).map((a) => a.story),
-      sections: groupBySection(assembledByRun.get(runId) ?? []).map((g) => ({
-        slug: g.slug,
-        name: g.name,
-        stories: g.stories.map((a) => a.story)
-      })),
+      stories: sectionStories(runId, null),
       corrections: correctionsPrintedIn(db, runId)
     }))
   ),
   "utf8"
 )
+// Per-section feeds (generation 3), at /<slug>/feed.xml, for every desk
+// the paper declares — the brief among them, so it is briefly served at
+// two links. An edition where the desk was absent is not an item.
+if (SECTIONS.length > 1) {
+  for (const section of SECTIONS) {
+    const withDesk = recent.filter((runId) => sectionStories(runId, section.slug).length > 0)
+    mkdirSync(`site/${section.slug}`, { recursive: true })
+    writeFileSync(
+      `site/${section.slug}/feed.xml`,
+      renderFeedXml(
+        withDesk.map((runId) => ({
+          runId,
+          stories: sectionStories(runId, section.slug),
+          corrections: []
+        })),
+        { path: `/${section.slug}/feed.xml`, section: { slug: section.slug, name: section.name } }
+      ),
+      "utf8"
+    )
+  }
+}
 
 // Home page cards: anchor order matches the edition page (mains, then fold).
 const clusterMeta = db.prepare(
@@ -117,11 +156,11 @@ const imageCandidates = db.prepare(
    ORDER BY len DESC`
 )
 
-const mainsCount = latestAssembled.filter((a) => a.story.foldReason === null).length
+const mainsCount = leadAssembled.filter((a) => a.story.foldReason === null).length
 let mainIdx = 0
 let foldIdx = 0
 const cards: Array<HomeCard> = []
-for (const a of latestAssembled) {
+for (const a of leadAssembled) {
   const isFold = a.story.foldReason !== null
   const anchor = isFold
     ? storyAnchor(mainsCount + ++foldIdx)
@@ -158,7 +197,8 @@ writeFileSync(
   renderHomePage({
     latestRunId: editions[0]!,
     headlines: cards,
-    editions
+    editions,
+    index: indexHtml
   }),
   "utf8"
 )

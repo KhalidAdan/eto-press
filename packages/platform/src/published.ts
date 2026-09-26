@@ -37,6 +37,8 @@ export interface PublishedRow {
   /** The desk this story printed in. Rows from before generation 3 read
    * back as the default section. */
   readonly section: string
+  /** Optional anatomy: the one-line deck. */
+  readonly deck: string | null
 }
 
 export const toRow = (
@@ -64,7 +66,8 @@ export const toRow = (
     story.data !== undefined && story.data.length > 0
       ? JSON.stringify(story.data)
       : null,
-  section
+  section,
+  deck: story.deck ?? null
 })
 
 /** Rebuild the full story from a row. The split forms are re-derived by the
@@ -89,7 +92,8 @@ export const fromRow = (row: PublishedRow): EditionStory => {
     data:
       row.data_items === null
         ? []
-        : (JSON.parse(row.data_items) as ReadonlyArray<DataItem>)
+        : (JSON.parse(row.data_items) as ReadonlyArray<DataItem>),
+    deck: row.deck ?? null
   })
   return { ...derived, sources: links }
 }

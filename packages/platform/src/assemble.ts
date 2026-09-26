@@ -32,7 +32,8 @@ export const openJournal = (): Journal => {
     `ALTER TABLE published_stories ADD COLUMN data_items TEXT`,
     // Generation 3 (the same migrations db.ts applies on a print run).
     `ALTER TABLE published_stories ADD COLUMN section TEXT NOT NULL DEFAULT '${DEFAULT_SECTION_SLUG}'`,
-    `ALTER TABLE corrections ADD COLUMN section TEXT`
+    `ALTER TABLE corrections ADD COLUMN section TEXT`,
+    `ALTER TABLE published_stories ADD COLUMN deck TEXT`
   ]) {
     try {
       db.exec(migration)
