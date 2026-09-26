@@ -319,3 +319,17 @@ the pin is the ownership guarantee, unchanged.
 ---
 
 *The press moves out. The paper stays home.*
+
+---
+
+## Generation 3 — proposed (2026-09-26)
+
+The paper grows sections. The brief becomes the "Current events brief"
+section of a paper that also prints a business desk, a sports desk and a
+blogs desk, each with its own source file, its own document and its own
+engine; the joint moves up one level, from paper-to-engine to
+paper-to-sections-to-engines, and the Engine interface keeps its shape.
+The founding North Star moved unchanged to `docs/sections/brief.md`; the
+paper-level constitution is the new `docs/NORTH-STAR.md`. The proposal,
+the editor's rulings and the seven-step PR train are in
+[PROPOSAL-SECTIONS.md](PROPOSAL-SECTIONS.md).

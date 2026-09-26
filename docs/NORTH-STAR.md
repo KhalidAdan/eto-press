@@ -2,197 +2,205 @@
 
 ## The Masthead
 
-*One story. Every side. Then it ends.*
+*One paper. Several desks. Then it ends.*
 
 ---
 
-eto takes a single event, gathers the accounts of it published by outlets that
-disagree, and writes one piece of prose that holds all of them. It names every
-source it used. Then it stops.
+eto is a daily paper. It has sections, the way a paper on a doorstep has
+sections: a brief of the day's events, the markets, the games, the writers
+you follow. Each section is printed by its own machinery on its own
+principles, from a source list you own. They are bound into one dated
+edition every morning. Then it ends.
 
-It runs on your machine. The list of outlets it reads is a file you own. That
-file is an editorial line, and it is yours — which means that from the moment
-you install eto, you are not its reader. You are its editor.
+It runs on your machine. Each section's source list is a file you own, and
+each file is an editorial line. From the moment you install eto you are not
+its reader. You are its editor, of every section you choose to print.
 
-A personal paper is not a private one. An edition can have readers — a
-household, a mailing list, the open web — and that is the oldest and best
+A personal paper is not a private one. An edition can have readers, a
+household, a mailing list, the open web, and that is the oldest and best
 shape of the press: one editor, a masthead they own, and whoever cares to
-read it. eto is built for that shape, and holds one goal it means to keep:
-an edition with readers says whose masthead it is, on the page and in the
-mail, so any reader can find the editorial line, question it, and — because
-the press itself is free — go and run their own. That is not a warning
-label. It is the invitation.
+read it. An edition with readers says whose masthead it is, on the page
+and in the mail, so any reader can find the editorial line, question it,
+and, because the press itself is free, go and run their own. That is not a
+warning label. It is the invitation.
 
 ---
 
-## The Shape of a Story
+## The Shape of a Morning
 
 ```
-IDF claims Hamas headquartered under Al-Shifa
+eto.                              Saturday, September 26, 2026
+One story. Every side.            Business 4 · Sports 3 · Blogs 9
 
-  Israeli troops entered Al-Shifa Hospital in Gaza after
-  encountering fighters at the gate. The IDF had surrounded
-  the hospital, saying Hamas had established a command post
-  in tunnels beneath it. Staff were told in advance. Medical
-  supplies were brought in.
+  [ the Current events brief, in full ]
 
-  Where the accounts differ
-  Hamas denies the tunnel claim outright. The Guardian notes
-  the search results were unreleased at press time; FOX
-  reports White House officials corroborating the Israeli
-  account. Reuters attributes the corroboration to unnamed
-  officials. No source reports having seen the tunnels.
+  ────────────────────────────────────────────────────────────
 
-  Sources  The Guardian · Reuters · FOX
+  IN TODAY'S PAPER
+
+  BUSINESS
+  Board    S&P 500  6,412  ▲ 0.4      10y  4.11  ▼ 0.03
+  Markets  Fed holds, markets shrug
+           Two members dissented; the statement dropped "patient".   ft.com
+  ...
+
+  SPORTS
+  Scores   Raptors 104  Celtics 99      Arsenal 2  Spurs 1
+  Column   On the Raptors' bench        by the editor
+  ...
+
+  BLOGS
+  1  The end of the file system as we knew it
+     Argues that sync, not storage, is what an OS sells now.   daringfireball.net
+  ...
+
+  That is the paper for today.
 ```
 
-Four parts: what happened, where they part company, who said so, and an end.
-
-The third part is old — every honest outlet cites. The fourth is rare. The
-second is the one that does not exist anywhere else, and it is the reason to
-build this.
-
----
-
-These are the standards the software keeps so that you can keep the rest.
+The brief in full, a rule, and then every other section compressed to one
+line per item: what it is, one sentence that says what it says, and where it
+came from. The front page is the paper compressed, not the paper advertised.
+Each section is one click deeper, at a dated address, and the archive holds
+every morning as it was.
 
 ---
 
-### 1. One story, many mouths.
+These are the standards the paper keeps, above every section. Where a
+section's own constitution says otherwise, this document wins.
 
-A story is not a link. A story is an event, and the six or nine competing
-accounts of it, collapsed into one telling. If eto cannot find the same event in
-sources that disagree, it does not run the story. A single-source item is not a
-story. It is a rumour with good manners.
+---
 
-### 2. The disagreement is the story.
+### 1. Nothing unattributed ships.
 
-Where the accounts conflict, eto says so, in the body, in plain words, with each
-side named. It does not average them into a mush that no outlet would recognise
-and no reader can check. Consensus manufactured by deleting the contradiction is
-not neutrality. It is a quieter kind of lying.
+Every item in every section names where it came from and links to it. In the
+brief that is the sources line under each story. In the markets it is the
+door each figure was read from. In the blogs it is the post itself, one click
+away. A line eto cannot attribute is a line eto cuts, whichever desk wrote it.
+This is the proof of work, and it is the same proof on every page.
 
-### 3. Nothing unattributed ships.
+### 2. The masthead is yours. Every masthead.
 
-Every claim traces to a named source. The list at the foot of each story is not
-a courtesy and not decoration — it is the proof of work, and it is the reason
-the story above it can be believed. A fact eto cannot attribute is a fact eto
-cuts.
+Each section has its own source file, and each file is an editorial line
+that eto enforces and never overrules. The brief's file says which outlets
+stand where. The sports file says which leagues. The blogs file says which
+writers. eto holds no view on any of it. It will tell you plainly when a line
+has collapsed, when a section has gone quiet, when a door has closed. It will
+not quietly correct you. An editor who can be overruled by their own press is
+not an editor.
 
-### 4. The model composites. It does not comment.
+### 3. Every section says what it is.
 
-The model's job is merge, compress, attribute. It contributes no adjective it
-was not given, no motive, no forecast, no implication drawn between two
-paragraphs. It is a compositor at a stone, not a columnist. When it strays, that
-is a defect, and it is reported and fixed like any other defect.
+A section is printed by one engine, and an engine carries a doctrine: the
+principles it keeps, printable, short. The brief's doctrine is the one that
+started this paper, and it applies to the brief alone. The markets desk does
+not composite. The blogs desk does not judge. A reader who wants to know what
+a section promises can read its doctrine in a minute, and a section that
+cannot state its doctrine does not exist.
 
-### 5. Incomplete beats wrong.
+### 4. The paper ends.
 
-The failure mode is omission. Given the choice between a gap and a guess, eto
-prints the gap. A brief that admits it does not know is still a brief. A brief
-that invents is nothing at all, and it takes every previous brief down with it.
+Finite by construction, section by section and as a whole. No section
+scrolls, recommends, or relates. Each one ends with a line that says it has
+ended, and the paper ends with one more. Only the brief promises how long it
+takes to read: six minutes, the same as it always was. The rest is for the
+commute and the coffee, read when you have a moment, and it is still finished
+when you get there. A product that cannot be finished is not informing you.
+It is holding you.
 
-### 6. The masthead is yours.
+### 5. Quiet is printed, not filled.
 
-eto holds no view on what balance means. It enforces the balance you configured
-and no other. Change the file, change the paper. It will tell you plainly when
-your sources have collapsed onto one side of a story — that is a measurement,
-and you are entitled to it. It will not quietly correct you. An editor who can
-be overruled by his own press is not an editor.
+A section with nothing to say prints nothing, and the paper says which
+sections are absent this morning, on the page and in the report, so that a
+silence you did not expect is a silence you can look into. A morning where
+every section is silent prints no edition at all. Nothing is padded to keep
+a page full.
 
-### 7. The brief ends.
+### 6. eto reads the front door.
 
-Finite by construction. No infinite scroll, no related stories, no next thing,
-no recommendation trained on what kept you reading last time. It ends today the
-way it ended yesterday, and you leave. A product that cannot be finished is not
-informing you. It is holding you.
+Feeds, APIs, ordinary pages served to ordinary readers, in every section. eto
+does not disguise itself, does not pretend to be a browser it is not, does not
+pick a lock a publisher has closed. A source that must be tricked into being
+read is a source eto drops, whichever desk asked for it. Politeness is not
+only ethics here. It is why this runs untouched on your hardware for years.
 
-### 8. eto reads the front door.
+### 7. The archive is fixed.
 
-Feeds, APIs, ordinary pages served to ordinary readers. eto does not disguise
-itself, does not pretend to be a browser it is not, does not pick a lock a
-publisher has closed. A source that must be tricked into being read is a source
-eto drops, and the slot is filled from elsewhere on the same side of the aisle —
-the spectrum has depth, and no single outlet is owed a place in it. Politeness
-is not only ethics here. It is why this runs untouched on your hardware for
-years while a cleverer thing would have broken by spring.
+Yesterday's edition, every section of it, is the record of what was known
+yesterday, and it stays that way. A correction runs in today's paper, dated,
+pointing back to the section and the item. eto never reaches into what it has
+already told you and changes it while you sleep.
 
-### 9. The archive is fixed.
+### 8. It runs on your metal.
 
-Yesterday's brief is the record of what was known yesterday, and it stays that
-way. When a story turns out to have been wrong, the correction runs in today's
-brief, dated, pointing back. eto never reaches into what it has already told you
-and changes it while you sleep. Being able to watch a story be wrong and then be
-corrected is most of what it means to trust it.
-
-### 10. It runs on your metal.
-
-Your machine. Your model. Your electricity. Your source list. No account, no
-service, no remote switch. Nobody can change your paper's mind by shipping an
-update, including the people who wrote it. The guarantee is not that eto is
-trustworthy. The guarantee is that eto cannot become untrustworthy without your
-hands on it.
+Your machine. Your models. Your electricity. Your source files. No account, no
+service, no remote switch. A section that asks a model a question asks it on
+your hardware, and a section that asks no questions never wakes the GPU. The
+guarantee is not that eto is trustworthy. The guarantee is that eto cannot
+become untrustworthy without your hands on it.
 
 ---
 
 ### What Success Looks Like
 
-Someone sets up eto because they are tired. Not uninformed — tired. They read
-the first brief and it takes six minutes. Somewhere in the second week they
-click a source link, because a line about a hospital or a budget or a resignation
-seemed too clean, and they find the source says what eto said it said. They do
-that maybe four more times over the following months. It checks out each time.
-After that they mostly stop checking, and the stopping is earned rather than
-lazy.
+Someone reads the brief at breakfast. It takes six minutes and it ends, and
+they leave. On the train they open the paper again, skip past the brief, and
+read the sports desk: the scores in a table, two columns, a handful of pieces
+from writers they chose. At lunch they read the markets and three blog posts
+whose one-line decks told them exactly which three. Every page ended. Nothing
+suggested a fourth.
 
-A year in, they have edited the file twice. Once to drop an outlet that kept
-being alone on its own facts. Once to add one, because a brief said *no source
-on the right covered this* and they decided that gap was theirs to close. Both
-times they understood exactly what they were changing about their own paper.
+A year in they have edited four files, not one. They dropped a league. They
+added a writer. They noticed the business desk had gone quiet for two
+mornings, read the report, and found a feed had moved. They understood
+exactly what they were changing about their own paper each time, because
+each section is its own line and none of them is anyone else's.
 
-They do not have the app open now. There is no app. They read the thing in the
-morning, they reach the end of it, and they go and do something else — and when
-a story breaks that they care about, they find they already have the shape of
-it, and the names of the people who disagree about it.
-
-Culvert succeeds by being forgotten. eto cannot; it is the thing being read.
-It succeeds by being *finished* — present for a few minutes, trusted because it
-was checkable, and then done for the day.
-
-If a brief can be read without the sources ever mattering, we have lost the plot.
+If a section can be read without its sources ever mattering, that section
+has lost the plot, and the paper says so in its own constitution.
 
 ---
 
 ### What eto is not
 
-**Not a feed.** It has an end. That is the whole design.
+**Not a feed.** Every section ends. That is the whole design.
 
-**Not a spectrum chart.** Showing you that coverage is fractured is a diagnosis.
-eto is supposed to be the treatment: one readable account, sources underneath.
+**Not an aggregator.** An aggregator collects whatever arrives. Each of
+these sections is an edited line, finite, with a stated doctrine and a
+named editor.
 
-**Not a fact-checker.** It does not rule on who is telling the truth. It tells
-you what each said and exactly where they part company, and hands the judgment
-back to you, which is where it belongs.
+**Not one newsletter that became four.** One paper, one masthead, one
+morning. The paper on the web is always whole; the morning email carries
+the brief and points at the rest.
 
-**Not neutral by magic.** It is neutral by construction, and only as neutral as
-the file you wrote. Point it at nine outlets that agree and it will faithfully
-produce a very confident newspaper about one half of the world.
-
----
-
-### The Default Masthead
-
-eto ships with a starting source list seeded from the AllSides Media Bias
-Chart (v11.3, read 2026-07-25) — the same kind of chart its editor once kept
-open in another window while doing all of this by hand. The seed uses the
-chart's five labels — left, lean-left, center, lean-right, right — because
-balance measured in finer buckets is harder to fool. The audited catalog of
-every chart outlet's front door lives in `docs/SOURCES.md`, and the active
-list lives in `sources.toml`.
-
-None of this outranks you. The chart is a cartographer, not an editor.
-Change the file, change the paper.
+**Not a hosted service.** There is no eto account and no one to switch it
+off. The press is free and the paper is yours.
 
 ---
 
-*A newspaper whose sources you can read — in both senses.*
+### The Sections
+
+Two weights of document govern a section. The brief has a **constitution**:
+it can move a vote, so it is strict, and slow to change. Every other desk has
+a **desk note**: what the desk is, what it is not, and what its editor may
+change without ceremony.
+
+The flagship, eto.news, prints four. Each has its own document, its own
+source file, and its own engine.
+
+| section | document | source file | engine |
+|---|---|---|---|
+| Current events brief | [`docs/sections/brief.md`](sections/brief.md), the constitution | `sections/brief.toml` | eto |
+| Business | [`docs/sections/business.md`](sections/business.md), a desk note | `sections/business.toml` | ledger |
+| Sports | [`docs/sections/sports.md`](sections/sports.md), a desk note | `sections/sports.toml` | ledger |
+| Blogs | [`docs/sections/blogs.md`](sections/blogs.md), a desk note | `sections/blogs.toml` | shelf |
+
+The brief's constitution is the document this paper was founded on, moved
+here unchanged on 2026-09-26. Where the code says *NORTH-STAR §n*, it means
+that document's numbering.
+
+None of this outranks you. Add a section, drop a section, change a file,
+change the paper.
+
+---
+
+*A newspaper whose sources you can read, in every section, in both senses.*
