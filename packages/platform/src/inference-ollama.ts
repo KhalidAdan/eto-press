@@ -20,6 +20,7 @@ import type { Draft } from "./edition.js"
 import { ModelMissing } from "./errors.js"
 import type {
   CompositeAccount,
+  DeckSource,
   FoldCandidate,
   InferenceApi,
   PairItem
@@ -169,6 +170,52 @@ export const parseDraft = (raw: string, attempt: number): Draft | null => {
   return { headline, body, differ, sourcesLine, raw, attempt }
 }
 
+// -- The deck question (generation 3) ----------------------------------------
+
+/** The copy desk's standing orders: say what the piece says, in one or
+ * two sentences, and add nothing. The cage (deck.ts) refuses a deck that
+ * carries a number, a name or a quoted phrase the text does not. */
+export const DECK_TEMPLATE =
+  "You are a newspaper copy desk writing the deck — the one- or " +
+  "two-sentence line under a headline — for a single piece by {outlet}.\n\n" +
+  "Rules:\n" +
+  "- Say what the piece says. Nothing it does not say: no context, no " +
+  "opinion of your own, no forecast, no praise or criticism.\n" +
+  "- Use only names, numbers and phrases that appear in the piece.\n" +
+  "- One sentence, two at most. About 25 words, never more than 40. " +
+  "Plain, present tense. Do not repeat the headline.\n" +
+  "- Output the deck only: no label, no quotation marks around it, " +
+  "nothing else.\n\n" +
+  "HEADLINE: {title}\n\n{text}"
+
+export const DECK_PROMPT_HASH = createHash("sha256")
+  .update(DECK_TEMPLATE)
+  .digest("hex")
+  .slice(0, 16)
+
+const DECK_TEXT_CAP = 6000
+
+export const deckPrompt = (source: DeckSource): string =>
+  DECK_TEMPLATE.replace("{outlet}", source.outlet)
+    .replace("{title}", source.title)
+    .replace("{text}", source.text.slice(0, DECK_TEXT_CAP))
+
+/** Pure and testable: the deck is the completion after any thinking,
+ * unlabeled, unquoted, one paragraph. Null when nothing usable came out. */
+export const parseDeck = (raw: string): string | null => {
+  const afterThink = raw.includes("</think>")
+    ? raw.slice(raw.lastIndexOf("</think>") + 8)
+    : raw
+  const text = afterThink
+    .replace(/\*\*/g, "")
+    .replace(/^\s*(deck|standfirst)\s*:\s*/i, "")
+    .trim()
+    .replace(/^["“]+|["”]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  return text.length < 10 ? null : text
+}
+
 // -- The provider -------------------------------------------------------------
 
 export const makeOllamaProvider: Effect.Effect<InferenceApi, never, Ollama> =
@@ -219,15 +266,25 @@ export const makeOllamaProvider: Effect.Effect<InferenceApi, never, Ollama> =
         return models.map((model) => ({ model, digest: byName.get(model)! }))
       })
 
+    // The deck is compression of one text: the judge model's kind of
+    // task, not the compositor's, and the 8B model's morning budget is
+    // spoken for. think: false for the same reason the compositor pins it.
+    const deck: InferenceApi["deck"] = (source, unit) =>
+      ollama
+        .chat(MATCH_MODEL, deckPrompt(source), unit, { numCtx: 8192, think: false })
+        .pipe(Effect.map((raw) => ({ deck: parseDeck(raw), raw })))
+
     return {
       provider: "ollama",
       identities: {
         sameEvent: { model: MATCH_MODEL, questionHash: SAME_EVENT_PROMPT_HASH },
-        composite: { model: COMPOSITE_MODEL, questionHash: COMPOSITE_PROMPT_HASH }
+        composite: { model: COMPOSITE_MODEL, questionHash: COMPOSITE_PROMPT_HASH },
+        deck: { model: MATCH_MODEL, questionHash: DECK_PROMPT_HASH }
       },
       sameEvent,
       nominate,
       composite,
+      deck,
       pin
     } satisfies InferenceApi
   })
