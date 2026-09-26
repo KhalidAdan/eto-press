@@ -45,8 +45,14 @@ import {
 } from "@aws-sdk/client-sesv2"
 import { readFileSync } from "node:fs"
 import * as TOML from "smol-toml"
-import { assembleStories, correctionsPrintedIn, openJournal, publishedRuns } from "./assemble.js"
-import { MAIL, MAIL_TAG_KIND, SITE_URL } from "./config.js"
+import {
+  assembleStories,
+  correctionsPrintedIn,
+  groupBySection,
+  openJournal,
+  publishedRuns
+} from "./assemble.js"
+import { MAIL, MAIL_TAG_KIND, SECTIONS, SITE_URL } from "./config.js"
 import { renderEmailEdition } from "./email.js"
 import { loadEnv } from "./env.js"
 
@@ -73,11 +79,16 @@ const testFlag = process.argv.indexOf("--test")
 const testArg = testFlag > -1 ? (process.argv[testFlag + 1] ?? null) : null
 const testAddr = testArg === null ? null : (SIMULATOR[testArg] ?? testArg)
 
-const masthead = TOML.parse(readFileSync("sources.toml", "utf8")) as {
-  email_edition?: boolean
-}
-if (testAddr === null && masthead.email_edition !== true) {
-  console.log("email_edition is not enabled in sources.toml; nothing to do")
+// The morning delivery switch is the paper's: [mail] email_edition in
+// eto.toml. Undeclared there, the first section's source file decides,
+// where generation 2 kept the flag.
+const firstMasthead = SECTIONS[0]!.masthead
+const emailEdition =
+  MAIL.emailEdition ??
+  ((TOML.parse(readFileSync(firstMasthead, "utf8")) as { email_edition?: boolean })
+    .email_edition === true)
+if (testAddr === null && !emailEdition) {
+  console.log(`email_edition is not enabled (eto.toml [mail], or ${firstMasthead}); nothing to do`)
   process.exit(0)
 }
 
@@ -102,10 +113,16 @@ if (testAddr === null) {
   }
 }
 
-const stories = assembleStories(db, runId).map((a) => a.story)
+const assembled = assembleStories(db, runId)
+const stories = assembled.map((a) => a.story)
 const edition = renderEmailEdition({
   runId,
   stories,
+  sections: groupBySection(assembled).map((g) => ({
+    slug: g.slug,
+    name: g.name,
+    stories: g.stories.map((a) => a.story)
+  })),
   corrections: correctionsPrintedIn(db, runId)
 })
 const ses = new SESv2Client({ region: process.env["AWS_REGION"] ?? MAIL.region })

@@ -106,14 +106,40 @@ const storyBlock = (s: HtmlStory): string => {
 
 export type EmailCorrection = EditionCorrection
 
+/** One section of the email, as the paper groups it (generation 3). */
+export interface EmailSection {
+  readonly slug: string
+  readonly name: string
+  readonly stories: ReadonlyArray<HtmlStory>
+}
+
 export const renderEmailEdition = (opts: {
   readonly runId: string
   readonly stories: ReadonlyArray<HtmlStory>
   readonly corrections?: ReadonlyArray<EmailCorrection>
+  /** The stories grouped by section, when the paper has more than one.
+   * Must cover exactly `stories`, in the same order. */
+  readonly sections?: ReadonlyArray<EmailSection>
 }): { subject: string; html: string; text: string } => {
   const date = longDate(opts.runId)
   const editionUrl = `${SITE_URL}/${opts.runId}.html`
   const corrections = opts.corrections ?? []
+  // A single-section paper renders exactly as generation 2 did; several
+  // desks each get a label line before their stories.
+  const groups: ReadonlyArray<{ name: string | null; stories: ReadonlyArray<HtmlStory> }> =
+    opts.sections !== undefined && opts.sections.length > 1
+      ? opts.sections
+      : [{ name: null, stories: opts.stories }]
+  const storiesHtml = groups
+    .map(
+      (g) =>
+        (g.name === null
+          ? ""
+          : `\n  <div style="border-top:2px solid ${INK};padding:24px 0 0 0;">
+    <p style="margin:0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${INK};">${esc(g.name)}</p>
+  </div>\n`) + g.stories.map(storyBlock).join("\n")
+    )
+    .join("\n")
   const correctionsHtml =
     corrections.length === 0
       ? ""
@@ -137,7 +163,7 @@ export const renderEmailEdition = (opts: {
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;color:${QUIET};">${esc(PAPER_MOTTO)}</p>
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${INK};">${esc(date)}</p>
   </div>${correctionsHtml}
-${opts.stories.map(storyBlock).join("\n")}
+${storiesHtml}
   <div style="border-top:1px solid ${HAIRLINE};padding:22px 0;text-align:center;">
     <p style="margin:0 0 10px 0;font-family:${MONO};font-size:12px;color:${QUIET};"><a href="${editionUrl}" style="color:${QUIET};">Read this edition on ${esc(SITE_HOST)}</a> · <a href="${SITE_URL}/sources.html" style="color:${QUIET};">How we choose our sources</a></p>
     <p style="margin:0 0 14px 0;font-family:${SERIF};font-size:15px;font-style:italic;color:${QUIET};">The brief ends here.</p>
@@ -150,7 +176,9 @@ ${opts.stories.map(storyBlock).join("\n")}
     `${PAPER_NAME} — ${date}`,
     PAPER_MOTTO,
     "",
-    ...opts.stories.flatMap((s) => [
+    ...groups.flatMap((g) => [
+      ...(g.name === null ? [] : ["═══", g.name.toUpperCase()]),
+      ...g.stories.flatMap((s) => [
       "———",
       s.foldReason === null ? "" : `BELOW THE FOLD — nominated because: ${s.foldReason}`,
       s.headline.toUpperCase(),
@@ -178,6 +206,7 @@ ${opts.stories.map(storyBlock).join("\n")}
         : "",
       s.balanceNote ?? "",
       ""
+    ])
     ]).filter((l) => l !== ""),
     "———",
     `Read on the web: ${editionUrl}`,

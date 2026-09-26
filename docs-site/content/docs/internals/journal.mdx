@@ -21,12 +21,12 @@ same command.
 | --- | --- | --- |
 | `runs` | `run_id` (the editor's local date) | started/finished, the morning's note |
 | `feed_fetches` | every attempt | the §8 source-health history — not rebuildable |
-| `items` | `link` UNIQUE | normalized entries; insert-or-ignore makes refetching idempotent |
+| `items` | `link` UNIQUE | normalized entries; insert-or-ignore makes refetching idempotent. `feed_url` names the feed that saw the item first, and a section's ingest reads its window back by its own feeds (generation 3) |
 | `articles` | `item_id` | fetched account text (and the outlet's `og_image`); a rerun refetches only what's missing or failed. Full text served in the feed itself is journaled here at stage 2b |
 | `documents` | `(url, content_hash)` | the FrontDoor's journal: every distinct version of every watched page — how the letter engine knows a statement is new |
-| `corrections` | id | your corrections — not rebuildable |
+| `corrections` | id | your corrections — not rebuildable. `section` names the desk the corrected story printed in (NULL before generation 3) |
 | `email_sends` | `run_id` | one delivery per edition, ever — not rebuildable |
-| `published_stories` | `(run_id, position)` | the published-edition store — not rebuildable |
+| `published_stories` | `(run_id, position)` | the published-edition store — not rebuildable. Positions are paper-global print order; `section` names each row's desk (generation 3; rows from before read back as the single section) |
 
 **Engine tables** — the eto engine's working memory:
 
@@ -44,8 +44,9 @@ working memory owns its schema, created idempotently on first use; today
 only the eto engine has any.
 
 Migrations are additive and ignored when already applied:
-`stories.fold_reason`, `articles.og_image`, `verdicts.confidence`, and the
-optional-anatomy columns on `published_stories`.
+`stories.fold_reason`, `articles.og_image`, `verdicts.confidence`, the
+optional-anatomy columns on `published_stories`, and generation 3's
+`published_stories.section`, `items.feed_url` and `corrections.section`.
 
 ## Questions are versioned artifacts
 

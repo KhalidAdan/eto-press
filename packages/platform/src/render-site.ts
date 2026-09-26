@@ -15,12 +15,14 @@ import * as TOML from "smol-toml"
 import {
   assembleStories,
   correctionsPrintedIn,
+  groupBySection,
   healthLines,
   openJournal,
   publishedRuns,
   reportFor,
   type AssembledStory
 } from "./assemble.js"
+import { SECTIONS } from "./config.js"
 import { renderFeedXml } from "./feed.js"
 import {
   renderEditionHtml,
@@ -68,6 +70,11 @@ for (const runId of editions) {
       runId,
       editionLabel: "",
       stories: assembled.map((a) => a.story),
+      sections: groupBySection(assembled).map((g) => ({
+        slug: g.slug,
+        name: g.name,
+        stories: g.stories.map((a) => a.story)
+      })),
       report: {
         ...reportFor(db, runId, assembled.length),
         ...(runId === editions[0] ? { healthLines: health } : {})
@@ -86,6 +93,11 @@ writeFileSync(
     editions.slice(0, 14).map((runId) => ({
       runId,
       stories: (assembledByRun.get(runId) ?? []).map((a) => a.story),
+      sections: groupBySection(assembledByRun.get(runId) ?? []).map((g) => ({
+        slug: g.slug,
+        name: g.name,
+        stories: g.stories.map((a) => a.story)
+      })),
       corrections: correctionsPrintedIn(db, runId)
     }))
   ),
@@ -151,8 +163,10 @@ writeFileSync(
   "utf8"
 )
 
-// Sources page, straight from the masthead file — spectrum order.
-const parsed = TOML.parse(readFileSync("sources.toml", "utf8")) as {
+// Sources page, straight from the masthead file — spectrum order. On a
+// sectioned paper this is the FIRST section's file (the brief's, on the
+// flagship); per-desk sources pages arrive with the site rewrite.
+const parsed = TOML.parse(readFileSync(SECTIONS[0]!.masthead, "utf8")) as {
   source?: Array<{ name: string; side: string }>
   seed?: { name: string; url?: string; version?: string; description?: string }
 }
