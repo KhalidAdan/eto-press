@@ -135,7 +135,8 @@ describe("the engine registry matches the pages that enumerate engines", () => {
   for (const page of [
     ["docs-site", "content", "docs", "concepts", "engines.mdx"],
     ["docs-site", "content", "docs", "internals", "architecture.mdx"],
-    ["docs", "CHANGELOG-GEN2.md"]
+    // The current generation's changelog names the whole registry.
+    ["docs", "CHANGELOG-GEN3.md"]
   ]) {
     it(`${page[page.length - 1]} names every registered engine`, () => {
       const doc = read(...page)

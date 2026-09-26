@@ -82,6 +82,14 @@ export interface PinnedModel {
   readonly digest: string | null
 }
 
+/** One text handed to the deck question — a single post or article, its
+ * writer named because a deck is written about someone's piece. */
+export interface DeckSource {
+  readonly outlet: string
+  readonly title: string
+  readonly text: string
+}
+
 export interface InferenceApi {
   /** Which provider answered — for logs and the run report. */
   readonly provider: string
@@ -89,7 +97,17 @@ export interface InferenceApi {
   readonly identities: {
     readonly sameEvent: QuestionIdentity
     readonly composite: QuestionIdentity
+    readonly deck: QuestionIdentity
   }
+  /** The deck (generation 3, the fifth question): one or two sentences
+   * that say what ONE text says — the desk's line, not the author's, and
+   * it adds nothing. `deck: null` means no typed answer came back; the
+   * cage that refuses an answer with anything the text does not contain
+   * lives outside the boundary (deck.ts), like every other policy. */
+  readonly deck: (
+    source: DeckSource,
+    unit: string
+  ) => Effect.Effect<{ readonly deck: string | null; readonly raw: string }, OllamaCallFailed>
   /** Stage 4: same news event? */
   readonly sameEvent: (
     a: PairItem,
