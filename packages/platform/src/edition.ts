@@ -108,6 +108,11 @@ export interface EditionStory {
   /** Optional anatomy: the story's data list (a wrap board's whole body
    * — labeled figures with their motion). Empty means absent. */
   readonly data?: ReadonlyArray<DataItem>
+  /** Optional anatomy: the one-line deck under the headline — the desk's
+   * line, never the author's, and never a model's when the outlet wrote
+   * its own. The index dialect prints it; a story without one is indexed
+   * by its first sentence. */
+  readonly deck?: string | null
 }
 
 export interface EditionCorrection {
@@ -256,6 +261,7 @@ export const editionStoryFrom = (opts: {
   readonly byline?: string | null
   readonly links?: ReadonlyArray<LinkItem>
   readonly data?: ReadonlyArray<DataItem>
+  readonly deck?: string | null
 }): EditionStory => {
   const differ = splitDiffer(opts.differ)
   return {
@@ -272,6 +278,7 @@ export const editionStoryFrom = (opts: {
     engineRef: opts.engineRef ?? null,
     byline: opts.byline ?? null,
     links: opts.links ?? [],
-    data: opts.data ?? []
+    data: opts.data ?? [],
+    deck: opts.deck ?? null
   }
 }

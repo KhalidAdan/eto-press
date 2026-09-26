@@ -54,6 +54,20 @@ themselves.
 | `page__end` / `page__end--tight` | "The brief ends here." |
 | `page-section` / `page-section--tight` / `section-label` | Home-page sections. |
 | `page__footer` | The page footer block. |
+| `desk` / `desk__label` / `desk__end` | One section of a sectioned paper on the edition page (generation 3): the desk, its label, and the line where it ends. Absent on a single-section paper. |
+
+## The index
+
+The front page of a sectioned paper carries its first section in full and
+then every other desk compressed to one row per item — the paper's index
+(generation 3). Absent on a single-section paper.
+
+| Class | Element |
+| --- | --- |
+| `index` / `index__label` / `index__desks` | The index block, its "In today's paper" label, and the stack of desks. |
+| `index__desk` / `index__desk-label` / `index__count` / `index__desk-end` | One desk: its linked name and item count, and the line where it ends. |
+| `index__board` / `index__figure` / `index__figure-label` / `index__figure-value` / `index__figure-note` | The desk's figures, when it printed any (a board's rows). |
+| `index__rows` / `index__row` / `index__kicker` / `index__headline` / `index__deck` / `index__source` | The rows: an optional kicker, the linked headline, the one-line deck, the source. |
 
 ## Home and sources furniture
 

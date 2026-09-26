@@ -79,10 +79,26 @@ export interface FeedEdition extends EditionDocument {
   }>
 }
 
-export const renderFeedXml = (editions: ReadonlyArray<FeedEdition>): string => {
+/** Which feed this is: the paper's (at /feed.xml, the link readers have
+ * always had) or one section's (at /<slug>/feed.xml, generation 3). */
+export interface FeedIdentity {
+  /** The feed's path under the site, e.g. "/feed.xml" or "/sports/feed.xml". */
+  readonly path: string
+  /** The section, for a per-section feed: its items link to the desk's
+   * anchor on the edition page and the channel carries its name. */
+  readonly section?: { readonly slug: string; readonly name: string } | undefined
+}
+
+export const renderFeedXml = (
+  editions: ReadonlyArray<FeedEdition>,
+  identity: FeedIdentity = { path: "/feed.xml" }
+): string => {
   const items = editions
     .map((e) => {
-      const url = `${SITE_URL}/${e.runId}.html`
+      const url =
+        identity.section === undefined
+          ? `${SITE_URL}/${e.runId}.html`
+          : `${SITE_URL}/${e.runId}.html#${identity.section.slug}`
       const corrections =
         e.corrections.length === 0
           ? ""
@@ -124,9 +140,9 @@ export const renderFeedXml = (editions: ReadonlyArray<FeedEdition>): string => {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${escXml(PAPER_NAME)}</title>
+    <title>${escXml(identity.section === undefined ? PAPER_NAME : `${PAPER_NAME} — ${identity.section.name}`)}</title>
     <link>${SITE_URL}</link>
-    <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${SITE_URL}${identity.path}" rel="self" type="application/rss+xml"/>
     <description>${escXml(SITE_DESCRIPTION)}</description>
     <language>en</language>
 ${items}

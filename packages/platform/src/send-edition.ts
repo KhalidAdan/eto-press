@@ -55,6 +55,7 @@ import {
 import { MAIL, MAIL_TAG_KIND, SECTIONS, SITE_URL } from "./config.js"
 import { renderEmailEdition } from "./email.js"
 import { loadEnv } from "./env.js"
+import { buildIndex, pickCard } from "./index-dialect.js"
 
 loadEnv()
 const CONTACT_LIST = MAIL.contactList
@@ -113,17 +114,35 @@ if (testAddr === null) {
   }
 }
 
+// The mail carries the paper's FIRST section in full (the brief, on the
+// flagship) and, on a paper with more desks, one section card after the
+// end mark — the run id picks the desk, so a retry mails the same card
+// (generation 3; per-section subscription is deferred, see
+// docs/PROPOSAL-SECTIONS.md). A single-section paper mails as it always did.
 const assembled = assembleStories(db, runId)
-const stories = assembled.map((a) => a.story)
+const groups = groupBySection(assembled)
+const lead = groups[0]?.stories ?? []
+const stories = lead.map((a) => a.story)
+const editionUrl = `${SITE_URL}/${runId}.html`
+const desks = buildIndex(
+  groups.slice(1).map((g) => ({ slug: g.slug, name: g.name, stories: g.stories.map((a) => a.story) })),
+  { editionHref: editionUrl, first: lead.length + 1 }
+)
+const picked = pickCard(runId, desks)
 const edition = renderEmailEdition({
   runId,
   stories,
-  sections: groupBySection(assembled).map((g) => ({
-    slug: g.slug,
-    name: g.name,
-    stories: g.stories.map((a) => a.story)
-  })),
-  corrections: correctionsPrintedIn(db, runId)
+  corrections: correctionsPrintedIn(db, runId),
+  more: groups.length > 1,
+  card:
+    picked === null
+      ? null
+      : {
+          name: picked.name,
+          headline: picked.rows[0]?.headline ?? picked.name,
+          href: picked.href,
+          count: picked.count
+        }
 })
 const ses = new SESv2Client({ region: process.env["AWS_REGION"] ?? MAIL.region })
 
