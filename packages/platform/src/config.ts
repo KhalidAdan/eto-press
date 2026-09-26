@@ -154,6 +154,9 @@ export const PAPER_DESCRIPTION = str(
 export const SITE_URL = str(paper, "paper", "site_url", "http://localhost")
 /** The single accent color — the paper's own voice, never the news's. */
 export const ACCENT = str(paper, "paper", "accent", "#7f1d1d")
+/** Where the paper's constitution is published, for the about page's
+ * link (generation 3). Empty means the page names no constitution. */
+export const CONSTITUTION_URL = str(paper, "paper", "constitution_url", "")
 
 /** The nameplate's short address: "eto.news" from "https://eto.news". */
 export const SITE_HOST = new URL(SITE_URL).host

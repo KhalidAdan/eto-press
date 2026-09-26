@@ -126,7 +126,12 @@ const stories = lead.map((a) => a.story)
 const editionUrl = `${SITE_URL}/${runId}.html`
 const desks = buildIndex(
   groups.slice(1).map((g) => ({ slug: g.slug, name: g.name, stories: g.stories.map((a) => a.story) })),
-  { editionHref: editionUrl, first: lead.length + 1 }
+  {
+    editionHref: editionUrl,
+    first: lead.length + 1,
+    // The card's button lands on the desk's own dated page.
+    sectionHref: (slug) => `${SITE_URL}/${runId}/${slug}/`
+  }
 )
 const picked = pickCard(runId, desks)
 const edition = renderEmailEdition({
