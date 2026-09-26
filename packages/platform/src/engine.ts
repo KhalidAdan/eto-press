@@ -17,10 +17,21 @@ import type { EditionStory } from "./edition.js"
 import type { Masthead } from "./masthead.js"
 import type { RunReport } from "./render.js"
 
-/** What the platform hands the engine: the morning, and nothing else.
- * No corpus — each engine builds its own from the capabilities it uses. */
+/** The desk an engine is printing this call — the paper's declaration,
+ * never the engine's business to interpret. An engine that ignores it is
+ * still correct; one that keys a cache by it has the slug. */
+export interface DaySection {
+  readonly slug: string
+  readonly name: string
+}
+
+/** What the platform hands the engine: the morning, the section it is
+ * printing, and that section's masthead — nothing else. No corpus: each
+ * engine builds its own from the capabilities it uses. Since generation 3
+ * the frame calls `edition(day)` once per section, in declared order. */
 export interface Day {
   readonly runId: string
+  readonly section: DaySection
   readonly masthead: Masthead
 }
 

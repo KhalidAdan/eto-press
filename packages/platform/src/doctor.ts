@@ -15,14 +15,20 @@ import { GetAccountCommand, SESv2Client } from "@aws-sdk/client-sesv2"
 import Database from "better-sqlite3"
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import * as TOML from "smol-toml"
-import { COMPOSITE_MODEL, ENGINE, MAIL, MATCH_MODEL, OLLAMA_URL } from "./config.js"
+import { COMPOSITE_MODEL, MAIL, MATCH_MODEL, OLLAMA_URL, SECTIONED, SECTIONS } from "./config.js"
+import { deskDir } from "./desk.js"
 import { loadEnv } from "./env.js"
 
 /** Engines that call no models. Doctor is a platform verb and cannot ask
  * the engine registry (that lives in the press binding), so this list is
  * maintained here beside the checks it gates. */
 const MODELLESS = new Set(["desk", "letter", "digest", "sports", "wrap"])
-const needsModels = !MODELLESS.has(ENGINE)
+/** Engines whose sections need no source list. */
+const SOURCELESS = new Set(["desk"])
+/** Engines that read the desk. */
+const DESKED = new Set(["desk", "sports"])
+const needsModels = SECTIONS.some((s) => !MODELLESS.has(s.engine))
+const engineNames = [...new Set(SECTIONS.map((s) => s.engine))].join(", ")
 
 type Status = "ok" | "warn" | "fail" | "skip"
 interface Check {
@@ -47,48 +53,73 @@ const get = async (url: string, timeoutMs: number): Promise<Response> =>
 
 console.log("eto doctor — the press, examined\n")
 
-// -- the paper ---------------------------------------------------------------
+// -- the paper: every section's source file ----------------------------------
+// One line per section; a single-section paper reads sources.toml as it
+// always did. A feed listed under two sections is refused by name — the
+// same rule the press applies at preflight.
 let feedUrls: Array<{ outlet: string; url: string }> = []
-if (!existsSync("sources.toml")) {
-  report("paper", "fail", "no sources.toml here — this directory is not a paper")
-} else {
+const feedOwners = new Map<string, Array<string>>()
+for (const section of SECTIONS) {
+  const label = SECTIONED ? `section ${section.slug}` : "paper"
+  const file = section.masthead
+  if (!existsSync(file)) {
+    report(label, SOURCELESS.has(section.engine) && !SECTIONED ? "warn" : "fail",
+      `no ${file} here — ${SECTIONED ? `the ${section.slug} section has no source file` : "this directory is not a paper"}`)
+    continue
+  }
   try {
-    const masthead = TOML.parse(readFileSync("sources.toml", "utf8")) as {
+    const masthead = TOML.parse(readFileSync(file, "utf8")) as {
       source?: Array<{ name?: string; side?: string; feeds?: Array<string> }>
     }
     const sources = masthead.source ?? []
-    feedUrls = sources.flatMap((s) =>
+    const feeds = sources.flatMap((s) =>
       (s.feeds ?? []).map((url) => ({ outlet: s.name ?? "?", url }))
     )
+    feedUrls = feedUrls.concat(feeds)
+    for (const f of feeds) {
+      const owners = feedOwners.get(f.url) ?? []
+      if (!owners.includes(section.slug)) owners.push(section.slug)
+      feedOwners.set(f.url, owners)
+    }
     const bad = sources.filter((s) => !s.name || !s.side || !s.feeds?.length)
     if (sources.length === 0) {
-      if (ENGINE === "desk") {
-        report("paper", "ok", `a desk paper (engine "${ENGINE}") — sources not needed`)
+      if (SOURCELESS.has(section.engine)) {
+        report(label, "ok", `a ${section.engine} ${SECTIONED ? "section" : "paper"} — sources not needed`)
       } else {
-        report("paper", "fail",
-          `sources.toml has no [[source]] blocks — the ${ENGINE} engine will refuse to print`)
+        report(label, "fail",
+          `${file} has no [[source]] blocks — the ${section.engine} engine will refuse to print`)
       }
     } else if (bad.length > 0) {
-      report("paper", "fail", `${bad.length} source(s) missing name/side/feeds`)
+      report(label, "fail", `${bad.length} source(s) in ${file} missing name/side/feeds`)
     } else {
       const toml = existsSync("eto.toml")
         ? "eto.toml present"
         : "no eto.toml — running on the press's neutral defaults"
-      report("paper", existsSync("eto.toml") ? "ok" : "warn",
-        `${sources.length} sources, ${feedUrls.length} feeds; ${toml}`)
+      report(label, existsSync("eto.toml") ? "ok" : "warn",
+        `${sources.length} sources, ${feeds.length} feeds (${section.engine} engine); ${toml}`)
     }
   } catch (e) {
-    report("paper", "fail", `sources.toml unreadable: ${String(e).slice(0, 80)}`)
+    report(label, "fail", `${file} unreadable: ${String(e).slice(0, 80)}`)
   }
 }
+const shared = [...feedOwners.entries()].filter(([, owners]) => owners.length > 1)
+if (shared.length > 0) {
+  const [url, owners] = shared[0]!
+  report("sections", "fail",
+    `${url} is listed under ${owners.join(" and ")}${shared.length > 1 ? ` (+${shared.length - 1} more)` : ""} — a feed belongs to one section only`)
+} else if (SECTIONED) {
+  report("sections", "ok", `${SECTIONS.length} sections: ${SECTIONS.map((s) => `${s.slug} (${s.engine})`).join(", ")}`)
+}
 
-// -- the desk (desk engine only) ---------------------------------------------
-if (ENGINE === "desk") {
-  if (!existsSync("desk")) {
-    report("desk", "warn", "no desk/ directory yet — nothing will print until one exists")
+// -- the desk (engines that read it) -----------------------------------------
+for (const section of SECTIONS.filter((s) => DESKED.has(s.engine))) {
+  const dir = deskDir(SECTIONED, section.slug)
+  const label = SECTIONED ? `desk/${section.slug}` : "desk"
+  if (!existsSync(dir)) {
+    report(label, "warn", `no ${dir}/ directory yet — nothing will print from it until one exists`)
   } else {
-    const entries = readdirSync("desk").filter((f) => f.endsWith(".md")).length
-    report("desk", "ok",
+    const entries = readdirSync(dir).filter((f) => f.endsWith(".md")).length
+    report(label, "ok",
       `${entries} entr${entries === 1 ? "y" : "ies"} on the desk (printed ones are skipped)`)
   }
 }
@@ -96,7 +127,7 @@ if (ENGINE === "desk") {
 // -- ollama ------------------------------------------------------------------
 let ollamaUp = false
 if (!needsModels) {
-  report("ollama", "skip", `the ${ENGINE} engine calls no models — no Ollama, no GPU`)
+  report("ollama", "skip", `the ${engineNames} engine${engineNames.includes(",") ? "s call" : " calls"} no models — no Ollama, no GPU`)
 } else {
   try {
     const res = await get(`${OLLAMA_URL}/api/version`, 5000)

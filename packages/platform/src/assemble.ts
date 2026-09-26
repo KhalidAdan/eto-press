@@ -4,8 +4,9 @@
  * for what a published story looks like outside the press.
  */
 import Database from "better-sqlite3"
+import { DEFAULT_SECTION_SLUG, SECTIONS } from "./config.js"
 import { editionStoryFrom, type EditionStory } from "./edition.js"
-import { fromRow, type PublishedRow } from "./published.js"
+import { fromRow, rowSection, type PublishedRow } from "./published.js"
 
 export type Journal = InstanceType<typeof Database>
 
@@ -28,7 +29,10 @@ export const openJournal = (): Journal => {
   for (const migration of [
     `ALTER TABLE published_stories ADD COLUMN byline TEXT`,
     `ALTER TABLE published_stories ADD COLUMN link_items TEXT`,
-    `ALTER TABLE published_stories ADD COLUMN data_items TEXT`
+    `ALTER TABLE published_stories ADD COLUMN data_items TEXT`,
+    // Generation 3 (the same migrations db.ts applies on a print run).
+    `ALTER TABLE published_stories ADD COLUMN section TEXT NOT NULL DEFAULT '${DEFAULT_SECTION_SLUG}'`,
+    `ALTER TABLE corrections ADD COLUMN section TEXT`
   ]) {
     try {
       db.exec(migration)
@@ -39,19 +43,35 @@ export const openJournal = (): Journal => {
   return db
 }
 
-/** Corrections that PRINTED in a given edition — for that edition's page. */
+/** The printed name of a section slug: the paper's declaration when it
+ * has one, else the slug itself (an edition from a paper whose eto.toml
+ * has since dropped that section still names it). */
+export const sectionName = (slug: string): string =>
+  SECTIONS.find((s) => s.slug === slug)?.name ?? slug
+
+/** Corrections that PRINTED in a given edition — for that edition's page.
+ * The published-edition store names the corrected story; the legacy
+ * engine-table join covers editions published before the store. */
 export const correctionsPrintedIn = (db: Journal, runId: string) =>
   (db
     .prepare(
-      `SELECT c.edition AS edition, c.note AS note,
-              COALESCE(MAX(d.headline), 'story #' || c.story_rank) AS headline
+      `SELECT c.edition AS edition, c.note AS note, c.story_rank AS storyRank,
+              COALESCE(c.section, MAX(p.section)) AS section,
+              COALESCE(MAX(p.headline), MAX(d.headline), 'story #' || c.story_rank) AS headline
        FROM corrections c
+       LEFT JOIN published_stories p ON p.run_id = c.edition AND p.position = c.story_rank
        LEFT JOIN stories s ON s.run_id = c.edition AND s.rank = c.story_rank AND s.status = 'published'
        LEFT JOIN drafts d ON d.cluster_hash = s.cluster_hash
        WHERE c.printed_in = ?
        GROUP BY c.id ORDER BY c.id`
     )
-    .all(runId) as Array<{ edition: string; headline: string; note: string }>)
+    .all(runId) as Array<{
+    edition: string
+    headline: string
+    note: string
+    storyRank: number
+    section: string | null
+  }>)
 
 /** Source-health trends: the §6/§8 instrument panel, printed not advised. */
 export const healthLines = (db: Journal): Array<string> => {
@@ -97,6 +117,33 @@ export interface AssembledStory {
    * enrich cards from engine caches when it still resolves; null when
    * the engine left none. */
   readonly clusterHash: string | null
+  /** The desk this story printed in (generation 3); the default section
+   * for every edition published before sections existed. */
+  readonly section: string
+}
+
+/** The edition's stories grouped by section, in print order — what the
+ * dialects render on a sectioned paper. A single-section edition is one
+ * group. */
+export interface AssembledSection {
+  readonly slug: string
+  readonly name: string
+  readonly stories: ReadonlyArray<AssembledStory>
+}
+
+export const groupBySection = (
+  stories: ReadonlyArray<AssembledStory>
+): Array<AssembledSection> => {
+  const groups: Array<{ slug: string; name: string; stories: Array<AssembledStory> }> = []
+  for (const s of stories) {
+    const last = groups[groups.length - 1]
+    if (last !== undefined && last.slug === s.section) {
+      last.stories.push(s)
+    } else {
+      groups.push({ slug: s.section, name: sectionName(s.section), stories: [s] })
+    }
+  }
+  return groups
 }
 
 export const publishedRuns = (db: Journal): Array<string> =>
@@ -121,7 +168,8 @@ export const assembleStories = (
   if (stored.length > 0) {
     return stored.map((row) => ({
       story: fromRow(row),
-      clusterHash: row.engine_ref
+      clusterHash: row.engine_ref,
+      section: rowSection(row)
     }))
   }
   const rows = db
@@ -162,6 +210,7 @@ export const assembleStories = (
     return [
       {
         clusterHash: row.cluster_hash,
+        section: DEFAULT_SECTION_SLUG,
         story: editionStoryFrom({
           headline: draft.headline,
           body: draft.body,

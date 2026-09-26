@@ -30,7 +30,45 @@ accent = "#7f1d1d"
 
 | Field | Default | Meaning |
 | --- | --- | --- |
-| `use` | `"eto"` | Which engine prints this paper — a name from the press's built-in registry (`eto`, `desk`, `letter`, `digest`, `sports`, `wrap`). Generation 2. |
+| `use` | `"eto"` | Which engine prints this paper when it declares no sections — a name from the press's built-in registry (`eto`, `desk`, `letter`, `digest`, `sports`, `wrap`). Generation 2. |
+
+## `[[section]]` — generation 3
+
+A paper is sections: each printed by one engine from its own source file,
+bound into one morning in the order declared here. **A paper with no
+`[[section]]` blocks is a paper with one section**, printed by `[engine]
+use` from `sources.toml`, and it renders exactly as generation 2 rendered
+it — every existing paper is valid as it stands.
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `slug` | *(required)* | The section's address: `[a-z][a-z0-9-]*`, unique in the paper. Names the section on the page, its desk directory (`desk/<slug>/`), and its journal rows. |
+| `engine` | *(required)* | Which engine prints this section — a name from the registry above. |
+| `name` | the slug | The printed name: the section heading on the page, in the archive, and in the mail. |
+| `masthead` | `sections/<slug>.toml` | The section's source file — `sources.toml`'s shape, one per desk. What `side` means in it is the engine's to say. |
+
+```toml
+[[section]]
+name = "Current events brief"
+slug = "brief"
+engine = "eto"
+masthead = "sources.toml"
+
+[[section]]
+name = "Sports"
+slug = "sports"
+engine = "sports"
+```
+
+Two rules the press enforces at preflight: a feed URL may be listed under
+one section only (the journal keys an item by its link and gives it one
+side), and every section's engine must be one the press was built with.
+A section whose engine returns no edition is printed as absent — a line on
+the page and a warning in the report — while the others print; a morning
+where every section is silent prints nothing at all.
+
+The desk is per section once sections are declared: `desk/<slug>/`
+instead of `desk/`.
 
 ## `[models]`
 
@@ -57,6 +95,7 @@ re-composites as needed — the caches key on model and prompt.
 | `contact_list` | `"eto-readers"` | SES contact list name (a press convention, not identity). |
 | `topic` | `"morning-edition"` | The list topic readers subscribe to. |
 | `config_set` | `"eto-mail"` | SES configuration set. |
+| `email_edition` | *(undeclared)* | The morning delivery switch, `true` or `false`. Undeclared here, the `email_edition` flag in the first section's source file decides, where generation 2 kept it. |
 
 ## `[backup]`
 

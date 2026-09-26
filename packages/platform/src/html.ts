@@ -387,12 +387,74 @@ ${rows}
 `
 }
 
+/** One section of the edition page, as the site groups it (generation 3).
+ * A single-section edition passes none and renders as generation 2 did. */
+export interface HtmlSection {
+  readonly slug: string
+  readonly name: string
+  readonly stories: ReadonlyArray<HtmlStory>
+}
+
+/** The stories of one section: the mains, then the fold, story anchors
+ * numbered from `first` in print order. */
+const storiesBlock = (
+  stories: ReadonlyArray<HtmlStory>,
+  first: number
+): { html: string; next: number } => {
+  const mains = stories.filter((s) => s.foldReason === null)
+  const folds = stories.filter((s) => s.foldReason !== null)
+  const mainsHtml = mains.map((s, i) => storySection(s, first + i)).join("\n\n")
+  const foldsHtml = folds
+    .map(
+      (s, i) => `
+    <section class="fold">
+      <h2 class="fold__label instrument instrument--label instrument--strong accent">Below the fold</h2>
+      <p class="fold__note instrument instrument--quiet">One nomination from outside the front page. The model's printed reason — judge it:</p>
+      <p class="fold__reason instrument instrument--quiet">${esc(s.foldReason!)}</p>
+${storySection(s, first + mains.length + i)}
+    </section>`
+    )
+    .join("\n")
+  return {
+    html: `    <div class="edition__stories">
+${mainsHtml}
+    </div>
+${foldsHtml}`,
+    next: first + stories.length
+  }
+}
+
+/** The body of the edition page: the stories, or — on a sectioned paper —
+ * each desk labeled, its stories under it, and a line where it ends. */
+const editionBody = (opts: {
+  readonly stories: ReadonlyArray<HtmlStory>
+  readonly sections?: ReadonlyArray<HtmlSection> | undefined
+}): string => {
+  const sections = opts.sections ?? []
+  if (sections.length <= 1) return storiesBlock(opts.stories, 1).html
+  const parts: Array<string> = []
+  let next = 1
+  for (const section of sections) {
+    const block = storiesBlock(section.stories, next)
+    next = block.next
+    parts.push(`    <section class="desk" id="${esc(section.slug)}">
+      <h2 class="desk__label section-label instrument instrument--label instrument--strong">${esc(section.name)}</h2>
+${block.html}
+      <p class="desk__end instrument instrument--quiet">${esc(section.name)} ends here.</p>
+    </section>`)
+  }
+  return parts.join("\n")
+}
+
 export const renderEditionHtml = (opts: {
   readonly runId: string
   readonly editionLabel: string
   readonly stories: ReadonlyArray<HtmlStory>
   readonly report: HtmlReport
   readonly corrections?: ReadonlyArray<HtmlCorrection>
+  /** The stories grouped by section, when the paper has more than one.
+   * Must cover exactly `stories`, in the same order. */
+  readonly sections?: ReadonlyArray<HtmlSection>
 }): string => {
   const date = longDate(opts.runId)
   const corrections = opts.corrections ?? []
@@ -443,24 +505,7 @@ ${headMeta({
       <p class="masthead__date instrument instrument--label">${esc(date)}${opts.editionLabel ? ` · ${esc(opts.editionLabel)}` : ""}</p>
     </header>
 ${correctionsSection}
-    <div class="edition__stories">
-${opts.stories
-    .filter((s) => s.foldReason === null)
-    .map((s, i) => storySection(s, i + 1))
-    .join("\n\n")}
-    </div>
-${opts.stories
-    .filter((s) => s.foldReason !== null)
-    .map(
-      (s, i) => `
-    <section class="fold">
-      <h2 class="fold__label instrument instrument--label instrument--strong accent">Below the fold</h2>
-      <p class="fold__note instrument instrument--quiet">One nomination from outside the front page. The model's printed reason — judge it:</p>
-      <p class="fold__reason instrument instrument--quiet">${esc(s.foldReason!)}</p>
-${storySection(s, opts.stories.filter((x) => x.foldReason === null).length + i + 1)}
-    </section>`
-    )
-    .join("\n")}
+${editionBody(opts)}
 
     <footer class="report">
       <h2 class="report__label instrument instrument--label instrument--strong">The run, reported</h2>

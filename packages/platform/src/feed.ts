@@ -68,8 +68,16 @@ const storyHtml = (s: EditionStory): string => {
     .join("\n")
 }
 
-/** The feed renders the edition document itself — no private shape. */
-export type FeedEdition = EditionDocument
+/** The feed renders the edition document itself — no private shape. On a
+ * sectioned paper the same stories arrive grouped, and the item labels
+ * each desk. */
+export interface FeedEdition extends EditionDocument {
+  readonly sections?: ReadonlyArray<{
+    readonly slug: string
+    readonly name: string
+    readonly stories: ReadonlyArray<EditionStory>
+  }>
+}
 
 export const renderFeedXml = (editions: ReadonlyArray<FeedEdition>): string => {
   const items = editions
@@ -85,10 +93,20 @@ export const renderFeedXml = (editions: ReadonlyArray<FeedEdition>): string => {
                   `<p>In the edition of <a href="${SITE_URL}/${escHtml(c.edition)}.html">${escHtml(longDate(c.edition))}</a>, the story “${escHtml(c.headline)}”: ${escHtml(c.note)} The original stands unchanged in the archive.</p>`
               )
               .join("\n")
+      // Several desks: each labeled inside the item. One: the stories alone.
+      const sectioned = e.sections !== undefined && e.sections.length > 1
+      const stories = sectioned
+        ? e.sections!
+            .map(
+              (s) =>
+                `<h2>${escHtml(s.name)}</h2>\n` + s.stories.map(storyHtml).join("\n<hr/>\n")
+            )
+            .join("\n<hr/>\n")
+        : e.stories.map(storyHtml).join("\n<hr/>\n")
       const content = [
         corrections,
-        e.stories.map(storyHtml).join("\n<hr/>\n"),
-        `<hr/>\n<p><em>The brief ends here.</em></p>`
+        stories,
+        `<hr/>\n<p><em>The ${sectioned ? "paper" : "brief"} ends here.</em></p>`
       ]
         .filter(Boolean)
         .join("\n")

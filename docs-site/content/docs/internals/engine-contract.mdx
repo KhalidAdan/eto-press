@@ -16,7 +16,8 @@ description: What an engine is handed, what it must return, and how to write one
 // packages/platform/src/engine.ts
 export interface Day {
   readonly runId: string        // the editor's local calendar date
-  readonly masthead: Masthead   // sources.toml as data; interpretation is yours
+  readonly section: DaySection  // { slug, name }: the desk you are printing (generation 3)
+  readonly masthead: Masthead   // that section's source file as data; interpretation is yours
 }
 
 export type EngineOutcome =
@@ -36,11 +37,18 @@ export interface Engine<E = unknown, R = unknown> {
 }
 ```
 
-Three decisions are encoded here:
+Four decisions are encoded here:
 
 - **No corpus in `Day`.** The eto engine builds its corpus from feeds; the
   desk engine from the Desk; a future engine from documents or APIs. The
   platform hands you the morning, not a worldview.
+- **One call per section.** Since generation 3 a paper is sections, and
+  the frame calls `edition(day)` once per section in declared order, each
+  with that section's masthead and `Day.section` naming it. Two sections
+  on your engine are two calls with two mastheads. An engine that ignores
+  `section` is still correct; the feed ingest and the Desk are already
+  scoped to the section by the frame (a section's `desk/<slug>/`, its own
+  feeds' items), so you never see another desk's corpus.
 - **Silence is an outcome, not an error.** `NoEdition` means no archive
   file and no mail — distinct from an Edition with zero stories, which
   prints the honest quiet page. Your doctrine chooses.
