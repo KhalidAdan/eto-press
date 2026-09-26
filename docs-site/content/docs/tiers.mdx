@@ -37,11 +37,12 @@ nothing at all.
 
 ## Tier 3 — a paper with a mailing list
 
-Only here does a mail provider enter. `eto mail` provisioning walks the SES
-ordeal down to one command and two DNS records; the subscribe flow (a form
-endpoint and a confirm link) deploys only for this tier. Sends are idempotent,
-suppression is swept before every send, and there is no tracking of any kind
-in the mail.
+Only here does a mail provider enter. SES setup is by hand today — a domain
+identity, its DKIM records, a contact list, a configuration set, an IAM user
+— and a one-command provisioning verb is on the roadmap. The subscribe flow
+(a form endpoint and a confirm link) is deployed only for this tier, by you.
+Sends are idempotent, suppression is swept before every send, and there is no
+tracking of any kind in the mail.
 
 **Setup:** [The morning email](/docs/guides/mail).
 

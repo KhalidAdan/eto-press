@@ -85,8 +85,9 @@ export const loadMasthead = (path: string) =>
         (e) => new MastheadInvalid({ path, reason: `unreadable: ${e.message}` })
       )
     )
+    // Some Windows editors prefix a UTF-8 BOM; TOML does not allow one.
     const parsed = yield* Effect.try({
-      try: () => TOML.parse(raw),
+      try: () => TOML.parse(raw.replace(/^﻿/, "")),
       catch: (e) => new MastheadInvalid({ path, reason: `TOML: ${String(e)}` })
     })
     yield* checkUnknownKeys(path, parsed as Record<string, unknown>)

@@ -4,6 +4,13 @@
 the roadmap only after the editor's review. Until then, generation 1
 continues as shipped.*
 
+**Status, 2026-09-26.** Adopted. The editor ruled on 2026-08-16: the
+license stays AGPL-3.0-only and the engine package names stand. The
+proposal was executed in PRs #2–#6 and published as the 2.x line. This
+document is kept as the record of the reasoning; the current state is
+in ROADMAP.md ("Generation 2 — Built" and its addendum) and
+CHANGELOG-GEN2.md.
+
 ---
 
 ## The Reframe
@@ -36,7 +43,7 @@ One platform. Many possible engines. eto's is the first.
 | **Masthead** | a paper | name, motto, description, accent, editorial line (sources), domain, mail identity |
 | **Skin** | a paper | the stylesheet; full editorial CSS rights over the engine's structure. The engine ships a default theme |
 
-The North Star decomposes along the same seam: §§7–10 (the brief ends,
+The North Star decomposes along the same boundary: §§7–10 (the brief ends,
 the front door, the fixed archive, your metal) were never editorial —
 they are the platform's constitution, inherited by every paper on it.
 §§1–6 (one story many mouths, the disagreement is the story, nothing
@@ -92,7 +99,7 @@ name.
    a fork. Gen 2 emits semantic anatomy (`story__differ`,
    `story__sources`, …) with the default theme layered on top. This is
    the largest single work item.
-2. **The package seam.** The monorepo restructures along the
+2. **The package boundary.** The monorepo restructures along the
    platform/engine boundary (`packages/platform`, `packages/engine-*`)
    even while one engine exists — cheap now, expensive later.
 3. **The engine declaration.** A paper's configuration names its engine.
@@ -133,7 +140,7 @@ forever without acknowledging generation 2 exists.
 This proposal is deliberately **shelved behind phase 2**. Nothing in
 init/doctor/model-management is wasted by it — a wizard that scaffolds a
 paper serves any engine. The recommended order remains: phase 2 makes
-the press welcoming; generation 2 makes it plural. The package seam
+the press welcoming; generation 2 makes it plural. The package boundary
 (item 2) is the only gen-2 work worth doing early, because it makes
 every later decision cheaper and no current behavior different.
 

@@ -1,6 +1,6 @@
 ---
 title: The journal
-description: One SQLite file, cache keys that carry the resume story, and the two tables that are truly yours.
+description: One SQLite file, cache keys that carry the resume story, and the four tables that are truly yours.
 ---
 
 `db/eto.sqlite`, WAL mode, one file. Backup is copying a file; inspection is
@@ -20,43 +20,63 @@ same command.
 | Table | Keyed by | Holds |
 | --- | --- | --- |
 | `runs` | `run_id` (the editor's local date) | started/finished, the morning's note |
-| `feed_fetches` | every attempt | the §8 source-health history — one of the two tables you cannot rebuild |
+| `feed_fetches` | every attempt | the §8 source-health history — not rebuildable |
 | `items` | `link` UNIQUE | normalized entries; insert-or-ignore makes refetching idempotent |
-| `articles` | `item_id` | fetched account text; a rerun refetches only what's missing or failed |
-| `corrections` | id | your corrections — the other unrebuildable table |
+| `articles` | `item_id` | fetched account text (and the outlet's `og_image`); a rerun refetches only what's missing or failed. Full text served in the feed itself is journaled here at stage 2b |
+| `documents` | `(url, content_hash)` | the FrontDoor's journal: every distinct version of every watched page — how the letter engine knows a statement is new |
+| `corrections` | id | your corrections — not rebuildable |
+| `email_sends` | `run_id` | one delivery per edition, ever — not rebuildable |
+| `published_stories` | `(run_id, position)` | the published-edition store — not rebuildable |
 
 **Engine tables** — the eto engine's working memory:
 
 | Table | Keyed by | Why the key matters |
 | --- | --- | --- |
-| `verdicts` | `(item_a, item_b, model, prompt_hash)` | **the resume story of the whole pipeline**: a rerun skips every judged pair; changing the model or prompt automatically re-judges |
+| `verdicts` | `(item_a, item_b, model, prompt_hash)` | **the resume story of the whole pipeline**: a rerun skips every judged pair; changing the model or the question automatically re-judges. `answer` is yes, no, or abstain; `confidence` is NULL from a text model, a calibrated probability from a provider that has one |
 | `clusters`, `cluster_items` | run + hash | persisted because later stages and corrections reference them |
-| `stories` | `(run_id, cluster_hash)` | selected/published/dropped, with the named drop reason |
+| `stories` | `(run_id, cluster_hash)` | selected/published/dropped, with the named drop reason and the fold reason |
 | `drafts` | `(cluster_hash, model, prompt_hash, attempt)` | composite output, cache-keyed like verdicts |
-| `verifications` | draft | every cage check's result |
+| `verifications` | `(cluster_hash, attempt, check)` | every cage check's result — pass, violation, or advisory |
 
-The desk engine adds its own table (`desk_printed`, keyed by file and
-content hash) — engines own their schema, created idempotently on first use.
+The desk engine writes no tables of its own. Its printed-once check is a
+lookup of `engine_ref` in the published-edition store. An engine that needs
+working memory owns its schema, created idempotently on first use; today
+only the eto engine has any.
 
-## Prompts are versioned artifacts
+Migrations are additive and ignored when already applied:
+`stories.fold_reason`, `articles.og_image`, `verdicts.confidence`, and the
+optional-anatomy columns on `published_stories`.
 
-Every prompt lives in a file and is hashed; the hash is part of the cache
-key of any work it produced. Change a prompt and its stale outputs
-invalidate themselves — no manual cache-busting, ever.
+## Questions are versioned artifacts
 
-## The reconstruction interface
+The `model` and `prompt_hash` in the verdicts and drafts keys come from the
+inference boundary's identities, not from the engine. `model` is the
+provider's model identity; `prompt_hash` is the hash of the provider's
+question spec — for the Ollama provider, the prompt template in
+`inference-ollama.ts`. Change a question and its stale outputs invalidate
+themselves — no manual cache-busting, ever. The stage never sees the prompt;
+it sees the key.
 
-The site, email, and RSS dialects rebuild editions **from the journal**
-(`assemble.ts`): published `stories` rows joined to their `drafts`, with
-account links resolved from `cluster_items`. This is why the desk engine
-writes `stories` and `drafts` rows too — those tables are, today, the
-de-facto contract for "what published." Abstracting that store into a
-proper platform interface is the next planned refactor; until then, treat
-those two tables as load-bearing API.
+## The published-edition store
+
+`published_stories` is the archive's queryable shadow: the same edition as
+structured rows, engine-agnostic, one writer and one reader. The frame
+writes it (`persistPublishedStories`) right after the archive write
+succeeds, idempotently per `(run_id, position)`, so the two can never
+disagree. The site, email, and RSS dialects (`assemble.ts`) read it and
+rebuild each story through `fromRow` — the same constructor the pipeline
+used, with the source links exactly as resolved at publish time.
+
+Editions published before the store existed are rebuilt the old way:
+published `stories` rows joined to their `drafts`, links resolved from
+`cluster_items`. That path is the legacy fallback, taken only when the
+store has no rows for the edition.
 
 ## What can be deleted
 
-Everything except `corrections` and `feed_fetches` rebuilds from the world
-(at the cost of one slow morning). `eto export` writes the precious tables
-as diffable JSONL; `eto backup` snapshots the whole file. See
-[Backups](/docs/guides/backups) for the operator's view.
+Everything except `corrections`, `feed_fetches`, `published_stories`, and
+`email_sends` rebuilds from the world (at the cost of one slow morning).
+`eto export` writes five tables as diffable JSONL — `stories`,
+`feed_fetches`, `email_sends`, `clusters`, `corrections`; `eto backup`
+snapshots the whole file. See [Backups](/docs/guides/backups) for the
+operator's view.

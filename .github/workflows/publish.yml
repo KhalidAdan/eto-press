@@ -2,12 +2,20 @@
 # Tags follow the versioning scheme: v<generation>.<YYYYMMDD>.<patch>,
 # e.g. v1.20260814.0.
 #
-# Auth is npm trusted publishing (OIDC): each package's Settings ->
-# Trusted publisher on npmjs.com names this repository and workflow, and
-# npm mints short-lived credentials from the runner's OIDC token —
-# no NPM_TOKEN secret, no OTP, and provenance attestations for free.
-# (Token-based publishing dead-ends at EOTP: the account requires 2FA
-# and npm is deprecating tokens that bypass it.)
+# Auth is MEANT to be npm trusted publishing (OIDC): each package's
+# Settings -> Trusted publisher on npmjs.com names this repository and
+# workflow, and npm mints short-lived credentials from the runner's OIDC
+# token — no NPM_TOKEN secret, no OTP, and provenance attestations for
+# free. (Token-based publishing dead-ends at EOTP: the account requires
+# 2FA and npm is deprecating tokens that bypass it.)
+#
+# STATUS (2026-09-26): it does not work yet. Every run of this workflow
+# so far has failed at the OIDC exchange (issue #1 tracks it), and every
+# release through 2.20260926.0 was published by hand — from each package
+# directory, in the order the loop below names, with the account's OTP.
+# The workflow stays because the tag discipline and the guard are right;
+# when trusted publishing is configured for all ten packages it will
+# simply start succeeding.
 #
 # Publishing is deliberate, never automatic on merge — the press has no
 # remote switch (NORTH-STAR §10), and its releases are the same way:

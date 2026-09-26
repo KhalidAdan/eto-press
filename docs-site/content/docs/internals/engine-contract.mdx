@@ -44,18 +44,41 @@ Three decisions are encoded here:
 - **Silence is an outcome, not an error.** `NoEdition` means no archive
   file and no mail — distinct from an Edition with zero stories, which
   prints the honest quiet page. Your doctrine chooses.
-- **`models` drives preflight.** Declare the model names you call; the
-  frame verifies presence and pins digests before your code runs. Declare
-  `[]` and a paper on your engine never needs Ollama.
+- **`models` gates preflight.** A non-empty list means the frame asks the
+  inference provider to pin before your code runs; what gets pinned is the
+  provider's configured models, not the names in your list. Declare `[]`
+  and a paper on your engine never needs Ollama — for `eto print` and
+  `eto press` alike.
 
 ## What you're given, and not
 
-Your `edition()` runs with the services the press provides: the SQL client
-(the journal — create your own tables, read the platform's), the HTTP
-client via platform libraries (`ingestAllFeeds`, `fetchArticlesForStories`
-— front-door discipline included), the `Ollama` service (pinned, retried),
-and the `Desk`. You are never handed the filesystem, the archive, the mail,
-or your readers. The constitution is the shape of the toolbox.
+Your `edition()` runs with the services the press provides, and the list
+is closed: the SQL client (the journal — create your own tables, read the
+platform's), the HTTP client via platform libraries (`ingestAllFeeds`,
+`fetchArticlesForStories` — front-door discipline included), the
+inference service, and the `Desk`. `main.ts` states that ceiling as a type,
+and an engine that requires anything else does not compile. You are never
+handed the filesystem, the model server, the archive, the mail, or your
+readers. The constitution is the shape of the toolbox.
+
+## How an engine asks a model anything
+
+Only through the inference service, and only one of its questions:
+`sameEvent`, `nominate`, `composite` (plus `pin` for preflight and
+`identities` for journal keys). There is no chat. The questions are typed —
+a verdict, a pick with its reason, a four-part draft or null — and the
+prompt that produces each answer, the parser that reads it, and the
+per-model knobs all belong to the provider (`inference-ollama.ts`). An
+engine never sees a prompt or a raw completion.
+
+What stays yours is every policy around an answer: transport retries, the
+re-ask-then-abstain rule, journaling, attempt numbering, tripwires. The
+eto engine's `judge.ts` and `composite.ts` are the pattern.
+
+A new question means extending `inference.ts` and the provider, never
+writing a prompt in an engine. That is the point of the boundary: a
+provider that returns typed decisions instead of text must still be able
+to satisfy every question the press asks.
 
 ## The minimum viable engine
 
@@ -65,15 +88,22 @@ The desk engine is the reference implementation — one file. The walk:
 2. Decide: anything to print? If not, `NoEdition` with an honest reason.
 3. Build `EditionStory` values with `editionStoryFrom` — raw text in, both
    the archive form and the split visual form out. Differ and sources may
-   be empty; the dialects render their absence correctly.
-4. Persist `stories` and `drafts` rows so the site and mail dialects can
-   reconstruct your editions from the journal (see
-   [The journal](/docs/internals/journal#the-reconstruction-interface)).
-5. Return your report — the lines you'd want in front of you at 6 a.m.
+   be empty; the dialects render their absence correctly. Set `engineRef`
+   to your own opaque reference for the story (the desk engine uses
+   `desk:<content hash>`); the frame stores it, never interprets it.
+4. Return your report — the lines you'd want in front of you at 6 a.m.
+
+You write no publication tables. After the archive write succeeds, the
+frame writes every story to the published-edition store, and the site,
+email, and RSS dialects read from there. The desk engine keeps no table of
+its own at all: its printed-once check is a lookup of `engine_ref` in that
+store (see [The journal](/docs/internals/journal#the-published-edition-store)).
 
 Then register it in `packages/press/src/main.ts` and declare it in a test
 paper's `eto.toml`. The registry is static on purpose: an engine is a
-dependency the press was built with, not a download.
+dependency the press was built with, not a download. `eto init` offers only
+eto and desk as choices; every other engine is chosen by editing
+`[engine] use`.
 
 ## Failure discipline
 

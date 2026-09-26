@@ -10,16 +10,21 @@ Every morning is the same walk. Two principles shape all of it:
    A crash at minute 28 costs the unit in flight and nothing else; recovery is
    always the same command, run again. Resume is not a feature; it is the
    absence of one.
-2. **The model only touches prose.** Two stages ask a model anything: judging
-   pairs and compositing stories. Every other stage is deterministic code, and
-   the model's output is always caged by deterministic verification.
+2. **The model only touches prose.** Three questions are ever put to a
+   model — is this the same event, which story belongs below the fold, and
+   write the composite — and the stages put them to the platform's inference
+   service, never to a model directly. Every other stage is deterministic
+   code, and the model's output is always caged by deterministic
+   verification.
 
 ## The stages
 
 <Steps>
   <Step title="Preflight">
-    Validate the masthead, run migrations, confirm the engine's models are
-    present and match `models.lock.json`. A drifted digest stops the press —
+    Validate the masthead, run migrations, and — if the engine declares any
+    models — ask the inference provider to pin its models: each one with the
+    strongest identity the provider can promise (Ollama: a content digest),
+    checked against `models.lock.json`. A drifted digest stops the press —
     an `ollama pull` must never silently change your paper's mind.
     Configuration problems fail loudly here, before any work.
   </Step>
@@ -33,7 +38,9 @@ Every morning is the same walk. Two principles shape all of it:
     Parse RSS and Atom (hostile encodings assumed), then classify each item —
     news, opinion, video, podcast, liveblog, digest. Only `news` items may
     participate in event matching: opinion and format items act as glue
-    between unrelated clusters.
+    between unrelated clusters. An entry that arrives with its full text in
+    the feed is journaled as the account of record right here; the article
+    fetch later skips it.
   </Step>
   <Step title="Window and prefilter">
     Keep the 48-hour window, then cut candidate pairs with plain code — two
@@ -42,17 +49,22 @@ Every morning is the same walk. Two principles shape all of it:
     aborts the run: cheap sanity beats expensive garbage.
   </Step>
   <Step title="Judge pairs">
-    The small model answers one question per pair: same news event, yes or
-    no. Verdicts are cached by pair, model, and prompt hash — rerunning
-    skips every judged pair; changing the prompt re-judges automatically. A
-    unanimous verdict stream trips an abort: one-sided answers mean a broken
-    prompt, not a quiet news day.
+    One question per pair: same news event, yes or no. Verdicts are cached
+    by pair, the provider's model identity, and the hash of its question —
+    rerunning skips every judged pair; changing the model or the question
+    re-judges automatically. Each verdict also carries a confidence, which a
+    text model leaves empty. An answer that will not parse is asked once
+    more, then recorded as an abstention. A unanimous stream of fresh
+    verdicts trips an abort: one-sided answers mean a broken prompt, not a
+    quiet news day.
   </Step>
   <Step title="Cluster, gate, dedupe">
-    Union-find over the yes-edges, then a density gate that cuts the welded
-    blobs transitive chaining creates. Clusters mostly published in an
-    earlier edition are set aside — yesterday's front page does not reprint
-    itself. A story that returns with mostly new reporting runs again as a
+    Union-find over the yes-edges, then a density gate that shears the
+    welded blobs transitive chaining creates — no model is asked anything
+    here. A blob still under the density floor after shearing is set aside
+    and reported, never printed. Then clusters mostly published in an earlier
+    edition are set aside — yesterday's front page does not reprint itself.
+    A story that returns with mostly new reporting runs again as a
     development.
   </Step>
   <Step title="Select">
@@ -74,22 +86,31 @@ Every morning is the same walk. Two principles shape all of it:
     fetched accounts is dropped and reported.
   </Step>
   <Step title="Composite">
-    The larger model merges the fetched accounts into the four-part story:
-    headline, body, where-the-accounts-differ, sources. No adjective it was
-    not given, no motive, no forecast, ~350 words, it ends.
+    The compositor is asked for the four-part story — headline, body,
+    where-the-accounts-differ, sources — from at most six of the fetched
+    accounts, one per outlet first, longest wins. No adjective it was not
+    given, no motive, no forecast, ~350 words, it ends. The printed sources
+    line is arithmetic: exactly the outlets whose accounts were in the ask.
+    Whatever the model wrote under SOURCES is discarded.
   </Step>
   <Step title="Verify">
-    The cage. Deterministic checks against the fetched text: every quote
-    verbatim, every entity present, no evaluative adjective in the paper's
-    own voice, the sources line exact, the word budget respected. Violations
-    go back to the compositor once as editor's notes; a story that still
-    fails is cut or dropped. A gap over a guess, every time.
+    The cage. Deterministic checks against the fetched text, no model. A
+    violation is any of: a quoted fragment not found verbatim in an account;
+    a sources line naming fewer than two outlets, or an outlet whose account
+    was not fetched; prose that says "account 3" instead of naming an outlet;
+    a story over the 420-word hard cap. Violations go back to the compositor
+    once as editor's notes; a story that still fails drops whole, with the
+    reason printed. Advisories — a named entity found in no account, a story
+    over the 350-word target, an outlet fetched but not listed — print in the
+    run report and never drop a story. A gap over a guess, every time.
   </Step>
   <Step title="Render, archive, report">
     Surviving stories become the edition — markdown in the archive (written
-    once, atomically, never overwritten), the site, the email, the RSS item.
-    The run report prints the whole morning as data: feeds read and failed,
-    the funnel, every drop and its named reason, source-health trends.
+    once, atomically, never overwritten), then the published-edition store
+    in the journal, which the site, the email, and the RSS item are rendered
+    from. The run report prints the whole morning as data: feeds read and
+    failed, the funnel, blobs set aside, every drop and its named reason,
+    source-health trends.
   </Step>
 </Steps>
 

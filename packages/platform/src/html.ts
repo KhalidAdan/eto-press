@@ -248,9 +248,6 @@ ${headMeta({
     description: SITE_DESCRIPTION,
     path: "/"
   })}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./brief.css">
 </head>
 <body class="page">
@@ -355,9 +352,6 @@ ${headMeta({
       `Every outlet this paper reads and where it stands${seed === null ? "" : `, seeded from the ${seed.name}`}. The masthead is a file: change the file, change the paper.`,
     path: "/sources.html"
   })}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./brief.css">
 </head>
 <body class="page">
@@ -432,9 +426,6 @@ ${headMeta({
     description: `The ${date} edition: ${opts.stories.length} stories, each one event told through outlets that disagree, every source linked.`,
     path: `/${opts.runId}.html`
   })}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./brief.css">
 </head>
 <body class="page">

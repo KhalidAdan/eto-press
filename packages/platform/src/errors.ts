@@ -71,17 +71,15 @@ export class ArticleUnreadable extends Data.TaggedError("ArticleUnreadable")<{
   readonly url: string
 }> {}
 
-// -- Stage 4/5/8: model calls (unit-level, never fatal to the run) ----------
+// -- Stages 4/6b/8: the inference provider did not answer. Retried by the
+// stage; what an exhausted retry means is the stage's call — at 4 the run
+// stops (and resumes from the journal), at 6b there is no nomination,
+// at 8/9 it escalates to PressStalled. ---------------------------------------
 
 export class OllamaCallFailed extends Data.TaggedError("OllamaCallFailed")<{
   /** Which unit of work was in flight, e.g. "pair 123-456". */
   readonly unit: string
   readonly cause: unknown
-}> {}
-
-export class VerdictUnparseable extends Data.TaggedError("VerdictUnparseable")<{
-  readonly pairId: string
-  readonly raw: string
 }> {}
 
 // -- Stage 8: composite (a shapeless draft drops the story; a dead press

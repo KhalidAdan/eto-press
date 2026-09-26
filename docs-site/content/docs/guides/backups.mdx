@@ -10,8 +10,10 @@ that honestly.
 
 - **The archive** (`archive/*.md`) — the record itself. It is plain files;
   version it, sync it, copy it. The flagship keeps it in git.
-- **Your corrections and source-health history** — the two journal tables
-  that came from you and your mornings rather than from the world.
+- **Four journal tables** that came from you and your mornings rather than
+  from the world: your corrections, the source-health history
+  (`feed_fetches`), the published-edition store (`published_stories`), and
+  the record of what was mailed (`email_sends`).
 - **Your configuration** — `eto.toml`, `sources.toml`, `models.lock.json`,
   and (tier 3) the reader list.
 
@@ -27,9 +29,10 @@ slow morning, not history.
 eto export
 ```
 
-exports the genuinely-yours tables as diffable JSONL into `db/exports/` —
-text files that belong in version control beside the archive, where a bad
-day is a readable diff instead of a binary mystery.
+exports five tables — `stories`, `feed_fetches`, `email_sends`, `clusters`,
+`corrections` — as diffable JSONL into `db/exports/`: text files that
+belong in version control beside the archive, where a bad day is a readable
+diff instead of a binary mystery.
 
 ```bash
 eto backup
@@ -45,18 +48,27 @@ dir = "D:\\paper-backups"   # point this at a different disk
 keep = 14
 ```
 
-On tier 3, `eto backup-readers` snapshots the reader list from SES, so your
-list survives even your mail provider.
+The default `dir` is `backups`, a gitignored folder inside the paper — a
+snapshot on the same disk as the thing it protects. Point it elsewhere when
+you configure the paper for real.
 
-Both run automatically at the tail of every `eto press` morning; the
+On tier 3, `eto backup-readers` snapshots the reader list from SES, so your
+list survives even your mail provider. It runs at the tail of every
+`eto press` whatever the tier; without AWS credentials it fails and the
+morning carries on.
+
+All three run automatically at the tail of every `eto press` morning; the
 commands exist for the days you want one now.
 
 ## Restoring
 
 - **Archive**: it's files — put them back.
-- **Journal**: copy a snapshot over `db/eto.sqlite`, or simply delete the
-  journal and let the next morning rebuild the caches; then re-import your
-  exports if you want corrections and history back.
+- **Journal**: copy a snapshot over `db/eto.sqlite`, or delete the journal
+  and let the next morning rebuild the caches. Corrections and history
+  then come back only from the exports, and only by hand: there is no
+  import verb, so load the JSONL rows with `sqlite3` or a short script.
 - **A whole paper on a new machine**: config + archive + the latest journal
   snapshot, then `eto doctor` — it will tell you what's missing (usually
-  just the models, which `eto models pull` restores to pinned digests).
+  just the models). `eto models pull` downloads them; if the registry's
+  current build differs from your lock, the press reports drift and
+  `eto models pin` accepts it.

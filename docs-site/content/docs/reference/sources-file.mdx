@@ -18,8 +18,9 @@ Flags live at the **top of the file**, above the first `[[source]]` block.
 <Callout>
   TOML scoping means a flag placed *below* a `[[source]]` block would
   silently belong to that source. The press refuses this by name —
-  `"below_the_fold" appears inside [[source]] #3 — move it to the top of
-  the file` — rather than ignoring your intent.
+  `"below_the_fold" appears inside [[source]] #3 — TOML attaches it to that
+  source, and the press would silently ignore it. Move it to the top of the
+  file, above the first [[source]].` — rather than ignoring your intent.
 </Callout>
 
 ## `[seed]` — the provenance claim
@@ -41,8 +42,8 @@ description = "which rates outlets' perspective, not their accuracy"
 | Field | Required | Meaning |
 | --- | --- | --- |
 | `name` | yes | The outlet's name as it appears in sources lines and reports. |
-| `side` | yes | The outlet's place on *your* map. The five seeded labels are `left`, `lean-left`, `center`, `lean-right`, `right`; custom labels are allowed and measured like any other. |
-| `feeds` | yes | One or more front-door feed URLs. |
+| `side` | yes | The outlet's place on *your* map. The five seeded labels are `left`, `lean-left`, `center`, `lean-right`, `right`; custom labels are allowed and measured like any other. On the digest, sports, and wrap engines the same field names a section, a league, or a board — see [the engines](/docs/concepts/engines). |
+| `feeds` | yes | One or more front-door feed URLs. On the wrap engine, a data endpoint with an optional `#dot.path`. |
 
 ```toml
 [[source]]

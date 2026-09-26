@@ -11,14 +11,15 @@ local model. Here is the full bill.
 | Requirement | Minimum | Notes |
 | --- | --- | --- |
 | Node.js | 20+ | The press runs TypeScript directly via tsx; no build step. |
-| Ollama | any recent | The local model server. The press can start it if it's installed but not running. |
+| Ollama | any recent | The local model server. `eto press` starts it if it is installed but not running; `eto print` and `eto doctor` fail loudly instead. A desk paper never needs it. |
 | GPU memory | ~8 GB | Enough to hold the 8B-class compositor. Smaller cards work with smaller models, traded against composite quality. |
 | Disk | a few GB | Models dominate; the journal and archive are megabytes. |
 
 The default models are `qwen3:4b-instruct` (the judge — high volume, one-word
 answers) and `qwen3:8b` (the compositor — a handful of stories a day, longer
-deliberation). `eto init` pulls both and pins their digests; you never manage
-them by hand.
+deliberation). `eto models pull` downloads both and pins their digests to
+`models.lock.json` on the first pull; from then on the press refuses to print
+if a model drifts from the lock.
 
 <Callout>
   The pipeline wants the GPU to itself at press time. If other model servers
@@ -39,17 +40,34 @@ them by hand.
     ```bash
     npx @eto-press/cli init
     ```
-    The wizard asks three questions, seeds your source list from the audited
-    AllSides shelf, pulls and pins the models, and runs a sandboxed dry
-    edition from that morning's actual feeds — your own front page before
-    you have created a single account anywhere.
+    The wizard asks five questions — name, motto, web address, accent
+    color, engine — and writes the paper: `eto.toml`, `sources.toml` seeded
+    from the audited AllSides shelf, `.env.example`, `.gitignore`. It pulls
+    no models and prints nothing; its last words are the next steps. Pass
+    `--name`, `--motto`, `--site-url`, `--accent`, `--engine` to skip the
+    questions.
+  </Step>
+  <Step title="Install the press into the paper">
+    ```bash
+    npm init -y && npm install @eto-press/press @eto-press/cli
+    ```
+    The press is a dependency of the paper, so `eto` runs from its
+    `node_modules`. Nothing global.
+  </Step>
+  <Step title="Pull the models">
+    ```bash
+    eto models pull
+    ```
+    Downloads the two models into Ollama's store and pins their digests.
+    A desk paper skips this step.
   </Step>
   <Step title="Verify the press">
     ```bash
     eto doctor
     ```
-    Models present and matching the lock, GPU sanity, feeds reachable,
-    journal healthy, mail (if configured) verified.
+    Models present and matching the lock, no foreign models resident on
+    the GPU, feeds reachable, journal healthy, mail (if credentials are
+    present) enabled to send and within quota, the last edition's status.
   </Step>
 </Steps>
 
@@ -61,7 +79,8 @@ them by hand.
   redirection has burned this project before.
 - **macOS** — the schedule installs a launchd agent. Apple-silicon Macs run
   the default models comfortably on the unified memory.
-- **Linux** — the schedule installs cron or a systemd timer. If Ollama runs
+- **Linux** — the schedule installs a crontab line (cron only, no systemd
+  unit), which also tees the morning to `logs/cron.log`. If Ollama runs
   as a service under a different user, make sure the paper directory is
   readable by whoever runs `eto press`.
 

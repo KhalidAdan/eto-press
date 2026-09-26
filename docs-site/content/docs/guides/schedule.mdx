@@ -9,33 +9,43 @@ installs it into your operating system's scheduler so it runs before you
 wake:
 
 ```bash
-eto schedule --time 05:30
+eto schedule --time 05:30 --yes
 ```
 
-Task Scheduler on Windows, launchd on macOS, cron or systemd on Linux —
-whichever your machine has. `--yes` skips the confirmation for scripted
-setups.
+Without `--yes` it prints the plan for your platform and installs nothing;
+with it, it installs exactly that. Task Scheduler on Windows (the job retries
+hourly for six hours), a launchd agent on macOS, a crontab line on Linux
+(cron only — no systemd unit — and the line tees the morning to
+`logs/cron.log`).
 
 ## The morning's order
 
-1. **Print** — the pipeline, skipped if today's edition already exists.
-2. **Render** — the public site, from the journal.
+1. **Print** — the pipeline, skipped if `archive/<today>.md` already
+   exists. Fatal.
+2. **Render** — the public site, from the journal. Fatal.
 3. **Export** — the journal's own tables to diffable JSONL (non-fatal).
 4. **Email** — the edition to your list, guarded against double-sends
-   (non-fatal; the guard makes retries safe).
-5. **Backups** — the journal snapshot and, on tier 3, the reader list.
+   (non-fatal; the guard makes retries safe). `--no-email` skips it.
+5. **Backups** — the journal snapshot, then the reader list. Both
+   non-fatal; the reader snapshot runs whatever the tier and fails quietly
+   without AWS credentials.
 
-Fatality mirrors the pipeline's rule: a failed *print* stops the morning
-loudly; a failed export or email logs and continues — the tail steps are all
-idempotent, so the next run finishes whatever this one couldn't.
+Fatality mirrors the pipeline's rule: a failed *print* or *render* stops
+the morning loudly; a failed export, email, or backup logs and continues —
+the tail steps are all idempotent, so the next run finishes whatever this
+one couldn't.
+
+For a paper whose engine uses models (eto), `eto press` first checks that
+Ollama answers and starts it if not. A desk, letter, digest, sports, or wrap
+paper never needs Ollama, and the check is skipped.
 
 ## Retries are the design
 
 If the press stalls at minute 28, the journal holds everything already done.
-Schedule an hourly retry if you like: a completed morning exits at the
-already-published guard after running the idempotent tail, and a partial
-morning *finishes* instead of starting over. Recovery is always the same
-command.
+The Windows job already retries hourly; on macOS and Linux, add a second
+scheduled time if you want one. A completed morning skips the print (the
+archive file exists) and reruns the idempotent tail; a partial morning
+*finishes* instead of starting over. Recovery is always the same command.
 
 ## Logs
 

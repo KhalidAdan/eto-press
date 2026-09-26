@@ -4,42 +4,44 @@ description: Every verb the eto command knows, and what each one touches.
 ---
 
 The CLI runs in the current directory — which is to say, in a paper. Install
-nothing globally; `npx @eto-press/cli <verb>` works everywhere, and a paper
-created by `init` has `eto` available in its own scripts.
+nothing globally: `npx @eto-press/cli <verb>` works everywhere, and a paper
+that has installed `@eto-press/press` and `@eto-press/cli` as dependencies
+(the wizard's first next step) has `eto` on its own path.
 
 ## Setup verbs
 
 | Verb | What it does |
 | --- | --- |
-| `eto init` | A paper comes into existence: three questions, the seeded source list, models pulled and pinned, a sandboxed dry edition. |
-| `eto doctor` | Examine the press: models against the lock, GPU sanity, feeds reachable, journal health, mail verification, the last edition's status. Exit code 1 if the press would stall. |
-| `eto models` | `status` \| `pull` \| `pin` — the models, managed rather than remembered. `pull` restores to pinned digests; re-pinning is deliberate. |
-| `eto schedule` | Install the morning into the OS scheduler. `--time 05:30` sets the hour; `--yes` skips confirmation. |
+| `eto init [dir]` | A paper comes into existence: five questions (name, motto, web address, accent color, engine), the seeded source list, `eto.toml`, `.env.example`, `.gitignore` — and the next steps, printed. It pulls no models and prints no edition. `--name`, `--motto`, `--site-url`, `--accent`, `--engine eto\|desk` answer the questions from the command line. Never overwrites an existing paper. |
+| `eto doctor` | Examine the press: models against the lock, foreign models resident on the GPU, feeds reachable, journal health, mail (SES account: sending enabled, quota), the last edition's status. Exit code 1 if the press would stall. |
+| `eto models` | `status` \| `pull` \| `pin` — the models, managed rather than remembered. `status` shows what is installed against what the lock expects. `pull` downloads each tag's current build and pins it only if no lock exists yet; a pull that lands a different digest under an existing lock is reported as drift, and `pin` accepts it deliberately. A pull cannot restore an older digest. |
+| `eto schedule` | Install the morning into the OS scheduler. `--time 05:30` sets the hour. Without `--yes` it prints the plan and installs nothing; `--yes` installs. |
 
 ## The morning verbs
 
 | Verb | What it does |
 | --- | --- |
-| `eto press` | The whole morning: print, render, export, email, backups — with the pipeline's fatality rules (a failed print stops; the idempotent tail degrades gracefully). |
-| `eto print` | Just the pipeline: gather, judge, composite, verify, archive. |
-| `eto render` | Render the public site from the journal. Expects the stylesheet already compiled (`tailwindcss -i brief.css -o site/brief.css --minify`). |
-| `eto email` | Deliver the latest edition to the reader list. `--test <addr>` sends to one address and nobody else. |
+| `eto press` | The whole morning: print, render, export, email, backup, backup-readers, logged to `logs/press-YYYY-MM-DD.log`. Print is skipped when today's archive file exists; a failed print or render stops the morning; the rest log and continue. `--no-email` skips the send. Checks that Ollama answers (and starts it) only for engines that use models. No git. |
+| `eto print` | Just the pipeline: gather, judge, composite, verify, archive. Does not start Ollama. |
+| `eto render` | Render the public site from the journal: every published edition, `index.html`, `sources.html`, `feed.xml`. Compiles the stylesheet (the paper's `brief.css` if present, else the default theme) to `site/brief.css` and copies the fonts into `site/fonts/`. |
+| `eto email` | Deliver the latest published edition to the reader list, once per edition ever. `--test <addr>` sends to one address and nobody else; `--test success`, `bounce`, or `complaint` address the SES mailbox simulator. |
 
 ## The record verbs
 
 | Verb | What it does |
 | --- | --- |
-| `eto correct <edition> <rank> "<note>"` | Print a dated correction in the next edition, pointing back. The archive is never touched. |
-| `eto export` | Export the genuinely-yours journal tables as diffable JSONL to `db/exports/`. |
-| `eto backup` | Snapshot the journal (SQLite online backup) to the configured backup directory, rotating. |
-| `eto backup-readers` | Snapshot the reader list from SES. |
-| `eto gen-functions` | Regenerate the subscribe functions' configuration from `eto.toml`. |
+| `eto correct <edition> <rank> "<note>"` | Print a dated correction in the next edition, pointing back. The note is at least ten characters. The archive is never touched. |
+| `eto export` | Export five journal tables — `stories`, `feed_fetches`, `email_sends`, `clusters`, `corrections` — as diffable JSONL to `db/exports/`. |
+| `eto backup` | Snapshot the journal (SQLite online backup) to `[backup] dir`, keeping `[backup] keep`. |
+| `eto backup-readers` | Snapshot the reader list from SES. Fails, non-fatally, without AWS credentials. |
+| `eto gen-functions` | Write `functions/_config.ts` from `eto.toml` for the subscribe functions. `functions/` must already exist. |
 
 ## Conventions
 
 - Every verb reads the paper in the **current working directory** — running
-  in an empty directory gives you an unnamed local paper's defaults, which
-  is also how the sandboxed dry run works.
+  in an empty directory gives you an unnamed local paper's defaults.
 - Verbs exit nonzero on failure and print named errors, never bare stack
   traces; the [error reference](/docs/reference/errors) maps each to its
   meaning and blast radius.
+- There is no mail-setup verb and no import verb yet; SES is provisioned by
+  hand and exports are restored by hand.

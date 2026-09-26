@@ -25,7 +25,7 @@ is designed out; the loud stop is the fix.
 Check in order:
 
 1. **`logs/press-…`** — did the run start at all? A scheduler that didn't
-   fire is an OS problem; `eto schedule` reinstalls.
+   fire is an OS problem; `eto schedule --yes` reinstalls.
 2. **`BriefAlreadyPublished`** — a retry reaching this guard is a morning
    that already finished. Not an error.
 3. **The quiet page** — an edition that says *nothing to print today* is an
@@ -35,12 +35,16 @@ Check in order:
 
 ## A model error
 
-- `ModelMissing` — `eto models pull` restores exactly the pinned digests.
-- `ModelDrifted` — something updated a model underneath you. If you meant
-  to upgrade, `eto models pin` re-pins deliberately; if you didn't, pull the
-  pinned digest back.
-- `OllamaDown` — the press tries to start Ollama itself; if it can't, start
-  it the way your OS expects (app, service, `ollama serve`).
+- `ModelMissing` — `eto models pull` downloads the tag's current build from
+  the registry. If that build's digest differs from your lock, the next
+  print reports `ModelDrifted` instead.
+- `ModelDrifted` — a model no longer matches the lock: something updated
+  it underneath you, or a fresh pull landed a newer build; `eto models status`
+  shows which. A pull cannot restore an older digest, so the way forward is
+  `eto models pin`, run deliberately, once you have accepted the new build.
+- `OllamaDown` — `eto press` tries to start Ollama itself (only for engines
+  that use models); `eto print` and `eto doctor` do not. Start it the way
+  your OS expects (app, service, `ollama serve`).
 
 ## A feed keeps failing
 
@@ -55,9 +59,9 @@ Timeouts and 5xx retry themselves.
 - **A flag below a `[[source]]` block** belongs to that source; the press
   refuses known flags there by name. Keep paper-wide flags at the top of
   the file.
-- **BOM and encoding** — some Windows tools rewrite TOML with a UTF-8 BOM
-  or re-encode em-dashes. The masthead loader reports the exact line of
-  anything it cannot parse.
+- **Encoding** — a UTF-8 BOM (some Windows tools add one when rewriting a
+  file) is tolerated and stripped on read. Re-encoded punctuation is not;
+  the masthead loader reports the exact line of anything it cannot parse.
 
 ## The funnel tripped
 
@@ -70,10 +74,15 @@ fell off a cliff.
 
 ## Email didn't send
 
-- `email_edition` still `false`, or the domain identity hasn't verified
-  (sends fall back to your verified address, loudly).
-- The sent-guard: an edition emails once. `eto email --test you@…` exercises
-  the path without touching the list.
+- `email_edition` still `false`, or the domain identity hasn't verified.
+  Until it does, sends go from `[mail] from_fallback` with a note in the
+  log; if that is empty too, the verb exits 1 with *no mail identity
+  configured*.
+- The sent-guard: an edition emails once. `eto email --test you@…` sends
+  the latest published edition to one address without touching the list;
+  `--test success`, `--test bounce`, `--test complaint` address the SES
+  mailbox simulator, so the plumbing can be exercised without a real
+  inbox.
 
 ## Still stuck
 

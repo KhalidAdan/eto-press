@@ -14,24 +14,32 @@ eto render
 ```
 
 renders the public site from the journal (the morning run does this
-automatically). The output is self-contained static HTML: no client
-framework, no CDN dependencies, fonts and stylesheet included. The one build
-detail: the stylesheet compiles from `brief.css` —
+automatically). The output is self-contained static HTML: no scripts, no
+client framework, no request to any third party. The stylesheet is compiled
+by `eto render` itself into `site/brief.css`, and the two fonts (Lora and
+IBM Plex Mono) are copied into `site/fonts/`. There is no build step of
+yours.
 
-```bash
-npx tailwindcss -i brief.css -o site/brief.css --minify
-```
-
-— which `eto init` wires into your paper's scripts.
+To skin the paper, put a `brief.css` at the paper's root. It may
+`@import "@eto-press/platform/brief.css"` and add rules, or be plain CSS
+from scratch; either way `eto render` compiles it in place of the default
+theme. See [skins](/docs/concepts/skins).
 
 ## Pick a host
 
+`eto press` does no git and no upload — the press prints the paper; the
+paper decides how it travels. Whatever you pick, it runs after the morning:
+
+```bash
+eto press && git add -A && git commit -qm "the $(date +%F) edition" && git push
+```
+
 - **Cloudflare Pages** (the flagship's choice) — connect the paper's git
-  repository, set the output directory to `site/`, done. The paperboy's
-  daily commit doubles as the deploy trigger.
+  repository, set the output directory to `site/`, done. Your commit after
+  `eto press` is the deploy trigger.
 - **Netlify** — identical shape: repository, `site/`, deploy on push.
-- **rsync to any server** — `rsync -az site/ you@host:/var/www/paper/` at
-  the end of the morning. No git required.
+- **rsync to any server** — `rsync -az site/ you@host:/var/www/paper/` in
+  place of the commit. No git required.
 - **A folder on your LAN** — `site/` behind any web server, or opened
   directly in a browser. Tier 2 is optional; this is still a complete paper.
 

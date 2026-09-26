@@ -18,7 +18,8 @@
 import { spawn } from "node:child_process"
 import { createWriteStream, existsSync, mkdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { OLLAMA_URL } from "@eto-press/platform/config"
+import { ENGINE, OLLAMA_URL } from "@eto-press/platform/config"
+import { engines } from "./engines.js"
 
 const args = new Set(process.argv.slice(2))
 const noEmail = args.has("--no-email")
@@ -63,6 +64,9 @@ const fatal = (title: string, code: number): never => {
 }
 
 // -- ollama up? (start it if the machine has it but forgot) ------------------
+// Only for an engine that asks models anything: a desk or letter paper
+// never needs Ollama, for `eto press` exactly as for `eto print`.
+const needsModels = (engines[ENGINE]?.models.length ?? 0) > 0
 const ollamaUp = async (): Promise<boolean> => {
   try {
     const res = await fetch(`${OLLAMA_URL}/api/version`, { signal: AbortSignal.timeout(3000) })
@@ -71,7 +75,7 @@ const ollamaUp = async (): Promise<boolean> => {
     return false
   }
 }
-if (!(await ollamaUp())) {
+if (needsModels && !(await ollamaUp())) {
   log("ollama not answering — attempting to start it")
   try {
     const served = spawn("ollama", ["serve"], { detached: true, stdio: "ignore" })

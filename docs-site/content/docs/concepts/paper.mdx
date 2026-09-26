@@ -13,11 +13,12 @@ A **paper** is an ordinary directory on your disk:
   - desk/ — editor-authored copy (optional)
   - db/
     - eto.sqlite — the journal
-    - exports/ — diffable JSONL of the tables that are truly yours
+    - exports/ — five tables as diffable JSONL
   - archive/
     - 2026-08-15.md — one file per edition, append-only, forever
     - 2026-08-16.md
   - site/ — the rendered web edition
+  - backups/ — journal snapshots (the default place; point it at another disk)
   - logs/ — one log per morning
 </FileTree>
 
@@ -47,10 +48,11 @@ of someone else's. Full reference:
 **The archive is files; the journal is the newsroom.** Published editions are
 plain markdown in `archive/`, never rewritten. The journal (`db/eto.sqlite`)
 holds every fetch, verdict, draft, and verification — it can be deleted and
-rebuilt from the world, except for two tables that are genuinely yours:
-your corrections and your source-health history. Those are exported as
-diffable JSONL and backed up on every run. See
-[Backups and the journal](/docs/guides/backups).
+rebuilt from the world, except for four tables that are genuinely yours:
+your corrections, your source-health history, the published-edition store,
+and the record of which editions were mailed. `eto export` writes five
+tables as diffable JSONL and `eto backup` snapshots the whole file, both on
+every run. See [Backups and the journal](/docs/guides/backups).
 
 ## The guarantees the directory carries
 

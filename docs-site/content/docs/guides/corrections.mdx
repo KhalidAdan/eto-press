@@ -14,7 +14,8 @@ eto correct 2026-08-10 2 "The recall figure was 1.6 million dozen, not 1.6 milli
 ```
 
 The arguments are the edition date, the story's rank in that edition, and
-your note. The correction is journaled and waits for the next morning.
+your note — at least ten characters; a correction that says nothing is
+refused. The correction is journaled and waits for the next morning.
 
 ## What prints
 
@@ -42,7 +43,8 @@ moving afterward.
 
 ## Corrections are journaled forever
 
-The corrections table is one of the two whose contents cannot be rebuilt
-from the world (the other is your source-health history). It is exported as
-diffable JSONL on every run and included in every backup — see
+The corrections table is one of the four whose contents cannot be rebuilt
+from the world (the others: source-health history, the published-edition
+store, and the record of what was mailed). It is exported as diffable JSONL
+on every run and included in every backup — see
 [Backups and the journal](/docs/guides/backups).

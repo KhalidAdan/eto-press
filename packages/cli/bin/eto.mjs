@@ -6,7 +6,7 @@
 import { register } from "tsx/esm/api"
 
 const VERBS = {
-  init: ["@eto-press/press/init", "a paper comes into existence (asks three questions)"],
+  init: ["@eto-press/press/init", "a paper comes into existence (asks five questions)"],
   press: ["@eto-press/press/press-run", "the whole morning: print, render, export, email, backups"],
   print: ["@eto-press/press/main", "run the pipeline: gather, judge, composite, verify, archive"],
   doctor: ["@eto-press/press/doctor", "examine the press: models, lock, GPU, feeds, journal, mail"],
@@ -27,8 +27,6 @@ if (verb === undefined || VERBS[verb] === undefined) {
   for (const [v, [, help]] of Object.entries(VERBS)) {
     console.log(`  ${v.padEnd(15)} ${help}`)
   }
-  console.log("\nNote: `render` expects the paper's stylesheet already compiled")
-  console.log("(tailwindcss -i brief.css -o site/brief.css --minify).")
   process.exit(verb === undefined ? 0 : 1)
 }
 

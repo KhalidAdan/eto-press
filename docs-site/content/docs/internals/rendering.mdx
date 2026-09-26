@@ -21,23 +21,37 @@ interface EditionStory {
   sources: SourceLink[]
   balanceNote: string | null
   foldReason: string | null
+  engineRef?: string | null     // the engine's opaque ref; stored, never interpreted
+  byline?: string | null        // optional anatomy: a human author
+  links?: LinkItem[]            // optional anatomy: a link list
+  data?: DataItem[]             // optional anatomy: labeled figures
 }
 ```
 
 One constructor — `editionStoryFrom` — takes raw text and produces both
-forms. It is called from exactly two places: the pipeline as stories verify
-(in memory), and `assemble.ts` rebuilding editions from the journal for the
-site and mail. Same constructor, same splitting, same link resolution —
+forms. Every engine calls it as stories are built (in memory);
+`published.ts` calls it from `fromRow` when a dialect reads the store; and
+`assemble.ts` calls it on the legacy path for editions published before the
+store existed. Same constructor, same splitting, same link resolution —
 byte-identical output from either side, by construction.
+
+## The store between the dialects
+
+The frame renders the markdown dialect and writes the archive; then, and
+only then, it writes every story to `published_stories`
+(`persistPublishedStories`, idempotent per run and position). The site,
+email, and RSS dialects run as separate verbs and read that store — they
+never reconstruct an edition from any engine's working tables. One writer,
+one reader, same words at every door.
 
 ## The four dialects
 
 | Dialect | File | Consumes |
 | --- | --- | --- |
 | Markdown archive | `render.ts` | the **raw** fields — the record is what was written, never a re-layout |
-| Site | `html.ts` | the split fields, as semantic anatomy |
-| Email | `email.ts` | the split fields, inline-styled (mail clients strip stylesheets) |
-| RSS | `feed.ts` | the split fields, as unstyled semantic HTML |
+| Site | `html.ts` | the split fields, as semantic anatomy, read from the store |
+| Email | `email.ts` | the split fields, inline-styled (mail clients strip stylesheets), read from the store |
+| RSS | `feed.ts` | the split fields, as unstyled semantic HTML, read from the store |
 
 Absent anatomy renders as absence: an empty differ produces no "Where the
 accounts differ" label anywhere; an empty sources list produces no sources
@@ -47,12 +61,25 @@ line. That is how a desk story and an eto story share every renderer.
 
 The site markup carries **only semantic classes** — `story__differ`,
 `masthead__wordmark`, and the three voice classes (`prose`, `instrument`,
-`accent`). Every visual decision lives in `brief.css`, the default theme:
-semantic selectors carrying their rules via Tailwind `@apply`, compiled to
-plain CSS at build time. Tailwind is the theme's private build tool; a
-paper's replacement skin is plain CSS over the same anatomy and needs no
-toolchain at all. The full contract is the
-[anatomy reference](/docs/reference/anatomy).
+`accent`). The one stray is `group` on the story card's link — a utility
+name the markup still carries and the default theme does not use. Every
+visual decision lives in `brief.css`, the default theme. The full contract
+is the [anatomy reference](/docs/reference/anatomy).
+
+## The stylesheet and the fonts
+
+`eto render` compiles the stylesheet itself. The input is `brief.css` at the
+paper's root if one exists — the paper's skin — otherwise the press's
+default theme (`@eto-press/platform/brief.css`); the output is
+`site/brief.css`, minified. A skin may `@import` the default and add rules,
+or be plain CSS. There is no separate build step and nothing for the paper
+to wire up.
+
+The fonts are self-hosted: `eto render` copies Lora and IBM Plex Mono (OFL,
+from the fontsource packages) into `site/fonts/`, and the default theme's
+`@font-face` rules point there. A rendered page makes no third-party
+request — no font service, no CDN, no script — which is what makes "no
+tracking" and "self-contained static HTML" literally true.
 
 ## The archive write
 
@@ -60,7 +87,9 @@ The single non-idempotent step of a morning, which is why it is last,
 atomic (write temp file, rename), and guarded by existence —
 `BriefAlreadyPublished` if the path exists. Corrections are spliced by the
 frame above whatever the engine returned; §9 cannot be forgotten by an
-engine that never heard of it.
+engine that never heard of it. One escape hatch, for development only:
+`ETO_REPUBLISH=1` lets the write overwrite today's file, and logs a warning
+when it does.
 
 ## The invariant that gates refactors
 

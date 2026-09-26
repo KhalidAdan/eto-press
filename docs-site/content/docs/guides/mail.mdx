@@ -13,37 +13,37 @@ Amazon SES is the recommended provider for a real mailing list — roughly the
 cost of a coffee per year at household scale.
 
 <Callout>
-  The one-command provisioning below is **roadmap phase 3** and not yet in
-  the published CLI. Today the same steps are performed once by hand in the
-  AWS console (domain identity, DKIM, a contact list, a configuration set,
-  an IAM user) — the press automates everything after provisioning: the
+  One-command provisioning is **roadmap phase 3**; there is no mail-setup
+  verb in the CLI yet. Today the steps below are performed once, by hand, in
+  the AWS console. The press automates everything after provisioning: the
   sends, the guards, the suppression, the backups.
 </Callout>
 
-```bash
-eto mail setup ses
-```
-
 <Steps>
   <Step title="Identity and DKIM">
-    The command creates the domain identity and prints the DKIM records to
-    add at your DNS host. Verification usually lands within the hour.
+    Create the domain identity in SES and add the DKIM records it gives you
+    at your DNS host. Verification usually lands within the hour.
   </Step>
-  <Step title="List, suppression, configuration set">
-    The contact list, suppression handling, and the configuration set are
-    created idempotently — rerunning the command repairs rather than
-    duplicates.
+  <Step title="List and configuration set">
+    Create a contact list with one topic, and a configuration set. Their
+    names go in `[mail]` below; the defaults are `eto-readers`,
+    `morning-edition`, and `eto-mail`.
   </Step>
   <Step title="Secrets">
-    The IAM user's keys land in your paper's `.env` (never committed), and
-    `eto doctor` verifies the mail path end to end.
+    Create an IAM user allowed to send through SES and manage the list. Its
+    keys go in your paper's `.env` (never committed; `.env.example` shows
+    the shape). `eto doctor` then checks the account: sending enabled, and
+    the daily quota. It does not check the domain identity or the list —
+    those you confirm in the console.
   </Step>
   <Step title="Turn it on">
     ```toml
     email_edition = true
     ```
-    in `sources.toml`, once the domain verifies. Until then, sends fall back
-    to your verified address — loudly, so you notice.
+    in `sources.toml`. Until the domain verifies, sends go from
+    `[mail] from_fallback` — a verified address, with a note in the log so
+    you notice. If `from_fallback` is empty too, the send exits 1 with
+    *no mail identity configured* rather than send as nobody.
   </Step>
 </Steps>
 
@@ -54,7 +54,10 @@ eto mail setup ses
 region = "ca-central-1"
 domain = "example.news"
 from = "example <brief@example.news>"
+from_fallback = "you@example.com"   # verified; used until the domain is
 contact_list = "example-readers"
+topic = "morning-edition"
+config_set = "eto-mail"
 ```
 
 Full field reference: [configuration](/docs/reference/configuration#mail).
@@ -66,14 +69,38 @@ Full field reference: [configuration](/docs/reference/configuration#mail).
 - **Suppression swept** before every send; bounces and complaints leave your
   list automatically.
 - **Quota pacing** respects your provider's send rate.
-- **Test first**: `eto email --test you@example.com` sends today's edition
-  to one address and nobody else.
+- **Test first**: `eto email --test you@example.com` sends the latest
+  published edition to one address and nobody else. `--test success`,
+  `--test bounce`, and `--test complaint` are shorthands for the SES mailbox
+  simulator — the whole path, including the suppression sweep, without a
+  real inbox or a dent in your reputation.
 
 ## The subscribe flow
 
-Tier 3 deploys a small pair of edge functions: a form endpoint with a
+The subscribe flow is a small pair of edge functions: a form endpoint with a
 honeypot, and a confirm link — double opt-in, so your list is consent all
-the way down. `eto gen-functions` regenerates the functions' configuration
-from `eto.toml` whenever your masthead changes. The list is yours:
-exportable any time (`eto backup-readers`), never enriched with anything you
-did not ask for.
+the way down. No verb deploys them; you do, once:
+
+<Steps>
+  <Step title="Copy the functions into the paper">
+    Copy the `functions/` directory from the `@eto-press/subscribe` package
+    into the paper, beside `site/`.
+  </Step>
+  <Step title="Generate their configuration">
+    ```bash
+    eto gen-functions
+    ```
+    writes `functions/_config.ts` from `eto.toml`. Rerun it whenever your
+    masthead changes.
+  </Step>
+  <Step title="Deploy">
+    ```bash
+    wrangler pages deploy site
+    ```
+    Then set three bindings on the Pages project: `SUBSCRIBE_SECRET`,
+    `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`.
+  </Step>
+</Steps>
+
+The list is yours: exportable any time (`eto backup-readers`), never
+enriched with anything you did not ask for.

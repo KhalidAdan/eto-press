@@ -18,7 +18,8 @@ const CONFIG_PATH = "eto.toml"
 const root: Table = existsSync(CONFIG_PATH)
   ? (() => {
       try {
-        return TOML.parse(readFileSync(CONFIG_PATH, "utf8")) as Table
+        // Some Windows editors prefix a UTF-8 BOM; TOML does not allow one.
+        return TOML.parse(readFileSync(CONFIG_PATH, "utf8").replace(/^﻿/, "")) as Table
       } catch (e) {
         throw new Error(`${CONFIG_PATH} is not valid TOML: ${String(e)}`)
       }

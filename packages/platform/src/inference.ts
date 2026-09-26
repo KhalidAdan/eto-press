@@ -90,7 +90,7 @@ export interface InferenceApi {
     readonly sameEvent: QuestionIdentity
     readonly composite: QuestionIdentity
   }
-  /** Stage 4 (and the only question stage 5 may reuse): same news event? */
+  /** Stage 4: same news event? */
   readonly sameEvent: (
     a: PairItem,
     b: PairItem,

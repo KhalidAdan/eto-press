@@ -42,6 +42,14 @@ through [the desk](/docs/concepts/engines#the-desk-engine), and remembers
 through the journal. The constitution is not a promise the engine makes — it
 is the shape of what the engine is given.
 
+That shape is a closed list, and the type enforces it. What the press can
+provide an engine is exactly four services: the SQL client (the journal),
+the HTTP client (behind the platform's front-door libraries), the inference
+service (a closed set of typed questions — same event, the below-the-fold
+nomination, the composite — never a prompt), and the desk. The model server
+itself is not on the list; it is provided to the inference service, and no
+engine ever sees it.
+
 ## Four ownership surfaces
 
 | Surface | Owner | Contents |

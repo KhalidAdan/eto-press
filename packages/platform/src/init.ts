@@ -59,7 +59,7 @@ const ask = async (): Promise<{
     }
   }
   const rl = createInterface({ input: process.stdin, output: process.stdout })
-  console.log("A paper needs a masthead. Four questions, all changeable later in eto.toml.\n")
+  console.log("A paper needs a masthead. Five questions, all changeable later in eto.toml.\n")
   const name = (await rl.question("  The paper's name: ")).trim() || "your paper"
   const motto = (await rl.question("  Its motto (one line under the name): ")).trim() ||
     "Write your masthead in eto.toml."

@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/cli",
-  "version": "2.20260825.0",
+  "version": "2.20260926.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The eto command — verbs over the press. The paperboy's verbs, init, and doctor; the compile-and-dist story arrives with a later generation.",
@@ -18,7 +18,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@eto-press/press": "^2.20260825.0",
+    "@eto-press/press": "^2.20260926.0",
     "tsx": "^4.23.1"
   }
 }

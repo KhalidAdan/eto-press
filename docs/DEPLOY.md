@@ -1,5 +1,9 @@
 # Deploying the newsstand (eto.news on Cloudflare Pages)
 
+*This documents the flagship paper's deploy — its `deploy.yml` lives in
+the paper's own repository, not in this one. The press ships no publish
+adapter yet (ROADMAP.md, phase 3); this is what one paper wired by hand.*
+
 The division of labor, per NORTH-STAR §10: the **press** is the editor's
 machine — models, feeds, judgment, composition all happen there and only
 there. GitHub is the **loading dock** (the repo carries the finished
@@ -10,11 +14,20 @@ needed: wrangler uploads the directory as-is.
 Daily flow, once set up:
 
 ```
-npm run dev      # print the edition (your machine, your models)
-npm run render   # dress it in HTML (site/)
+eto press        # print, render, export, email, backups — your machine, your models
 git add -A && git commit -m "the YYYY-MM-DD edition" && git push
                  # GitHub Action deploys site/ to eto.news
 ```
+
+`eto press` deliberately does no git: publishing the rendered site is a
+paper-level choice. The flagship's own scheduled runner commits and pushes
+after it; another paper may rsync, or do nothing.
+
+The Action runs `wrangler pages deploy site`, which uploads the rendered
+pages and, because the paper carries a `functions/` directory (copied
+from `@eto-press/subscribe`), deploys the subscribe flow with them. Those
+functions need three bindings set on the Pages project — `SUBSCRIBE_SECRET`,
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`.
 
 ## One-time setup (editor's hands required)
 

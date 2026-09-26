@@ -3,29 +3,50 @@ title: The verification cage
 description: The model writes; deterministic code decides what ships.
 ---
 
-Two stages of the eto pipeline call a model. Everything the model produces
-passes through deterministic verification before a reader sees it. This
-page is why the cage looks the way it does — most of it was paid for in
-live incidents and controlled experiments, kept in `docs/experiments/`.
+The eto pipeline puts three questions to the inference service — same
+event, the below-the-fold nomination, the composite — and everything that
+comes back as prose passes through deterministic verification before a
+reader sees it. This page is why the cage looks the way it does — most of
+it was paid for in live incidents and controlled experiments, kept in
+`docs/experiments/`.
 
 ## What the cage checks
 
-Against the fetched account texts — never against the model's memory:
+`packages/engine-eto/src/verify.ts`, string work only, against the fetched
+account texts — never against the model's memory. Four checks are
+violations:
 
-- **Every direct quote appears verbatim** in some fetched account.
-- **Every named entity appears** in some fetched account.
-- **Evaluative adjectives in the paper's own voice** that appear in no
-  account are violations — the model may carry an outlet's
-  characterization only as that outlet's.
-- **The sources line names exactly** the accounts fetched and used.
-- **The word budget holds** (350 target, 420 hard cap), the four parts are
-  present, and nothing follows the end.
+- **Every quoted fragment appears verbatim** in some fetched account.
+- **The sources line names two or more outlets**, every one of them an
+  outlet whose account was fetched. The line itself is computed by stage 8
+  from the accounts that were in the ask — the model's own SOURCES text is
+  discarded — so this check guards the arithmetic, not the model.
+- **Prose never says "account 3".** A numbered reference is prompt
+  scaffolding the reader cannot see (the 2026-08-01 Ceuta story).
+- **The hard word cap holds** — 420 words across headline, body, and differ.
+
+Three are advisories — recorded, printed in the run report, never a reason
+to drop:
+
+- A named entity in the paper's voice that appears in no account.
+  Advisory until the false-positive rate is measured.
+- The story is over the 350-word target but under the cap.
+- An outlet was fetched but is not in the sources line.
+
+There is no adjective check. The compositor's standing orders forbid any
+adjective it was not given; nothing verifies that, and this page does not
+pretend otherwise.
+
+The four-part shape is not the cage's business. A completion that does not
+parse into headline, body, differ, and sources is null at the boundary;
+stage 8 asks once more and then drops the story as `DraftMalformed`, before
+the cage ever sees it.
 
 Violations become editor-style notes sent back to the compositor for
 **one** revision pass — experiment 001 converged in one, so one is the
-budget. Still failing: cut the offending claims if the story survives their
-loss, else drop the story and print the named reason. A gap over a guess,
-every time.
+budget. Still failing, the story drops whole (`BriefUnverifiable`,
+story-scoped) and the report prints the named reason. Claims are never cut
+from a story; a gap over a guess, every time.
 
 ## Why these checks, specifically
 
@@ -44,10 +65,12 @@ Statistical self-checks that abort a morning early when a stage's output
 *distribution* says misconfiguration, even though every individual call
 succeeded:
 
-- `FunnelAnomalous` — hundreds of news items but zero candidate pairs (or
-  20× the profile). A broken prefilter, caught before model time.
-- `VerdictsSuspicious` — the first hundred verdicts unanimous. A broken
-  prompt teaches nothing for twenty more minutes; stop now.
+- `FunnelAnomalous` — more than 20 news items but zero candidate pairs, or
+  candidate pairs exceeding 20× the news items. A broken prefilter, caught
+  before model time.
+- `VerdictsSuspicious` — the first hundred *fresh* verdicts (cached ones
+  do not count) unanimous. A broken prompt teaches nothing for twenty more
+  minutes; stop now.
 
 Experiment 002 paid for this lesson: its zero-matches run failed silently,
 politely, and completely.
@@ -62,7 +85,8 @@ press (`PressStalled`) rather than absorbing timeouts as story drops. The
 
 ## Advisories
 
-Checks worth recording but not enforcing (a story slightly over the soft
-word target, an account fetched but unnamed) print in the run report as
-advisories. They are the cage's gray zone made visible — candidates for
+Checks worth recording but not enforcing (an entity found in no account, a
+story over the soft word target, an account fetched but unnamed) print in
+the run report as advisories and are journaled in `verifications` beside
+the violations. They are the cage's gray zone made visible — candidates for
 promotion to real checks when a pattern emerges.

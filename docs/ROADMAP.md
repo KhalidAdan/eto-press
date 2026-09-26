@@ -69,18 +69,30 @@ charged to Tier 1 users. The ladder removes it.
 All software lives in a single repository and publishes as scoped packages:
 
 ```
-eto/                        the product
+eto-press/                  the product
 ├─ packages/
-│  ├─ press/                @eto-press/press — pipeline, verification, render
-│  ├─ cli/                  @eto-press/cli — init, press, doctor, mail setup (bin: eto)
-│  ├─ mail/                 @eto-press/mail — SES and SMTP adapters, one interface
+│  ├─ platform/             @eto-press/platform — journal, feeds, articles, inference, render, mail
+│  ├─ engine-eto/           @eto-press/engine-eto — the news brief (stages 1-9)
+│  ├─ engine-desk/          @eto-press/engine-desk — editor-authored editions
+│  ├─ engine-letter/        @eto-press/engine-letter — event-driven, from watched documents
+│  ├─ engine-digest/        @eto-press/engine-digest — the link digest
+│  ├─ engine-sports/        @eto-press/engine-sports — the sports paper
+│  ├─ engine-wrap/          @eto-press/engine-wrap — watched figures and their motion
+│  ├─ press/                @eto-press/press — the frame, the engine registry, the verbs
+│  ├─ cli/                  @eto-press/cli — the verb dispatcher (bin: eto)
 │  └─ subscribe/            @eto-press/subscribe — edge functions, deployable template
-├─ docs/                    blume content → the docs site
+├─ docs/                    the design documents (this file and its companions)
+├─ docs-site/               the documentation site (own lockfile, not a workspace)
 └─ .github/                 publish workflows, path-filtered
 ```
 
-npm workspaces; one test run across everything; atomic changes across press,
-CLI, and mail. The scope is `@eto-press` — decided 2026-08-13, after the
+*(Tree as built. The 2026-08-13 sketch had a `packages/mail/` —
+`@eto-press/mail`, SES and SMTP adapters behind one interface. That package
+never existed: SES sending lives in the platform, and the provider
+interface is still open work under phase 3.)*
+
+npm workspaces; one test run across everything; atomic changes across
+platform, engines, press, and CLI. The scope is `@eto-press` — decided 2026-08-13, after the
 org-creation form rejected `@eto`: a dormant account named `eto` holds the
 name with zero packages, and the bare package name `eto` is separately
 squatted by an untouched placeholder. Both are textbook candidates for npm's
@@ -126,8 +138,9 @@ have freshness legible in its version string.
 
 The docs site is [blume](https://github.com/haydenbleasel/blume) — markdown in
 a folder, static Astro output, deploys to Cloudflare Pages (already the host),
-MIT, with an eject hatch if outgrown. Lives as the monorepo's `docs/`
-workspace.
+MIT, with an eject hatch if outgrown. As built it lives at `docs-site/`,
+beside the design documents in `docs/`, with its own lockfile — not an
+npm workspace.
 
 ---
 
@@ -216,15 +229,26 @@ quietly de-risked most of it.
 **Phase 2 — Make it welcoming.**
 `eto init` and `eto doctor`, model management, schedule installation, the dry
 first edition. This phase is measured by the first-run moment above.
+*Status 2026-09-26: `eto init`, `eto doctor`, `eto models` and `eto
+schedule` exist. `init` asks the five masthead questions and writes the
+paper's files; it does not pick a tier, pull models, or run a dry edition —
+its last words point at `eto models pull`, `eto doctor`, `eto print`. The
+first-run moment as written above is not yet built.*
 
 **Phase 3 — Make it public.**
 Publish adapters, `eto mail setup`, the SMTP alternative, the watchdog
 generalized to any paper's URL.
+*Status 2026-09-26: not started. No publish adapter, no mail-setup verb
+(SES is still provisioned by hand), no SMTP alternative.*
 
 **Phase 4 — Make it a project.**
 npm distribution under `@eto-press`, generation.date.patch discipline, the blume
 docs site, issue templates, and a story for keeping the AllSides seed current
 as the chart revises.
+*Status 2026-09-26: npm distribution and the versioning discipline are in
+use, but every release so far has been published by hand — trusted
+publishing is not yet working (issue #1). The docs site is built
+(`docs-site/`). Issue templates and the seed-currency story are open.*
 
 ---
 
@@ -259,12 +283,38 @@ structural call.
 1's finding); the event-driven letter engine (forces cadence
 configuration and the first stat-line vocabulary); the link digest; the
 sports paper. The public engine interface is extracted only after the
-ladder has rungs enough to extract from.
+ladder has rungs enough to extract from. *(All four shipped 2026-08-17 —
+see the addendum below. The public interface remains unextracted.)*
 
 **Interaction with phase 4:** both editorial rulings landed 2026-08-16 —
 the license stays AGPL-3.0-only and the engine names stand — and
 `2.20260816.2` published the same day. Generation-1 papers are untouched;
 the pin is the ownership guarantee, unchanged.
+
+**Addendum, 2026-09-26 — what landed after.**
+
+- **2026-08-17, PRs #4–#6:** the published-edition store
+  (`published_stories`, written by the frame after the archive write, read
+  by the site, email, and RSS dialects); the gen-2 CLI; the letter, digest,
+  sports, and wrap engines — six engines registered in all (eto, desk,
+  letter, digest, sports, wrap); and the byline, link-list, and data-list
+  anatomy vocabulary they forced. Released as `2.20260825.0`.
+- **2026-09-21, PR #8:** the inference boundary — the stages ask a typed
+  `Inference` service a closed set of questions (same event, nomination,
+  composite, pin) and never see a prompt; the Ollama provider owns prompts,
+  parsers, and per-model knobs. The first "adapters before API" step;
+  engines may now require only SqlClient, HttpClient, Inference, and Desk.
+- **2026-09-26, the alignment pass:** `eto render` compiles the stylesheet
+  (the paper's `brief.css` if present, else the platform's default theme)
+  and copies the fonts into `site/fonts/`, so a rendered page makes no
+  third-party request; a desk, letter, digest, sports, or wrap paper never
+  starts or needs Ollama, for `eto press` as for `eto print`; `eto press`
+  does no git — a paper that deploys from git commits after it. PR #8 and
+  this pass ship together as `2.20260926.0`.
+- **Still open:** trusted publishing (issue #1; every release so far is a
+  hand publish), the mail-provider interface and SMTP adapter (phase 3),
+  publish adapters (phase 3), the first-run moment (phase 2), the public
+  engine interface.
 
 ---
 

@@ -1,8 +1,54 @@
 # Generation 2 — the changelog
 
-*Release `2.20260816.2`. The two gating editorial rulings were made
-2026-08-16: the license stays **AGPL-3.0-only**, and the engine package
-names stand.*
+*First release `2.20260816.2`, 2026-08-16, when the two gating editorial
+rulings were made: the license stays **AGPL-3.0-only**, and the engine
+package names stand. Later releases are listed newest first, then the
+generation's own account of itself.*
+
+## 2.20260926.0 — the boundary, and the site stands alone
+
+Cut 2026-09-26. Ten packages move together.
+
+- **The inference boundary** (PR #8). The stages never talk to a model:
+  they ask the platform's `Inference` service one of a closed set of
+  typed questions — same event (stage 4), the below-the-fold nomination
+  (6b), the composite (8, and 9's revision pass) — and get typed answers
+  back. One provider exists, Ollama, and it owns what used to be spread
+  across the eto engine: the prompt templates and their hashes, the
+  completion parsers, the per-model knobs. Journal keys are unchanged
+  (`model`, `prompt_hash` — the provider's identity for the question), so
+  nothing re-judges. `verdicts` gains a nullable `confidence` column: NULL
+  from text models, a calibrated probability from any provider that has
+  one. Preflight pins through the provider's `pin()`; a provider that
+  cannot promise a digest is logged "unpinnable" and never locked.
+  `@eto-press/press` exports `Inference` beside `Ollama`.
+- **The site depends on nothing outside `site/`.** `eto render` compiles
+  the stylesheet itself (the paper's own `brief.css` skin if present,
+  else the default theme, now at `@eto-press/platform/brief.css`) and
+  copies Lora and IBM Plex Mono into `site/fonts/`. The Google Fonts
+  links are gone from every page: no CDN, no third-party request, no
+  build step for the operator. `@eto-press/press/brief.css` remains as an
+  import of the platform theme, so existing skins keep compiling.
+- **A desk paper never needs Ollama** — now true for `eto press` as well
+  as `eto print`. The runner wakes Ollama only for an engine that
+  declares models. The engine registry lives in `press/src/engines.ts`.
+- `sources.toml` and `eto.toml` tolerate a UTF-8 BOM.
+- **Breaking for engine authors only:** the engine service ceiling is
+  now `SqlClient | HttpClient | Inference | Desk`. An engine that
+  required `Ollama` or `FileSystem` directly no longer typechecks — ask
+  the boundary, or the Desk. No shipped engine did.
+- Removed: `VerdictUnparseable`, an error class nothing ever raised (an
+  unparseable verdict is journaled as `abstain` after one re-ask).
+- The documentation site, the design documents, and every package
+  README were audited against the code and corrected; the
+  docs-accuracy tests now also pin the engine registry, the package
+  roster, and README presence.
+
+## 2.20260825.0 — the CLI page tells the truth
+
+Cut 2026-08-25. Metadata only: `@eto-press/cli`'s description no longer
+promises `init` and `doctor` as future work, and its npm page carries a
+README mirroring the verb table.
 
 ## What generation 2 is
 
@@ -63,13 +109,13 @@ so every generation-1 paper is already valid.
   printed with its motion against the last edition.
 - `@eto-press/press` — the binding: preflight from `engine.models`, the
   registry, the tail.
-- `@eto-press/cli` — `init` asks which engine; `doctor` examines the
-  engine you chose.
+- `@eto-press/cli` — `init` asks which engine (eto or desk; the other
+  four are chosen in `eto.toml`); `doctor` examines the engine you chose.
 
 ## Not in this release, on purpose
 
 A public engine/plugin API (the interface stays private until the
-contract settles across the five engines), dynamic engine loading,
+contract settles across the six engines), dynamic engine loading,
 score tables and figures and the email image pipeline (they arrive when
 papers demand them), cadence configuration beyond
 daily-plus-NoEdition.
