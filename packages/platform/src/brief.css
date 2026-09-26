@@ -10,7 +10,12 @@
  * no permission, full editorial CSS rights over the same anatomy.
  * Tailwind is this theme's build tool, nothing more: a skin may be
  * plain CSS. Anatomy classes with no rule here (story__body,
- * masthead__date, corrections__item, …) are deliberate skin hooks. */
+ * masthead__date, corrections__item, …) are deliberate skin hooks.
+ *
+ * Generation 3 adds the front page's ears, the desks, the index (the
+ * paper compressed), the calendar archive, the section pages, and makes
+ * the side spectrum monochrome: the accent is the only colour on the
+ * site, and it is spent on the paper's own voice alone. */
 @import "tailwindcss" source(none);
 
 @theme {
@@ -55,6 +60,12 @@ html { @apply antialiased; }
 .masthead { @apply flex flex-col items-center gap-4 border-b border-neutral-950/15 pb-10 text-center dark:border-white/15; }
 .masthead__wordmark { @apply text-6xl font-medium tracking-tight; }
 .masthead__motto { @apply text-neutral-950/60 dark:text-white/55; }
+/* The front page: the date line straight under the nameplate, then the
+ * ears — the motto on one side, the desks' counts on the other, the way
+ * a broadsheet's page one carries them beside the flag. */
+.masthead--front { @apply gap-2 pb-6; }
+.masthead__ears { @apply mt-3 flex w-full flex-col items-center gap-1 border-t border-neutral-950/15 pt-3 text-center sm:flex-row sm:justify-between sm:text-left dark:border-white/15; }
+.masthead__ear--counts { @apply tabular-nums sm:text-right; }
 
 .about { @apply flex flex-col gap-5 py-12; }
 
@@ -65,33 +76,53 @@ html { @apply antialiased; }
 .story__headline { @apply text-pretty text-2xl font-semibold tracking-tight sm:text-3xl; }
 .story__differ--list { @apply flex flex-col gap-3; }
 .story__links { @apply flex flex-col gap-2; }
-.story__data { @apply flex flex-col gap-2 tabular-nums; }
+/* Agate mode: figures in the instrument voice, tabular, tight. */
+.story__data { @apply grid grid-cols-1 gap-x-6 gap-y-1 tabular-nums sm:grid-cols-2; }
+.story__data-value { @apply font-medium; }
 .story__footer { @apply flex flex-col gap-2 pt-1; }
 .fold { @apply flex flex-col gap-3 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
 .fold__reason { @apply italic; }
 .report { @apply flex flex-col gap-4 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
 .report__lines { @apply flex flex-col gap-2 tabular-nums; }
 
-/* -- The home page's furniture ------------------------------------------- */
-.cards { @apply grid gap-6 sm:grid-cols-2; }
-.card { @apply border border-neutral-950/10 dark:border-white/10; }
-.card__link { @apply flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-2; }
-.card__figure { @apply flex flex-col; }
-.card__image { @apply aspect-video w-full object-cover; }
-.card__credit { @apply px-5 pt-2 text-neutral-950/50 dark:text-white/40; }
-.card__body { @apply flex grow flex-col gap-2 p-5; }
-.card__title { @apply text-pretty text-xl font-semibold group-hover:underline decoration-neutral-950/30 underline-offset-4 dark:decoration-white/30; }
-.card__meta { @apply mt-auto text-neutral-950/60 dark:text-white/50; }
-.card__meta-sep, .spectrum__sep { @apply text-neutral-950/25 dark:text-white/25; }
+/* -- The lead on the front page, and the desks --------------------------- */
+.lead { @apply flex flex-col; }
+.lead__end { @apply pb-2 pt-8 text-center italic; }
+.desk { @apply flex flex-col gap-2 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
+.desk__end { @apply pb-8 pt-2 italic; }
 
-/* -- The spectrum: blue to red, center violet ----------------------------- */
-.side--left { @apply text-blue-700 dark:text-blue-400; }
-.side--lean-left { @apply text-blue-500 dark:text-blue-300; }
-.side--center { @apply text-violet-600 dark:text-violet-400; }
-.side--lean-right { @apply text-red-500 dark:text-red-300; }
-.side--right { @apply text-red-700 dark:text-red-400; }
+/* -- The index: the paper compressed, one row per item ------------------ */
+.index { @apply flex flex-col gap-5 border-t-2 border-neutral-950 py-10 dark:border-white; }
+.index__desks { @apply flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10; }
+.index__desk { @apply flex flex-col gap-3 py-6; }
+.index__count { @apply font-normal tabular-nums; }
+.index__board { @apply grid grid-cols-2 gap-x-6 gap-y-1 tabular-nums sm:grid-cols-3; }
+.index__figure-value { @apply font-medium; }
+.index__rows { @apply flex flex-col gap-3; }
+.index__row { @apply text-pretty; }
+.index__headline { @apply font-semibold; }
+.index__desk-end { @apply italic; }
 
-/* -- The sources page ----------------------------------------------------- */
+/* -- The section page's neighbours ---------------------------------------- */
+.section-nav { @apply flex items-baseline justify-between gap-4 py-6; }
+.section-nav__link--none { @apply min-w-4; }
+
+/* -- The calendar of past editions ---------------------------------------- */
+.calendar { @apply flex flex-col gap-6 border-t border-neutral-950/15 py-10 dark:border-white/15; }
+.calendar__month { @apply flex flex-col gap-3; }
+.calendar__days { @apply flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10; }
+.calendar__day { @apply py-2 text-pretty; }
+.calendar__date { @apply tabular-nums; }
+.feeds { @apply text-pretty; }
+
+/* -- The spectrum: monochrome — filled where covered, hollow where not ----- */
+.spectrum__side--off { @apply text-neutral-950/30 dark:text-white/30; }
+.spectrum__sep { @apply text-neutral-950/25 dark:text-white/25; }
+/* The five side labels are skin hooks: no colour here, by design (the
+ * accent is the only colour on the site). A skin may colour them. */
+.side--left, .side--lean-left, .side--center, .side--lean-right, .side--right { @apply font-medium; }
+
+/* -- The about page's source table ---------------------------------------- */
 .side-table { @apply flex flex-col divide-y divide-neutral-950/10 border-t border-neutral-950/15 dark:divide-white/10 dark:border-white/15; }
 .side-row { @apply flex flex-col gap-2 py-6 sm:flex-row sm:gap-6; }
 .side-row__label { @apply w-32 shrink-0; }
@@ -102,19 +133,3 @@ html { @apply antialiased; }
 .subscribe__button { @apply border border-neutral-950 bg-neutral-950 px-6 py-2.5 sm:py-2 text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white dark:bg-white dark:text-neutral-950; }
 .honeypot { position: absolute; left: -5000px; }
 .visually-hidden { @apply sr-only hidden; }
-
-/* -- Sections (generation 3): the desks on the edition page ------------- */
-.desk { @apply flex flex-col gap-2 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
-.desk__end { @apply pb-8 pt-2 italic; }
-
-/* -- The index: the paper compressed, one row per item ------------------ */
-.index { @apply flex flex-col gap-5 border-t border-neutral-950/15 py-10 dark:border-white/15; }
-.index__desks { @apply flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10; }
-.index__desk { @apply flex flex-col gap-3 py-6; }
-.index__count { @apply font-normal tabular-nums; }
-.index__board { @apply grid grid-cols-2 gap-x-6 gap-y-1 tabular-nums sm:grid-cols-3; }
-.index__figure-value { @apply font-medium; }
-.index__rows { @apply flex flex-col gap-3; }
-.index__row { @apply text-pretty; }
-.index__headline { @apply font-semibold; }
-.index__desk-end { @apply italic; }

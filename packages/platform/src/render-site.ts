@@ -1,10 +1,11 @@
 /**
  * Stage 12, standalone: render the whole public site from the journal —
- * every published edition at site/<date>.html, the home page at
- * site/index.html (North Star for readers, today's stories, past
- * editions), sources.html from the masthead file — and the stylesheet
- * and fonts beside them, so site/ is the whole paper and depends on
- * nothing outside it.
+ * every published edition at site/<date>.html (the whole paper), every
+ * desk of a sectioned edition at site/<date>/<slug>/, the front page at
+ * site/index.html (the lead in full, the index of the other desks, the
+ * calendar of past editions), the about page at sources.html from the
+ * masthead file, the feeds — and the stylesheet and fonts beside them, so
+ * site/ is the whole paper and depends on nothing outside it.
  * Run: eto render
  */
 import { spawnSync } from "node:child_process"
@@ -20,36 +21,13 @@ import {
   openJournal,
   publishedRuns,
   reportFor,
+  type AssembledSection,
   type AssembledStory
 } from "./assemble.js"
-import { SECTIONS } from "./config.js"
+import { SECTIONED, SECTIONS } from "./config.js"
 import { renderFeedXml } from "./feed.js"
+import { renderEditionHtml, renderHomePage, renderSectionPage, renderSourcesPage, type CalendarEdition } from "./html.js"
 import { buildIndex, renderIndex } from "./index-dialect.js"
-import {
-  renderEditionHtml,
-  renderHomePage,
-  renderSourcesPage,
-  storyAnchor,
-  type HomeCard
-} from "./html.js"
-
-const UA = "eto/0.1 (+local news compositor; front-door reader)"
-
-/** Render-time image check: only ship images that actually answer, so the
- * page needs no client-side fallback JavaScript. */
-const imageAlive = async (src: string): Promise<boolean> => {
-  try {
-    const res = await fetch(src, {
-      method: "HEAD",
-      headers: { "user-agent": UA },
-      signal: AbortSignal.timeout(8000),
-      redirect: "follow"
-    })
-    return res.ok
-  } catch {
-    return false
-  }
-}
 
 const db = openJournal()
 const editions = publishedRuns(db)
@@ -62,53 +40,71 @@ mkdirSync("site", { recursive: true })
 
 const health = healthLines(db)
 const assembledByRun = new Map<string, Array<AssembledStory>>()
+const groupsByRun = new Map<string, Array<AssembledSection>>()
+const stories = (group: AssembledSection | undefined) => (group?.stories ?? []).map((a) => a.story)
+const htmlSections = (groups: ReadonlyArray<AssembledSection>) =>
+  groups.map((g) => ({ slug: g.slug, name: g.name, stories: stories(g) }))
+/** A desk's dated page, relative to the site root. */
+const sectionPath = (runId: string, slug: string) => `./${runId}/${slug}/`
+
+let sectionPages = 0
 for (const runId of editions) {
   const assembled = assembleStories(db, runId)
+  const groups = groupBySection(assembled)
   assembledByRun.set(runId, assembled)
+  groupsByRun.set(runId, groups)
+  const corrections = correctionsPrintedIn(db, runId)
+
+  // The whole paper, dated.
   writeFileSync(
     `site/${runId}.html`,
     renderEditionHtml({
       runId,
       editionLabel: "",
       stories: assembled.map((a) => a.story),
-      sections: groupBySection(assembled).map((g) => ({
-        slug: g.slug,
-        name: g.name,
-        stories: g.stories.map((a) => a.story)
-      })),
+      sections: htmlSections(groups),
       report: {
         ...reportFor(db, runId, assembled.length),
         ...(runId === editions[0] ? { healthLines: health } : {})
       },
-      corrections: correctionsPrintedIn(db, runId)
+      corrections
     }),
     "utf8"
   )
+
+  // Each desk at its own address, when the morning had more than one.
+  if (groups.length > 1) {
+    let first = 1
+    for (const [i, group] of groups.entries()) {
+      mkdirSync(`site/${runId}/${group.slug}`, { recursive: true })
+      const prev = groups[i - 1]
+      const next = groups[i + 1]
+      writeFileSync(
+        `site/${runId}/${group.slug}/index.html`,
+        renderSectionPage({
+          runId,
+          section: { slug: group.slug, name: group.name, stories: stories(group) },
+          first,
+          position: i + 1,
+          total: groups.length,
+          prev: prev === undefined ? null : { slug: prev.slug, name: prev.name },
+          next: next === undefined ? null : { slug: next.slug, name: next.name }
+        }),
+        "utf8"
+      )
+      first += group.stories.length
+      sectionPages++
+    }
+  }
 }
-const latestAssembled: Array<AssembledStory> = assembledByRun.get(editions[0]!) ?? []
-// The front page: the lead section's stories as cards, then the index of
-// every other desk (generation 3). A single-section paper has no index.
-const latestGroups = groupBySection(latestAssembled)
-const leadAssembled: ReadonlyArray<AssembledStory> = latestGroups[0]?.stories ?? []
-const indexHtml = renderIndex(
-  buildIndex(
-    latestGroups.slice(1).map((g) => ({
-      slug: g.slug,
-      name: g.name,
-      stories: g.stories.map((a) => a.story)
-    })),
-    { editionHref: `./${editions[0]}.html`, first: leadAssembled.length + 1 }
-  )
-)
 
 // The RSS feed at the link readers have always had: one item per edition,
 // the paper's FIRST section inside (the brief, on the flagship), newest
 // first. On a single-section paper that is the whole edition, unchanged.
 const recent = editions.slice(0, 14)
 const sectionStories = (runId: string, slug: string | null) => {
-  const groups = groupBySection(assembledByRun.get(runId) ?? [])
-  const group = slug === null ? groups[0] : groups.find((g) => g.slug === slug)
-  return (group?.stories ?? []).map((a) => a.story)
+  const groups = groupsByRun.get(runId) ?? []
+  return stories(slug === null ? groups[0] : groups.find((g) => g.slug === slug))
 }
 writeFileSync(
   "site/feed.xml",
@@ -143,74 +139,52 @@ if (SECTIONS.length > 1) {
   }
 }
 
-// Home page cards: anchor order matches the edition page (mains, then fold).
-const clusterMeta = db.prepare(
-  "SELECT sides, outlet_count FROM clusters WHERE run_id = ? AND cluster_hash = ?"
-)
-const imageCandidates = db.prepare(
-  `SELECT i.outlet AS outlet, a.og_image AS og, length(a.text) AS len
-   FROM cluster_items ci
-   JOIN items i ON i.id = ci.item_id
-   JOIN articles a ON a.item_id = i.id AND a.status = 'ok'
-   WHERE ci.run_id = ? AND ci.cluster_hash = ? AND a.og_image IS NOT NULL
-   ORDER BY len DESC`
-)
-
-const mainsCount = leadAssembled.filter((a) => a.story.foldReason === null).length
-let mainIdx = 0
-let foldIdx = 0
-const cards: Array<HomeCard> = []
-for (const a of leadAssembled) {
-  const isFold = a.story.foldReason !== null
-  const anchor = isFold
-    ? storyAnchor(mainsCount + ++foldIdx)
-    : storyAnchor(++mainIdx)
-  const meta = clusterMeta.get(editions[0], a.clusterHash) as
-    | { sides: string; outlet_count: number }
-    | undefined
-  const candidates = imageCandidates.all(editions[0], a.clusterHash) as Array<{
-    outlet: string
-    og: string
-    len: number
-  }>
-  let image: HomeCard["image"] = null
-  for (const c of candidates) {
-    if (await imageAlive(c.og)) {
-      image = { src: c.og, credit: c.outlet }
-      break
-    }
+// The front page: the lead section in full, then the index of every other
+// desk (generation 3), the calendar of past editions, the feeds.
+const latest = editions[0]!
+const latestGroups = groupsByRun.get(latest) ?? []
+const lead = latestGroups[0]
+const leadStories = stories(lead)
+const others = latestGroups.slice(1)
+const desks = buildIndex(htmlSections(others), {
+  editionHref: `./${latest}.html`,
+  first: leadStories.length + 1,
+  sectionHref: (slug) => sectionPath(latest, slug)
+})
+const calendar: Array<CalendarEdition> = editions.map((runId) => {
+  const groups = groupsByRun.get(runId) ?? []
+  return {
+    runId,
+    lead: stories(groups[0])[0]?.headline ?? null,
+    sections: groups.length
   }
-  cards.push({
-    title: a.story.headline,
-    anchor,
-    fold: isFold,
-    outletsLabel: meta
-      ? `${meta.outlet_count} outlet${meta.outlet_count === 1 ? "" : "s"}`
-      : `${a.story.sources.length} sources`,
-    sides: meta ? meta.sides.split("/") : [],
-    image
-  })
-}
-
+})
 writeFileSync(
   "site/index.html",
   renderHomePage({
-    latestRunId: editions[0]!,
-    headlines: cards,
-    editions,
-    index: indexHtml
+    runId: latest,
+    lead: leadStories,
+    leadEnd: SECTIONED && lead !== undefined ? `${lead.name} ends here.` : "The brief ends here.",
+    counts: desks
+      .filter((d) => d.count > 0)
+      .map((d) => `${d.name} ${d.count}`)
+      .join(" · "),
+    index: renderIndex(desks),
+    corrections: correctionsPrintedIn(db, latest),
+    calendar,
+    feeds: SECTIONS.length > 1 ? SECTIONS.map((s) => ({ name: s.name, path: `./${s.slug}/feed.xml` })) : []
   }),
   "utf8"
 )
 
-// Sources page, straight from the masthead file — spectrum order. On a
+// The about page, straight from the masthead file — spectrum order. On a
 // sectioned paper this is the FIRST section's file (the brief's, on the
-// flagship); per-desk sources pages arrive with the site rewrite.
+// flagship).
 const parsed = TOML.parse(readFileSync(SECTIONS[0]!.masthead, "utf8")) as {
   source?: Array<{ name: string; side: string }>
   seed?: { name: string; url?: string; version?: string; description?: string }
 }
-// A desk paper reads no outlets; its sources page is simply short.
+// A desk paper reads no outlets; its about page is simply short.
 const masthead = { ...parsed, source: parsed.source ?? [] }
 const SIDE_ORDER = ["left", "lean-left", "center", "lean-right", "right"]
 const bySide = SIDE_ORDER.flatMap((side) => {
@@ -261,6 +235,6 @@ for (const [pkg, file] of FONT_FILES) {
 }
 
 console.log(
-  `rendered ${editions.length} edition(s), index.html, sources.html — latest: ${editions[0]} ` +
-    `(${latestAssembled.length} stories, ${cards.filter((c) => c.image !== null).length} with images)`
+  `rendered ${editions.length} edition(s)${sectionPages > 0 ? `, ${sectionPages} section page(s)` : ""}, index.html, sources.html — latest: ${latest} ` +
+    `(${leadStories.length} lead stories, ${others.length} other desk(s))`
 )
