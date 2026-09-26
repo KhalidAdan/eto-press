@@ -4,10 +4,13 @@ description: What an engine is handed, what it must return, and how to write one
 ---
 
 <Callout>
-  The `Engine` interface is **private to the monorepo** and will change.
-  Writing an engine today means adding a package to this repository —
-  deliberately. The public plugin story waits until the ladder has enough
-  rungs that the interface is extracted from evidence rather than guessed.
+  Since **generation 3** the `Engine` interface is public, at
+  `@eto-press/press/engine`, together with the edition anatomy and the
+  platform libraries an engine builds its corpus with. It was extracted
+  from evidence — eight engines and the flagship's four sections — rather
+  than guessed. An engine still has to be a dependency the press was built
+  with (the registry in `press/src/engines.ts` is static); loading one by
+  name from a paper directory is the next rung, not this one.
 </Callout>
 
 ## The shape

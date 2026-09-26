@@ -7,10 +7,11 @@
  * a story is, and how it must be told. They meet exactly once per run,
  * at edition(day).
  *
- * This interface is private to the monorepo, extracted from its second
- * engine (the desk engine), and stays unpublished until the ladder has
- * more rungs — interfaces drawn from n=1 are reliably wrong, and n=2 is
- * only the first time they can be checked.
+ * This interface was extracted from the second engine (the desk engine)
+ * and kept private until the ladder had rungs enough to check it against
+ * — interfaces drawn from n=1 are reliably wrong. Generation 3 publishes
+ * it, at @eto-press/press/engine, with eight engines and the flagship's
+ * four sections behind it.
  */
 import type { Effect } from "effect"
 import type { EditionStory } from "./edition.js"

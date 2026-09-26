@@ -333,3 +333,12 @@ The founding North Star moved unchanged to `docs/sections/brief.md`; the
 paper-level constitution is the new `docs/NORTH-STAR.md`. The proposal,
 the editor's rulings and the seven-step PR train are in
 [PROPOSAL-SECTIONS.md](PROPOSAL-SECTIONS.md).
+
+**Status 2026-09-26, evening.** The train is built: seven stacked pull
+requests (#10–#16), each gated, each for the editor's review. The
+constitutions; the frame printing sections; the index, the email card and
+feeds per desk; the deck and the shelf engine; the ledger engine; the
+site; the public engine interface and the generation-3 version. Eight
+engines. What waits on the editor: the review itself, the engine names,
+the release tag, and the flagship's own section files (its editorial
+line, in KhalidAdan/eto).
