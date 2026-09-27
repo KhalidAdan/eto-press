@@ -33,24 +33,88 @@ import { Desk, type DeskEntry } from "@eto-press/platform/desk"
 import { editionStoryFrom, type DataItem, type EditionStory, type LinkItem } from "@eto-press/platform/edition"
 import type { Day, EngineOutcome } from "@eto-press/platform/engine"
 import { ingestAllFeeds, type FeedOutcome } from "@eto-press/platform/feeds"
-import { fetchRaw, recordDocument, valueAtPath } from "@eto-press/platform/frontdoor"
+import { fetchRaw, nodeAtPath, recordDocument, valueAtPath } from "@eto-press/platform/frontdoor"
 import type { Masthead, Source } from "@eto-press/platform/masthead"
 import type { Classifier, Item } from "@eto-press/platform/normalize"
 
 const everythingIsAPost: Classifier = () => "news"
 export const ROWS_PER_SHELF = 10
+/** A list door's default window: last night's games, not last season's. */
+export const LIST_WINDOW_HOURS = 36
+/** A list door never prints more rows than this on one board. */
+export const LIST_ROWS_MAX = 16
 
 const sha256 = (s: string): string => createHash("sha256").update(s).digest("hex")
 
-// -- The masthead's two kinds --------------------------------------------------
+// -- The masthead's kinds ------------------------------------------------------
 
-/** Doors are boards; everything else is a feed. */
+/** Doors and list doors are boards; everything else is a feed. */
 export const partition = (
   masthead: Masthead
 ): { doors: Array<Source>; feeds: Array<Source> } => ({
-  doors: masthead.source.filter((s) => s.kind === "door"),
-  feeds: masthead.source.filter((s) => s.kind !== "door")
+  doors: masthead.source.filter((s) => s.kind === "door" || s.kind === "list"),
+  feeds: masthead.source.filter((s) => s.kind !== "door" && s.kind !== "list")
 })
+
+// -- List doors (generation 3): one URL, one row per entry --------------------
+
+/** Fill "{a} @ {b.c}" from one entry. Null when any field is missing or
+ * empty — an entry that cannot say everything its row needs prints
+ * nothing (a game not yet played has no score). */
+export const fillTemplate = (template: string, entry: unknown): string | null => {
+  let missing = false
+  const out = template.replace(/\{([^}]+)\}/g, (_, path: string) => {
+    const v = nodeAtPath(entry, path.trim())
+    if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) {
+      missing = true
+      return ""
+    }
+    return typeof v === "string" ? v : String(v)
+  })
+  return missing ? null : out.trim()
+}
+
+/** A timestamp as a feed writes it; zone-less times are UTC. */
+const parseWhen = (v: unknown): number | null => {
+  if (typeof v !== "string" && typeof v !== "number") return null
+  const s = String(v).trim()
+  const zoned = /[zZ]$|[+-]\d\d:?\d\d$/.test(s) || /^\d+$/.test(s)
+  const t = /^\d+$/.test(s) ? Number(s) * (s.length <= 10 ? 1000 : 1) : Date.parse(zoned ? s : `${s}Z`)
+  return Number.isFinite(t) ? t : null
+}
+
+/** The rows a list door prints this morning: entries at the path, within
+ * the window when a timestamp field is named, templated, capped. Pure. */
+export const listRows = (
+  raw: string,
+  path: string | null,
+  source: Pick<Source, "label" | "value" | "when" | "window_hours">,
+  now: number
+): Array<{ label: string; value: string }> | null => {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return null
+  }
+  const list = path === null ? parsed : nodeAtPath(parsed, path)
+  if (!Array.isArray(list)) return null
+  if (source.label === undefined || source.value === undefined) return null
+  const windowMs = (source.window_hours ?? LIST_WINDOW_HOURS) * 3600 * 1000
+  const rows: Array<{ label: string; value: string }> = []
+  for (const entry of list) {
+    if (source.when !== undefined) {
+      const t = parseWhen(nodeAtPath(entry, source.when))
+      if (t === null || Math.abs(now - t) > windowMs) continue
+    }
+    const label = fillTemplate(source.label, entry)
+    const value = fillTemplate(source.value, entry)
+    if (label === null || value === null) continue
+    rows.push({ label, value })
+    if (rows.length >= LIST_ROWS_MAX) break
+  }
+  return rows
+}
 
 // -- Boards (the wrap's reading of data doors) --------------------------------
 
@@ -161,6 +225,42 @@ const edition = (day: Day) =>
             detail: String(fetched.left.cause).slice(0, 120)
           })
           yield* Effect.logWarning(`  door closed: ${label} ${url}`)
+          continue
+        }
+        if (source.kind === "list") {
+          const listed = listRows(fetched.right, path, source, Date.now())
+          if (listed === null) {
+            outcomes.push({
+              outlet: source.name,
+              url,
+              status: "malformed",
+              itemsKept: 0,
+              ms: Date.now() - started,
+              detail: `no list at ${path ?? "(body)"}, or no label/value templates`
+            })
+            yield* Effect.logWarning(`  no list at ${path ?? "(body)"}: ${label}`)
+            continue
+          }
+          const text = listed.map((r) => `${r.label}\t${r.value}`).join("\n")
+          const record = yield* recordDocument(day.runId, {
+            url: feed,
+            title: label,
+            text,
+            contentHash: sha256(text)
+          })
+          outcomes.push({
+            outlet: source.name,
+            url,
+            status: "ok",
+            itemsKept: record.isNew ? listed.length : 0,
+            ms: Date.now() - started,
+            detail: null
+          })
+          if (listed.length > 0) {
+            const rows = boards.get(source.side) ?? []
+            rows.push(...listed)
+            boards.set(source.side, rows)
+          }
           continue
         }
         const value = valueAtPath(fetched.right, path)

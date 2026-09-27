@@ -13,10 +13,23 @@ export const SourceSchema = Schema.Struct({
   feeds: Schema.NonEmptyArray(Schema.String),
   /** What the URLs are (generation 3, optional): `feed` — RSS/Atom, the
    * default and what every engine before the ledger assumed; `door` — a
-   * data door, a JSON or plain-text endpoint carrying figures, with an
-   * optional `#dot.path` (the wrap engine's convention). Only an engine
-   * that reads both kinds in one masthead looks at it. */
-  kind: Schema.optional(Schema.Literal("feed", "door"))
+   * data door, a JSON or plain-text endpoint carrying one figure, with an
+   * optional `#dot.path` (the wrap engine's convention); `list` — a JSON
+   * endpoint whose `#dot.path` leads to an array, one board row per entry
+   * (a night of scores). Only an engine that reads several kinds in one
+   * masthead looks at it. */
+  kind: Schema.optional(Schema.Literal("feed", "door", "list")),
+  /** A list door's row label, a template over each entry's fields:
+   * "{strAwayTeam} @ {strHomeTeam}". */
+  label: Schema.optional(Schema.String),
+  /** A list door's row value, a template: "{intAwayScore}–{intHomeScore}".
+   * An entry with any empty field in either template is skipped (a game
+   * not yet played has no score). */
+  value: Schema.optional(Schema.String),
+  /** A list door's timestamp field; with it, only entries within
+   * `window_hours` of the morning print (last night's games, not June's). */
+  when: Schema.optional(Schema.String),
+  window_hours: Schema.optional(Schema.Number)
 })
 export type Source = typeof SourceSchema.Type
 
@@ -49,7 +62,7 @@ export const MastheadSchema = Schema.Struct({
 export type Masthead = typeof MastheadSchema.Type
 
 const ROOT_KEYS = new Set(["below_the_fold", "email_edition", "seed", "source"])
-const SOURCE_KEYS = new Set(["name", "side", "feeds", "kind"])
+const SOURCE_KEYS = new Set(["name", "side", "feeds", "kind", "label", "value", "when", "window_hours"])
 
 /** TOML scoping quietly attaches a root key typed below the last [[source]]
  * to that source — a flag the editor believes is set, silently ignored.
