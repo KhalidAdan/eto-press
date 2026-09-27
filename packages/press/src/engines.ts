@@ -12,6 +12,7 @@ import type { SqlClient } from "@effect/sql"
 import { deskEngine } from "@eto-press/engine-desk/engine"
 import { digestEngine } from "@eto-press/engine-digest/engine"
 import { etoEngine } from "@eto-press/engine-eto/engine"
+import { ledgerEngine } from "@eto-press/engine-ledger/engine"
 import { letterEngine } from "@eto-press/engine-letter/engine"
 import { shelfEngine } from "@eto-press/engine-shelf/engine"
 import { sportsEngine } from "@eto-press/engine-sports/engine"
@@ -37,5 +38,6 @@ export const engines: Record<string, Engine<any, PressServices>> = {
   digest: digestEngine,
   sports: sportsEngine,
   wrap: wrapEngine,
-  shelf: shelfEngine
+  shelf: shelfEngine,
+  ledger: ledgerEngine
 }

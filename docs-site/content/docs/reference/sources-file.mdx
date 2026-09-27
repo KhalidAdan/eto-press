@@ -44,6 +44,7 @@ description = "which rates outlets' perspective, not their accuracy"
 | `name` | yes | The outlet's name as it appears in sources lines and reports. |
 | `side` | yes | The outlet's place on *your* map. The five seeded labels are `left`, `lean-left`, `center`, `lean-right`, `right`; custom labels are allowed and measured like any other. On the digest, sports, and wrap engines the same field names a section, a league, or a board — see [the engines](/docs/concepts/engines). |
 | `feeds` | yes | One or more front-door feed URLs. On the wrap engine, a data endpoint with an optional `#dot.path`. |
+| `kind` | no | Generation 3. What the URLs are: `feed` (RSS/Atom, the default) or `door` (a JSON or plain-text data endpoint carrying figures, with an optional `#dot.path`). Only the ledger engine, which reads both kinds in one masthead, looks at it: a `door` source is a board, a `feed` source is a shelf of decked links. |
 
 ```toml
 [[source]]

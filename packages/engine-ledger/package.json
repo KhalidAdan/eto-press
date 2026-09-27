@@ -1,0 +1,35 @@
+{
+  "name": "@eto-press/engine-ledger",
+  "version": "2.20260926.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "The ledger engine: the lay of the land as of yesterday. A board of figures with their motion, the editor's signed columns, then decked links from the outlets' feeds — the business desk and the sports desk in one engine.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.97.0",
+    "@effect/sql": "^0.52.0",
+    "effect": "^3.22.0",
+    "@eto-press/platform": "^2.20260926.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

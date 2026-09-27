@@ -30,6 +30,7 @@ doctrine; they meet once per morning at `edition(day)`.
 | `@eto-press/engine-sports` | signed columns beside the leagues' own links |
 | `@eto-press/engine-wrap` | labeled figures with their motion; nothing moved, no edition |
 | `@eto-press/engine-shelf` | the writers you follow, one line each: a deck under every title, caged |
+| `@eto-press/engine-ledger` | boards of figures with their motion, signed columns, decked links: the business desk and the sports desk |
 | `@eto-press/press` | the thin binding: preflight, the joint, the tail, the engine registry |
 | `@eto-press/cli` | the `eto` command — the paperboy's verbs |
 | `@eto-press/subscribe` | the mail slot: double-opt-in flow as Pages Functions |

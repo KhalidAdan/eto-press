@@ -44,11 +44,19 @@ prints exactly as it did.*
   is deck-sized, and no model is asked. `fetchAccount` reads one item's
   text through the journal. The **shelf** engine
   (`@eto-press/engine-shelf`): the writers you follow, one line each —
-  every new post as a row with its deck, grouped by shelf. Seven engines
-  registered: eto, desk, letter, digest, sports, wrap, shelf.
+  every new post as a row with its deck, grouped by shelf.
+- **The ledger** (this step). A source may declare `kind = "door"` (a
+  data endpoint) or `kind = "feed"` (the default); only an engine that
+  reads both kinds in one masthead looks at it. The **ledger** engine
+  (`@eto-press/engine-ledger`): the business desk and the sports desk in
+  one engine — boards of figures with their motion (doors), the section's
+  signed columns (the desk), then decked rows from the outlets' feeds
+  (shelves), in that order. Motion is measured against the last printed
+  board of that section. Nothing moved and nothing new is NoEdition; when
+  anything prints, every board prints. Eight engines registered: eto,
+  desk, letter, digest, sports, wrap, shelf, ledger.
 
 ## Still to come in the train
 
-The ledger engine (business and sports: boards, columns, decked links);
-the site (front page, section pages, the calendar archive, the monochrome
+The site (front page, section pages, the calendar archive, the monochrome
 spectrum); the public engine interface and the release.
