@@ -212,6 +212,9 @@ export const renderHomePage = (opts: {
   readonly latestRunId: string
   readonly headlines: ReadonlyArray<HomeCard>
   readonly editions: ReadonlyArray<string>
+  /** The index of the other desks, rendered (index-dialect.ts), on a
+   * sectioned paper; empty or absent on a single-section paper. */
+  readonly index?: string
 }): string => {
   const latest = `./${opts.latestRunId}.html`
   const card = (h: HomeCard): string => {
@@ -275,7 +278,7 @@ ${headMeta({
 ${headlineList}
       </ul>
     </section>
-
+${opts.index !== undefined && opts.index !== "" ? `\n${opts.index}\n` : ""}
     <section class="page-section page-section--tight">
       <h2 class="section-label instrument instrument--label instrument--strong">The morning edition, by email</h2>
       <form method="POST" action="/subscribe" class="subscribe">

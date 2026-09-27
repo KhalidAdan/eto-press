@@ -102,3 +102,19 @@ html { @apply antialiased; }
 .subscribe__button { @apply border border-neutral-950 bg-neutral-950 px-6 py-2.5 sm:py-2 text-white focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-white dark:bg-white dark:text-neutral-950; }
 .honeypot { position: absolute; left: -5000px; }
 .visually-hidden { @apply sr-only hidden; }
+
+/* -- Sections (generation 3): the desks on the edition page ------------- */
+.desk { @apply flex flex-col gap-2 border-t border-neutral-950/15 pt-10 dark:border-white/15; }
+.desk__end { @apply pb-8 pt-2 italic; }
+
+/* -- The index: the paper compressed, one row per item ------------------ */
+.index { @apply flex flex-col gap-5 border-t border-neutral-950/15 py-10 dark:border-white/15; }
+.index__desks { @apply flex flex-col divide-y divide-neutral-950/10 dark:divide-white/10; }
+.index__desk { @apply flex flex-col gap-3 py-6; }
+.index__count { @apply font-normal tabular-nums; }
+.index__board { @apply grid grid-cols-2 gap-x-6 gap-y-1 tabular-nums sm:grid-cols-3; }
+.index__figure-value { @apply font-medium; }
+.index__rows { @apply flex flex-col gap-3; }
+.index__row { @apply text-pretty; }
+.index__headline { @apply font-semibold; }
+.index__desk-end { @apply italic; }

@@ -94,7 +94,11 @@ describe("error reference matches the tagged errors", () => {
 })
 
 describe("anatomy reference matches the markup and theme", () => {
-  const html = read("packages", "platform", "src", "html.ts")
+  // The markup is two modules since generation 3: the pages, and the
+  // index dialect they embed.
+  const html =
+    read("packages", "platform", "src", "html.ts") +
+    read("packages", "platform", "src", "index-dialect.ts")
   const theme = read("packages", "platform", "src", "brief.css")
   const doc = read("docs-site", "content", "docs", "reference", "anatomy.mdx")
 

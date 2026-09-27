@@ -113,6 +113,16 @@ export interface EmailSection {
   readonly stories: ReadonlyArray<HtmlStory>
 }
 
+/** The morning email's one section card (generation 3): after the brief
+ * ends, one other desk's name, its lead line, and a button to it on the
+ * site. One desk per morning, the run id decides which. */
+export interface EmailCard {
+  readonly name: string
+  readonly headline: string
+  readonly href: string
+  readonly count: number
+}
+
 export const renderEmailEdition = (opts: {
   readonly runId: string
   readonly stories: ReadonlyArray<HtmlStory>
@@ -120,10 +130,32 @@ export const renderEmailEdition = (opts: {
   /** The stories grouped by section, when the paper has more than one.
    * Must cover exactly `stories`, in the same order. */
   readonly sections?: ReadonlyArray<EmailSection>
+  /** The section card, on a paper with more desks than the mail carries;
+   * null or absent otherwise. */
+  readonly card?: EmailCard | null
+  /** True on a paper with more desks than the mail carries: two short
+   * lines, top and bottom, say so and point at the site. */
+  readonly more?: boolean
 }): { subject: string; html: string; text: string } => {
   const date = longDate(opts.runId)
   const editionUrl = `${SITE_URL}/${opts.runId}.html`
   const corrections = opts.corrections ?? []
+  const more = opts.more === true
+  const moreLine = !more
+    ? ""
+    : `\n    <p style="margin:10px 0 0 0;font-family:${MONO};font-size:12px;color:${QUIET};">There is more to ${esc(PAPER_NAME)} than the brief — <a href="${editionUrl}" style="color:${QUIET};">the whole paper is on ${esc(SITE_HOST)}</a>.</p>`
+  const card = opts.card ?? null
+  const cardHtml =
+    card === null
+      ? ""
+      : `
+  <div style="border-top:1px solid ${HAIRLINE};padding:22px 0 6px 0;">
+    <div style="border:1px solid ${HAIRLINE};padding:18px 20px;">
+      <p style="margin:0 0 8px 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${QUIET};">Also in today's paper · ${esc(card.name)}</p>
+      <p style="margin:0 0 14px 0;font-family:${SERIF};font-size:19px;line-height:1.35;font-weight:600;color:${INK};">${esc(card.headline)}</p>
+      <p style="margin:0;"><a href="${esc(card.href)}" style="display:inline-block;padding:9px 16px;border:1px solid ${INK};background:${INK};color:#ffffff;font-family:${MONO};font-size:13px;text-decoration:none;">Read today's ${esc(card.name)} desk →</a> <span style="font-family:${MONO};font-size:12px;color:${QUIET};">${card.count} item${card.count === 1 ? "" : "s"}</span></p>
+    </div>
+  </div>`
   // A single-section paper renders exactly as generation 2 did; several
   // desks each get a label line before their stories.
   const groups: ReadonlyArray<{ name: string | null; stories: ReadonlyArray<HtmlStory> }> =
@@ -161,12 +193,12 @@ export const renderEmailEdition = (opts: {
   <div style="text-align:center;padding-bottom:22px;">
     <p style="margin:0;font-family:${SERIF};font-size:44px;font-weight:500;color:${INK};">${esc(PAPER_NAME)}<span style="color:${CLARET};">.</span></p>
     <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;color:${QUIET};">${esc(PAPER_MOTTO)}</p>
-    <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${INK};">${esc(date)}</p>
+    <p style="margin:6px 0 0 0;font-family:${MONO};font-size:12px;letter-spacing:1px;text-transform:uppercase;color:${INK};">${esc(date)}</p>${moreLine}
   </div>${correctionsHtml}
 ${storiesHtml}
   <div style="border-top:1px solid ${HAIRLINE};padding:22px 0;text-align:center;">
     <p style="margin:0 0 10px 0;font-family:${MONO};font-size:12px;color:${QUIET};"><a href="${editionUrl}" style="color:${QUIET};">Read this edition on ${esc(SITE_HOST)}</a> · <a href="${SITE_URL}/sources.html" style="color:${QUIET};">How we choose our sources</a></p>
-    <p style="margin:0 0 14px 0;font-family:${SERIF};font-size:15px;font-style:italic;color:${QUIET};">The brief ends here.</p>
+    <p style="margin:0 0 14px 0;font-family:${SERIF};font-size:15px;font-style:italic;color:${QUIET};">The brief ends here.</p>${cardHtml === "" ? "" : `\n  <div style="text-align:left;">${cardHtml}\n  </div>`}${moreLine === "" ? "" : `\n    <p style="margin:0 0 14px 0;font-family:${MONO};font-size:12px;color:${QUIET};">There is more to ${esc(PAPER_NAME)} than the brief — <a href="${editionUrl}" style="color:${QUIET};">the whole paper is on ${esc(SITE_HOST)}</a>.</p>`}
     <p style="margin:0;font-family:${MONO};font-size:11px;color:${QUIET};"><a href="{{amazonSESUnsubscribeUrl}}" style="color:${QUIET};">Unsubscribe</a> — one click, no questions.</p>
   </div>
 </div>
@@ -211,6 +243,15 @@ ${storiesHtml}
     "———",
     `Read on the web: ${editionUrl}`,
     "The brief ends here.",
+    ...(card === null
+      ? []
+      : [
+          "",
+          `ALSO IN TODAY'S PAPER · ${card.name.toUpperCase()}`,
+          card.headline,
+          `Read today's ${card.name} desk: ${card.href}`
+        ]),
+    ...(more ? [`There is more to ${PAPER_NAME} than the brief — the whole paper: ${editionUrl}`] : []),
     "Unsubscribe: {{amazonSESUnsubscribeUrl}}"
   ].join("\n")
 

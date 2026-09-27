@@ -183,7 +183,9 @@ const MIGRATIONS = [
   `ALTER TABLE items ADD COLUMN feed_url TEXT`,
   // A correction names the section it points at (NULL: recorded before
   // sections existed, or against the single section).
-  `ALTER TABLE corrections ADD COLUMN section TEXT`
+  `ALTER TABLE corrections ADD COLUMN section TEXT`,
+  // Optional anatomy: the one-line deck under a headline (generation 3).
+  `ALTER TABLE published_stories ADD COLUMN deck TEXT`
 ] as const
 
 export const ensureSchema = Effect.gen(function* () {
