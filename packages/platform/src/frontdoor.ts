@@ -144,13 +144,23 @@ export const valueAtPath = (raw: string, path: string | null): string | null => 
   } catch {
     return null
   }
-  let cursor: unknown = parsed
+  const node = nodeAtPath(parsed, path)
+  if (node === undefined || node === null) return null
+  return typeof node === "string" ? node : JSON.stringify(node)
+}
+
+/** Walk a dot path into parsed JSON ("data.items.0.price"); array indexes
+ * are numeric keys. Undefined when the path misses. Shared by the single
+ * value above and by list doors (generation 3), which walk to an array
+ * and then into each entry. */
+export const nodeAtPath = (node: unknown, path: string): unknown => {
+  let cursor: unknown = node
   for (const key of path.split(".")) {
-    if (cursor === null || typeof cursor !== "object") return null
+    if (key === "") continue
+    if (cursor === null || typeof cursor !== "object") return undefined
     cursor = (cursor as Record<string, unknown>)[key]
   }
-  if (cursor === undefined || cursor === null) return null
-  return typeof cursor === "string" ? cursor : JSON.stringify(cursor)
+  return cursor
 }
 
 /** Journal the fetched version. Returns whether this content is new for

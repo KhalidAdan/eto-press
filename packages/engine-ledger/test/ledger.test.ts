@@ -1,7 +1,75 @@
 import { describe, expect, it } from "vitest"
 import type { Masthead } from "@eto-press/platform/masthead"
 import type { Item } from "@eto-press/platform/normalize"
-import { decide, motionNote, parseColumn, parseDoor, partition, ROWS_PER_SHELF, shelve, toRow } from "../src/engine.js"
+import {
+  decide,
+  fillTemplate,
+  LIST_ROWS_MAX,
+  listRows,
+  motionNote,
+  parseColumn,
+  parseDoor,
+  partition,
+  ROWS_PER_SHELF,
+  shelve,
+  toRow
+} from "../src/engine.js"
+
+describe("list doors (generation 3)", () => {
+  // TheSportsDB's eventspastleague shape, trimmed.
+  const now = Date.parse("2026-10-04T12:00:00Z")
+  const body = JSON.stringify({
+    events: [
+      { strAwayTeam: "Miami Heat", strHomeTeam: "Toronto Raptors", intAwayScore: "99", intHomeScore: "104", strTimestamp: "2026-10-03T23:00:00" },
+      { strAwayTeam: "Boston Celtics", strHomeTeam: "New York Knicks", intAwayScore: null, intHomeScore: null, strTimestamp: "2026-10-04T23:30:00" },
+      { strAwayTeam: "New York Knicks", strHomeTeam: "San Antonio Spurs", intAwayScore: "88", intHomeScore: "101", strTimestamp: "2026-06-14T00:30:00" }
+    ]
+  })
+  const source = {
+    label: "{strAwayTeam} @ {strHomeTeam}",
+    value: "{intAwayScore}–{intHomeScore}",
+    when: "strTimestamp"
+  }
+
+  it("fills a template from an entry, and refuses one with a missing field", () => {
+    expect(fillTemplate("{a} @ {b.c}", { a: "X", b: { c: 2 } })).toBe("X @ 2")
+    expect(fillTemplate("{a}–{b}", { a: "1", b: null })).toBeNull()
+    expect(fillTemplate("{a}", { a: "  " })).toBeNull()
+  })
+
+  it("prints last night's finished games and nothing older or unplayed", () => {
+    expect(listRows(body, "events", source, now)).toEqual([
+      { label: "Miami Heat @ Toronto Raptors", value: "99–104" }
+    ])
+  })
+
+  it("without a timestamp field, prints every entry that can fill its row", () => {
+    const rows = listRows(body, "events", { label: source.label, value: source.value }, now)
+    expect(rows?.map((r) => r.value)).toEqual(["99–104", "88–101"])
+  })
+
+  it("is null for a path that misses the array, a body that isn't JSON, or missing templates", () => {
+    expect(listRows(body, "nope", source, now)).toBeNull()
+    expect(listRows("<html>", "events", source, now)).toBeNull()
+    expect(listRows(body, "events", { value: "{x}" }, now)).toBeNull()
+  })
+
+  it("caps a board", () => {
+    const many = JSON.stringify({ e: Array.from({ length: 40 }, (_, i) => ({ a: `t${i}`, b: i })) })
+    expect(listRows(many, "e", { label: "{a}", value: "{b}" }, now)).toHaveLength(LIST_ROWS_MAX)
+  })
+
+  it("partition puts list doors on the boards", () => {
+    const m: Masthead = {
+      source: [
+        { name: "NBA results", side: "Scores", feeds: ["https://x/api#events"], kind: "list", label: "{a}", value: "{b}" },
+        { name: "A Writer", side: "Trade talk", feeds: ["https://x/feed"] }
+      ]
+    }
+    expect(partition(m).doors.map((s) => s.name)).toEqual(["NBA results"])
+    expect(partition(m).feeds.map((s) => s.name)).toEqual(["A Writer"])
+  })
+})
 
 const masthead: Masthead = {
   source: [

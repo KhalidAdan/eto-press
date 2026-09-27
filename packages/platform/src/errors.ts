@@ -13,7 +13,15 @@ import { Data } from "effect"
 export class MastheadInvalid extends Data.TaggedError("MastheadInvalid")<{
   readonly path: string
   readonly reason: string
-}> {}
+}> {
+  // The run dies on this error and the log prints its message: say what
+  // is wrong and where, not "An error has occurred" (found the first
+  // time the flagship declared sections and shared a feed between two).
+  constructor(args: { readonly path: string; readonly reason: string }) {
+    super(args)
+    this.message = `${args.path}: ${args.reason}`
+  }
+}
 
 export class OllamaDown extends Data.TaggedError("OllamaDown")<{
   readonly url: string

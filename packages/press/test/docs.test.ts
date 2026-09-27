@@ -174,3 +174,27 @@ describe("the package roster matches what ships", () => {
     expect([...versions]).toHaveLength(1)
   })
 })
+
+describe("the publish workflow ships every package", () => {
+  const workflow = read(".github", "workflows", "publish.yml")
+  const loop = workflow.match(/for p in ([a-z -]+); do/)?.[1]?.trim().split(/\s+/) ?? []
+  const packages = readdirSync(join(ROOT, "packages")).filter((p) =>
+    existsSync(join(ROOT, "packages", p, "package.json"))
+  )
+
+  it("found the publish loop", () => {
+    expect(loop.length).toBeGreaterThanOrEqual(10)
+  })
+
+  it("names every package (a package missing here would never publish)", () => {
+    for (const p of packages) expect(loop, `packages/${p} absent from the publish loop`).toContain(p)
+  })
+
+  it("publishes the platform first and the press after every engine", () => {
+    expect(loop[0]).toBe("platform")
+    const press = loop.indexOf("press")
+    for (const p of loop.filter((x) => x.startsWith("engine-"))) {
+      expect(loop.indexOf(p), `${p} must publish before press`).toBeLessThan(press)
+    }
+  })
+})
