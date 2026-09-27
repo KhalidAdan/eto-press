@@ -14,12 +14,17 @@
  * machinery of a personal periodical (journal, front-door reading,
  * dialects, archive, mail, verbs), @eto-press/engine-eto holds the
  * editorial machinery (prefilter, judge, cluster, select, compositor,
- * the verification cage), and four more engines stand beside it. run.ts
- * here is the frame of the morning: preflight, the joint (the engine's
- * whole middle, one call), and the tail. The public API below is
- * unchanged from generation 1, plus the inference boundary.
+ * the verification cage), and seven more engines stand beside it.
+ *
+ * Generation 3 (docs/PROPOSAL-SECTIONS.md): a paper is sections, each
+ * printed by one engine from its own source file; run.ts is the frame of
+ * the morning — preflight, the joint once per section, the binding, the
+ * tail — and the Engine interface is public at @eto-press/press/engine.
+ * The API below is unchanged from generation 1, plus the inference
+ * boundary and the paper's sections.
  */
-export { nightly } from "./run.js"
+export { nightly, pressRun } from "./run.js"
+export { engines } from "./engines.js"
 export { Inference } from "@eto-press/platform/inference"
 export { Ollama } from "@eto-press/platform/ollama"
 export {
@@ -30,3 +35,4 @@ export {
   type Source
 } from "@eto-press/platform/masthead"
 export * as config from "@eto-press/platform/config"
+export type { SectionDecl } from "@eto-press/platform/config"

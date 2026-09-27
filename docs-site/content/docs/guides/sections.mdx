@@ -1,0 +1,134 @@
+---
+title: A paper of sections
+description: Add a business desk, a sports desk, the writers you follow — each on its own engine, from its own source file, bound into one morning.
+---
+
+<Callout>
+  Sections ship with **generation 3**. A paper that declares none is a
+  paper with one section — the brief, printed by `[engine] use` from
+  `sources.toml` — and prints exactly as it did.
+</Callout>
+
+A paper is several desks. Each desk is one engine reading one source file,
+and the press binds them into one dated edition: the first section in full
+on the front page, every other desk compressed to one row per item under
+it, each desk at its own address one click deeper. The archive holds every
+morning whole.
+
+## Declare the desks
+
+In `eto.toml`, one `[[section]]` per desk, in the order they print:
+
+```toml
+[[section]]
+name = "Current events brief"
+slug = "brief"
+engine = "eto"
+masthead = "sources.toml"      # the file the brief has always read
+
+[[section]]
+name = "Business"
+slug = "business"
+engine = "ledger"              # boards, columns, decked links
+
+[[section]]
+name = "Sports"
+slug = "sports"
+engine = "ledger"
+
+[[section]]
+name = "Blogs"
+slug = "blogs"
+engine = "shelf"               # the writers you follow, one line each
+```
+
+Each section's source file defaults to `sections/<slug>.toml` and has
+[the shape `sources.toml` has](/docs/reference/sources-file). What `side`
+means in it is the engine's to say: a stance on the eto engine, a shelf on
+the shelf engine, a board or a shelf on the ledger.
+
+## Write the source files
+
+**The brief** keeps `sources.toml`: outlets, where they stand, the
+`[seed]` claim.
+
+**Business** on the ledger engine mixes two kinds of source. A `door` is a
+data endpoint carrying a figure; a feed is an outlet whose new posts print
+as decked rows:
+
+```toml
+[[source]]
+name = "USD/CAD"
+side = "Markets"
+kind = "door"
+feeds = ["https://api.frankfurter.app/latest?from=USD&to=CAD#rates.CAD"]
+
+[[source]]
+name = "BBC Business"
+side = "Business news"
+feeds = ["https://feeds.bbci.co.uk/news/business/rss.xml"]
+```
+
+**Sports** is the same shape: the leagues' scoreboards as doors (a
+keyless scoreboard served to a league's own readers is a front door),
+the writers you trust as feeds, and your own signed columns on the desk.
+
+**Blogs** on the shelf engine is writers only, `side` naming the shelf:
+
+```toml
+[[source]]
+name = "Daring Fireball"
+side = "Tech"
+feeds = ["https://daringfireball.net/feeds/main"]
+```
+
+One rule the press enforces at preflight: **a feed URL belongs to one
+section only.** Two desks may read the same outlet through different
+feeds; they may not share one.
+
+## The desk is per section
+
+Once sections are declared, editor-written copy lives under the section:
+`desk/sports/2026-09-26-on-the-bench.md` prints in Sports, bylined, and
+never in Blogs. The single-section paper keeps `desk/`.
+
+## What prints
+
+- **The front page**: the first section in full, then "In today's paper"
+  — every other desk as one row per item (kicker, headline, one-line deck,
+  source), its board's figures above the rows. The ears under the
+  nameplate carry the desks' counts.
+- **Section pages** at `/YYYY-MM-DD/<slug>/`, with "Section 2 of 4" and
+  the neighbouring desks.
+- **The whole paper** at `/YYYY-MM-DD.html`, every desk labeled.
+- **The archive** as a calendar of mornings: each day its lead headline
+  and how many desks printed.
+- **The email**: the first section in full, then one card for another
+  desk that printed this morning (the run id picks it, so a retry mails
+  the same card), and two short lines saying there is more on the site.
+- **Feeds**: `/feed.xml` keeps carrying the first section; `/<slug>/feed.xml`
+  for every desk.
+
+## When a desk is quiet
+
+A section whose engine has nothing to print — no new posts, nothing
+moved, an empty desk — is **absent** that morning: a line on the page
+("Not printed this morning: Sports — no new columns and no new league
+links") and a `WARNING` in the report, for you to look into. The other
+desks print. A morning where every desk is silent prints nothing at all.
+
+## Models
+
+Preflight pins the union of the desks' models. A paper of desk, digest,
+letter, sports and wrap sections never wakes Ollama. The shelf and the
+ledger declare the judge model for [the deck](/docs/concepts/engines#the-shelf-engine)
+and ask it only for posts whose feeds carried no summary of their own.
+
+## The morning delivery switch
+
+`email_edition` moves to `eto.toml`, under `[mail]`, because it is the
+paper's, not a section's. Undeclared there, the flag in the first section's
+source file decides, where generation 2 kept it.
+
+`eto doctor` checks every section's source file, the one-feed-one-section
+rule, and each desk directory.

@@ -5,6 +5,7 @@ export default defineMeta({
     "first-week",
     "editing-sources",
     "desk-paper",
+    "sections",
     "publish-web",
     "mail",
     "schedule",

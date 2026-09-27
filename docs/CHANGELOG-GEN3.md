@@ -1,13 +1,17 @@
 # Generation 3 — the changelog
 
-*Unreleased. Generation 3 is being built as a train of stacked pull
-requests (the plan and the editor's rulings: PROPOSAL-SECTIONS.md); this
-file accumulates what each step changed, and becomes the release account
-when the train is merged and `3.YYYYMMDD.0` is tagged. Generation-2 papers
-are untouched until they update, and a paper that declares no sections
-prints exactly as it did.*
+*Built 2026-09-26 as a train of seven stacked pull requests (the plan and
+the editor's rulings: PROPOSAL-SECTIONS.md), versioned `3.20260926.0`
+across all twelve packages and awaiting the editor's review and tag. The
+version's date is the day the train was built; a release cut on a later
+day re-dates it. Generation-2 papers are untouched until they update, and
+a paper that declares no sections prints exactly as it did — the archive
+and the whole-paper page byte for byte, the front page redesigned.*
 
-## In the train, so far
+## 3.20260926.0 — the paper grows desks
+
+Twelve packages move together: the ten of generation 2 and two engines.
+The steps, in the order they were built:
 
 - **The constitutions** (#10). The founding North Star moves unchanged to
   `docs/sections/brief.md` as the Current events brief's constitution;
@@ -56,7 +60,24 @@ prints exactly as it did.*
   anything prints, every board prints. Eight engines registered: eto,
   desk, letter, digest, sports, wrap, shelf, ledger.
 
-## Still to come in the train
+- **The site** (#15). The front page is the paper compressed: the
+  nameplate with its date line and ears (the motto, the desks' counts),
+  the lead section in full, the index of every other desk, the subscribe
+  form, the archive as a calendar of mornings, the feeds. No manifesto,
+  no photo cards. Each desk at `/YYYY-MM-DD/<slug>/` with its neighbours;
+  the sources page becomes the about page, the constitution linked when
+  `[paper] constitution_url` names one; the side spectrum monochrome, so
+  the accent is the only colour on the site.
+- **The public interface and the version** (#16). `@eto-press/press/engine`
+  publishes `Day`, `Engine`, `EngineOutcome`, the edition anatomy and the
+  platform libraries an engine builds its corpus with; `@eto-press/press`
+  exports `pressRun` and the registry. A guide, *A paper of sections*.
+  Every package at `3.20260926.0`.
 
-The site (front page, section pages, the calendar archive, the monochrome
-spectrum); the public engine interface and the release.
+**Breaking, for engine authors only:** `Day` carries `section`. No
+shipped engine needed a change.
+
+**Not in this generation, deliberately:** per-section email
+subscription (SES topics) — the morning email carries the first section
+and one rotating card instead; loading an engine by name from a paper
+directory — the registry stays static.
