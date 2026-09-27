@@ -102,17 +102,26 @@ export const buildIndex = (
     readonly name: string
     readonly stories: ReadonlyArray<EditionStory>
   }>,
-  opts: { readonly editionHref: string; readonly first: number }
+  opts: {
+    /** The whole-paper page: the fallback address for a desk and its stories. */
+    readonly editionHref: string
+    readonly first: number
+    /** A desk's own page (generation 3's dated section pages). When given,
+     * the desk and its rows link there; anchors are paper-global either
+     * way, so #s7 is the same story on both pages. */
+    readonly sectionHref?: ((slug: string) => string) | undefined
+  }
 ): Array<IndexDesk> => {
   let position = opts.first
   return sections.map((section) => {
+    const base = opts.sectionHref === undefined ? null : opts.sectionHref(section.slug)
     const mains = section.stories.filter((s) => s.foldReason === null)
     const folds = section.stories.filter((s) => s.foldReason !== null)
     const ordered = [...mains, ...folds]
     const rows: Array<IndexRow> = []
     const board: Array<DataItem> = []
     for (const story of ordered) {
-      const href = `${opts.editionHref}#${anchor(position)}`
+      const href = `${base ?? opts.editionHref}#${anchor(position)}`
       position++
       board.push(...(story.data ?? []))
       rows.push(...rowsOf(story, href))
@@ -120,7 +129,7 @@ export const buildIndex = (
     return {
       slug: section.slug,
       name: section.name,
-      href: `${opts.editionHref}#${section.slug}`,
+      href: base ?? `${opts.editionHref}#${section.slug}`,
       board,
       rows,
       count: rows.length + board.length
