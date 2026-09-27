@@ -142,6 +142,21 @@ const TABLES = [
     section      TEXT NOT NULL DEFAULT 'brief', -- the desk this story printed in (generation 3)
     PRIMARY KEY (run_id, position)
   )`,
+  // The deck question's journal (generation 3): one row per link the desk
+  // asked about, keyed like drafts — change the model or the question and
+  // the row invalidates itself. `verdict` records the cage's ruling so a
+  // refused deck is never re-asked for the same question.
+  `CREATE TABLE IF NOT EXISTS decks (
+    link          TEXT NOT NULL,
+    model         TEXT NOT NULL,
+    question_hash TEXT NOT NULL,
+    deck          TEXT,                  -- the accepted deck, or NULL when refused/unparseable
+    raw           TEXT NOT NULL,
+    verdict       TEXT NOT NULL,         -- pass | refused | unparseable
+    detail        TEXT,                  -- why refused
+    created_at    TEXT NOT NULL,
+    PRIMARY KEY (link, model, question_hash)
+  )`,
   // Stage 4+ tables are declared now so the journal's shape is complete:
   `CREATE TABLE IF NOT EXISTS verdicts (
     item_a      INTEGER NOT NULL,

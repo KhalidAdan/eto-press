@@ -109,13 +109,57 @@ const fetchArticle = (item: Item) =>
 
 export type { Account, StoryWithAccounts }
 
+/** One item's account of record, through the journal: the text already
+ * journaled ok (stage 2b's feed-served full text, or an earlier fetch),
+ * else one polite fetch through the front door, persisted either way so
+ * a rerun never knocks twice. Null when the door would not open. */
+export const fetchAccount = (item: Item) =>
+  Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    const rows = yield* sql<{ status: string; text: string | null }>`
+      SELECT status, text FROM articles WHERE item_id = ${item.id}
+    `
+    if (rows[0]?.status === "ok" && rows[0].text) {
+      return { text: rows[0].text, source: "journal" as const }
+    }
+
+    yield* Effect.sleep(`${POLITENESS_MS} millis`)
+    const result = yield* fetchArticle(item).pipe(Effect.either)
+    if (result._tag === "Right") {
+      yield* sql`
+        INSERT OR REPLACE INTO articles ${sql.insert({
+          item_id: item.id,
+          status: "ok",
+          http_code: 200,
+          text: result.right.text,
+          og_image: result.right.ogImage,
+          fetched_at: new Date().toISOString()
+        })}
+      `
+      return { text: result.right.text, source: "fetched" as const }
+    }
+    const err = result.left
+    yield* sql`
+      INSERT OR REPLACE INTO articles ${sql.insert({
+        item_id: item.id,
+        status: err._tag === "ArticleUnreadable" ? "unreadable" : "unfetchable",
+        http_code: null,
+        text: null,
+        fetched_at: new Date().toISOString()
+      })}
+    `
+    yield* Effect.logWarning(
+      `  account dropped: ${item.outlet} — ${err._tag} (${item.link.slice(0, 70)})`
+    )
+    return null
+  })
+
 /** Fetch every account of every story. Cached by item id: a rerun refetches
  * only what is missing or previously failed. */
 export const fetchArticlesForStories = (
   stories: ReadonlyArray<Story>
 ) =>
   Effect.gen(function* () {
-    const sql = yield* SqlClient.SqlClient
     const out: Array<StoryWithAccounts> = []
     let fetched = 0
     let cached = 0
@@ -124,46 +168,14 @@ export const fetchArticlesForStories = (
     for (const story of stories) {
       const accounts: Array<Account> = []
       for (const item of story.cluster.items) {
-        const rows = yield* sql<{ status: string; text: string | null }>`
-          SELECT status, text FROM articles WHERE item_id = ${item.id}
-        `
-        if (rows[0]?.status === "ok" && rows[0].text) {
-          accounts.push({ item, text: rows[0].text })
-          cached++
+        const account = yield* fetchAccount(item)
+        if (account === null) {
+          failed++
           continue
         }
-
-        yield* Effect.sleep(`${POLITENESS_MS} millis`)
-        const result = yield* fetchArticle(item).pipe(Effect.either)
-        if (result._tag === "Right") {
-          yield* sql`
-            INSERT OR REPLACE INTO articles ${sql.insert({
-              item_id: item.id,
-              status: "ok",
-              http_code: 200,
-              text: result.right.text,
-              og_image: result.right.ogImage,
-              fetched_at: new Date().toISOString()
-            })}
-          `
-          accounts.push({ item, text: result.right.text })
-          fetched++
-        } else {
-          const err = result.left
-          yield* sql`
-            INSERT OR REPLACE INTO articles ${sql.insert({
-              item_id: item.id,
-              status: err._tag === "ArticleUnreadable" ? "unreadable" : "unfetchable",
-              http_code: null,
-              text: null,
-              fetched_at: new Date().toISOString()
-            })}
-          `
-          yield* Effect.logWarning(
-            `  account dropped: ${item.outlet} — ${err._tag} (${item.link.slice(0, 70)})`
-          )
-          failed++
-        }
+        accounts.push({ item, text: account.text })
+        if (account.source === "journal") cached++
+        else fetched++
       }
       out.push({ story, accounts })
     }
