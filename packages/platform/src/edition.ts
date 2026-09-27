@@ -11,6 +11,7 @@
  * blocks with engine-declared ids, and this module becomes EditionResult.
  * Until then, nothing here may grow engine-specific behavior — data only.
  */
+import type { FeedOutcome } from "./feeds.js"
 import type { Item } from "./normalize.js"
 
 /** An event: the cross-outlet cluster the judge and density gate accepted. */
@@ -113,14 +114,88 @@ export interface EditionCorrection {
   readonly edition: string
   readonly headline: string
   readonly note: string
+  /** The paper-global print position of the corrected story. */
   readonly storyRank?: number
+  /** The section the corrected story printed in. Absent on corrections
+   * recorded before generation 3 (they are the single section's). */
+  readonly section?: string | null
 }
 
+/** One section's stories, flat — what the four generation-2 dialects
+ * consume, and what a per-section feed renders. */
 export interface EditionDocument {
   readonly runId: string
   readonly stories: ReadonlyArray<EditionStory>
   readonly corrections: ReadonlyArray<EditionCorrection>
 }
+
+// -- The run report -----------------------------------------------------------
+// Part of the edition (stage 11): the editor's measurement surface,
+// printed as data, not advice. Authored by the engine, framed by the
+// platform.
+
+export interface RunReport {
+  readonly feedOutcomes: ReadonlyArray<FeedOutcome>
+  /** The eto engine's funnel. Absent for engines with no funnel to report. */
+  readonly funnel?: {
+    readonly items: number
+    readonly news: number
+    readonly candidates: number
+    readonly matches: number
+    readonly clusters: number
+    /** Clusters set aside by stage 5b: already printed in an earlier edition. */
+    readonly repeats: number
+    readonly selected: number
+    readonly published: number
+  }
+  readonly dropped: ReadonlyArray<{ readonly rank: number; readonly reason: string }>
+  /** Clusters set aside by stage 5c: still below the density floor after the
+   * splitter — welded blobs, not stories. */
+  readonly blobs?: ReadonlyArray<{
+    readonly itemCount: number
+    readonly outletCount: number
+    readonly density: number
+  }>
+  /** Source-health trends — the §6/§8 instrument panel. */
+  readonly healthLines?: ReadonlyArray<string>
+}
+
+// -- The paper: sections bound into one morning -------------------------------
+// Generation 3. The frame calls each section's engine and binds the
+// outcomes into one document; the archive dialect renders it whole, the
+// others render it section by section. A paper with one section and no
+// absences renders exactly as generation 2 rendered its edition.
+
+/** One section that printed: the engine's outcome, labeled. */
+export interface PaperSection {
+  readonly slug: string
+  readonly name: string
+  readonly stories: ReadonlyArray<EditionStory>
+  readonly report: RunReport
+  readonly advisoryLines: ReadonlyArray<string>
+}
+
+/** One section that returned NoEdition while another printed — a warning
+ * on the page and in the report (NORTH-STAR §5: quiet is printed). */
+export interface AbsentSection {
+  readonly slug: string
+  readonly name: string
+  readonly reason: string
+}
+
+export interface PaperEdition {
+  readonly runId: string
+  readonly sections: ReadonlyArray<PaperSection>
+  readonly absent: ReadonlyArray<AbsentSection>
+  readonly corrections: ReadonlyArray<EditionCorrection>
+}
+
+/** Every story of the paper in print order, each with its section —
+ * the order the published store numbers positions in. */
+export const paperStories = <S extends Pick<PaperSection, "slug" | "stories">>(
+  paper: { readonly sections: ReadonlyArray<S> }
+): Array<{ readonly section: S; readonly story: EditionStory }> =>
+  paper.sections.flatMap((section) => section.stories.map((story) => ({ section, story })))
 
 /** Split composed prose into paragraphs (blank-line separated, with
  * single-newline fallback). */

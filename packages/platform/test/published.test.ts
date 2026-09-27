@@ -1,11 +1,34 @@
 import { describe, expect, it } from "vitest"
 import { editionStoryFrom } from "../src/edition.js"
-import { fromRow, toRow } from "../src/published.js"
+import { fromRow, rowSection, toRow } from "../src/published.js"
 
 const links = new Map([
   ["The Guardian", "https://example.org/guardian"],
   ["Reuters", "https://example.org/reuters"]
 ])
+
+describe("the row's section (generation 3)", () => {
+  const story = editionStoryFrom({
+    headline: "H",
+    body: "B",
+    differ: "",
+    sourcesLine: "",
+    balanceNote: null,
+    foldReason: null,
+    linkByOutlet: new Map()
+  })
+
+  it("defaults to the single section, and carries a declared one", () => {
+    expect(toRow("2026-09-26", 1, story).section).toBe("brief")
+    expect(toRow("2026-09-26", 4, story, "sports").section).toBe("sports")
+  })
+
+  it("reads a pre-section row as the default section", () => {
+    expect(rowSection({})).toBe("brief")
+    expect(rowSection({ section: null })).toBe("brief")
+    expect(rowSection({ section: "blogs" })).toBe("blogs")
+  })
+})
 
 describe("the published-edition store round-trip", () => {
   it("preserves a full eto story — content, links, measurements, ref", () => {

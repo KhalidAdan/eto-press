@@ -139,6 +139,7 @@ const TABLES = [
     byline       TEXT,                  -- optional anatomy: the human author
     data_items   TEXT,                  -- optional anatomy: JSON [{label, value, note|null}]
     link_items   TEXT,                  -- optional anatomy: JSON [{title, href, note|null}]
+    section      TEXT NOT NULL DEFAULT 'brief', -- the desk this story printed in (generation 3)
     PRIMARY KEY (run_id, position)
   )`,
   // Stage 4+ tables are declared now so the journal's shape is complete:
@@ -168,7 +169,21 @@ const MIGRATIONS = [
   // A calibrated probability from the inference provider, when it gives
   // one. The local text models never do (always NULL); the column exists
   // so a provider that calibrates has somewhere honest to put it.
-  `ALTER TABLE verdicts ADD COLUMN confidence REAL`
+  `ALTER TABLE verdicts ADD COLUMN confidence REAL`,
+  // Generation 3: the paper has sections. Every published row names the
+  // desk it printed in; rows from before the column are the single
+  // section's. Positions stay paper-global (print order across all
+  // sections), so the (run_id, position) key and every correction that
+  // points at one are unchanged.
+  `ALTER TABLE published_stories ADD COLUMN section TEXT NOT NULL DEFAULT 'brief'`,
+  // Which feed carried an item. The ingest reads a section's window back
+  // by its own feeds, so two desks reading different feeds of one outlet
+  // never see each other's corpus. NULL for rows from before the column,
+  // which are scoped by outlet name instead.
+  `ALTER TABLE items ADD COLUMN feed_url TEXT`,
+  // A correction names the section it points at (NULL: recorded before
+  // sections existed, or against the single section).
+  `ALTER TABLE corrections ADD COLUMN section TEXT`
 ] as const
 
 export const ensureSchema = Effect.gen(function* () {

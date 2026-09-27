@@ -2,19 +2,23 @@ import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
 import { SqliteClient } from "@effect/sql-sqlite-node"
 import { Effect, Layer } from "effect"
 import { mkdirSync } from "node:fs"
-import { ENGINE } from "@eto-press/platform/config"
+import { SECTIONS } from "@eto-press/platform/config"
 import { Desk } from "@eto-press/platform/desk"
 import { Inference } from "@eto-press/platform/inference"
 import { Ollama } from "@eto-press/platform/ollama"
 import { engines } from "./engines.js"
 import { pressRun } from "./run.js"
 
-const engine = engines[ENGINE]
-if (engine === undefined) {
-  console.error(
-    `eto.toml names engine "${ENGINE}", but this press only knows: ${Object.keys(engines).join(", ")}`
-  )
-  process.exit(1)
+// Every section's engine must be one this press was built with — checked
+// here, before any layer is built, so the message is the first line out.
+for (const section of SECTIONS) {
+  if (engines[section.engine] === undefined) {
+    console.error(
+      `eto.toml: section "${section.slug}" names engine "${section.engine}", ` +
+        `but this press only knows: ${Object.keys(engines).join(", ")}`
+    )
+    process.exit(1)
+  }
 }
 
 // The journal lives in db/ (gitignored); ensure the directory exists before
@@ -36,4 +40,4 @@ const MainLive = Layer.mergeAll(
   Desk.Default.pipe(Layer.provide(NodeContext.layer))
 )
 
-NodeRuntime.runMain(pressRun(engine).pipe(Effect.provide(MainLive)))
+NodeRuntime.runMain(pressRun(engines).pipe(Effect.provide(MainLive)))

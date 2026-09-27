@@ -156,6 +156,10 @@ export const ingestAllFeeds = (masthead: Masthead, runId: string, classify: Clas
           if (entry.fullText !== null && !fullTextByLink.has(entry.link)) {
             fullTextByLink.set(entry.link, entry.fullText)
           }
+          // An item belongs to the feed that saw it first (generation 3:
+          // one feed, one section). The same feed re-labeling it — the
+          // editor moved an outlet to another side — still takes effect;
+          // a different feed carrying the same link does not steal it.
           yield* sql`
             INSERT INTO items ${sql.insert({
               run_id: runId,
@@ -165,11 +169,15 @@ export const ingestAllFeeds = (masthead: Masthead, runId: string, classify: Clas
               title: entry.title,
               summary: entry.summary,
               link: entry.link,
-              published_at: entry.publishedAt.toISOString()
+              published_at: entry.publishedAt.toISOString(),
+              feed_url: url
             })}
             ON CONFLICT (link) DO UPDATE SET
-              side = excluded.side,
-              kind = excluded.kind
+              side = CASE WHEN items.feed_url IS NULL OR items.feed_url = excluded.feed_url
+                          THEN excluded.side ELSE items.side END,
+              kind = CASE WHEN items.feed_url IS NULL OR items.feed_url = excluded.feed_url
+                          THEN excluded.kind ELSE items.kind END,
+              feed_url = COALESCE(items.feed_url, excluded.feed_url)
           `
           kept++
         }
@@ -181,17 +189,27 @@ export const ingestAllFeeds = (masthead: Masthead, runId: string, classify: Clas
 
     // Read the window back from the journal — items may have been first seen
     // by an earlier run today; the journal, not this process, is the truth.
+    // Scoped to THIS masthead's feeds (generation 3: one paper, several
+    // desks, one journal): rows from before feed_url existed are scoped by
+    // outlet name instead.
     const cutoffIso = new Date(Date.now() - WINDOW_HOURS * 3600 * 1000).toISOString()
-    const rows = yield* sql<{
-      id: number
-      outlet: string
-      side: string
-      kind: string
-      title: string
-      summary: string
-      link: string
-      published_at: string
-    }>`SELECT * FROM items WHERE published_at >= ${cutoffIso}`
+    const feedUrls = masthead.source.flatMap((s) => s.feeds)
+    const outlets = masthead.source.map((s) => s.name)
+    const rows =
+      feedUrls.length === 0
+        ? []
+        : yield* sql<{
+            id: number
+            outlet: string
+            side: string
+            kind: string
+            title: string
+            summary: string
+            link: string
+            published_at: string
+          }>`SELECT * FROM items WHERE published_at >= ${cutoffIso}
+             AND (${sql.in("feed_url", feedUrls)}
+                  OR (feed_url IS NULL AND ${sql.in("outlet", outlets)}))`
 
     for (const r of rows) {
       byLink.set(r.link, {
