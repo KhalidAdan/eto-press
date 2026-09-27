@@ -14,7 +14,7 @@
 # release through 2.20260926.0 was published by hand — from each package
 # directory, in the order the loop below names, with the account's OTP.
 # The workflow stays because the tag discipline and the guard are right;
-# when trusted publishing is configured for all ten packages it will
+# when trusted publishing is configured for all twelve packages it will
 # simply start succeeding.
 #
 # Publishing is deliberate, never automatic on merge — the press has no
@@ -60,7 +60,7 @@ jobs:
       # act) finishes the train instead of derailing at the guard.
       - run: |
           set -e
-          for p in platform engine-eto engine-desk engine-letter engine-digest engine-sports engine-wrap press cli subscribe; do
+          for p in platform engine-eto engine-desk engine-letter engine-digest engine-sports engine-wrap engine-shelf engine-ledger press cli subscribe; do
             v=$(node -p "require('./packages/$p/package.json').version")
             if npm view "@eto-press/$p@$v" version > /dev/null 2>&1; then
               echo "── @eto-press/$p@$v already published, skipping"
