@@ -8,6 +8,20 @@ day re-dates it. Generation-2 papers are untouched until they update, and
 a paper that declares no sections prints exactly as it did — the archive
 and the whole-paper page byte for byte, the front page redesigned.*
 
+## 3.20260927.0 — the front page is skimmable again
+
+Cut 2026-09-27, the evening after 3.20260926.0, on the editor's first look
+at the new front page: one headline in the first screen, the other desks
+ten screens down. The lead section is cards again — the outlet's own
+preview image with its credit, the headline, the breadth, the spectrum —
+each linking to the story on the lead's own dated page, where it is read
+in full. The sign-up sits between the lead and the other desks. The index
+puts the desks side by side on a wide screen, each with its board and its
+first five rows, then a link to the rest. On a card, and only there, the
+spectrum's covered positions keep their colours. Eight headlines in the
+first two screens, where there was one; the desks start at about 2,300
+pixels, where they started at 8,900.
+
 ## 3.20260926.0 — the paper grows desks
 
 Twelve packages move together: the ten of generation 2 and two engines.

@@ -2,8 +2,8 @@
  * Stage 12, standalone: render the whole public site from the journal —
  * every published edition at site/<date>.html (the whole paper), every
  * desk of a sectioned edition at site/<date>/<slug>/, the front page at
- * site/index.html (the lead in full, the index of the other desks, the
- * calendar of past editions), the about page at sources.html from the
+ * site/index.html (the lead as cards, the sign-up, the index of the other
+ * desks, the calendar of past editions), the about page at sources.html from the
  * masthead file, the feeds — and the stylesheet and fonts beside them, so
  * site/ is the whole paper and depends on nothing outside it.
  * Run: eto render
@@ -26,7 +26,15 @@ import {
 } from "./assemble.js"
 import { SECTIONED, SECTIONS } from "./config.js"
 import { renderFeedXml } from "./feed.js"
-import { renderEditionHtml, renderHomePage, renderSectionPage, renderSourcesPage, type CalendarEdition } from "./html.js"
+import {
+  renderEditionHtml,
+  renderHomePage,
+  renderSectionPage,
+  renderSourcesPage,
+  storyAnchor,
+  type CalendarEdition,
+  type HomeCard
+} from "./html.js"
 import { buildIndex, renderIndex } from "./index-dialect.js"
 
 const db = openJournal()
@@ -139,8 +147,10 @@ if (SECTIONS.length > 1) {
   }
 }
 
-// The front page: the lead section in full, then the index of every other
-// desk (generation 3), the calendar of past editions, the feeds.
+// The front page: the lead section as cards (the skim), the sign-up, the
+// index of every other desk side by side, the calendar of past editions,
+// the feeds. The lead is read in full one click deeper: its desk page on
+// a sectioned morning, the edition page otherwise.
 const latest = editions[0]!
 const latestGroups = groupsByRun.get(latest) ?? []
 const lead = latestGroups[0]
@@ -151,6 +161,70 @@ const desks = buildIndex(htmlSections(others), {
   first: leadStories.length + 1,
   sectionHref: (slug) => sectionPath(latest, slug)
 })
+const leadHref =
+  latestGroups.length > 1 && lead !== undefined ? sectionPath(latest, lead.slug) : `./${latest}.html`
+
+/** Render-time image check: only ship images that actually answer, so the
+ * page needs no client-side fallback JavaScript. */
+const imageAlive = async (src: string): Promise<boolean> => {
+  try {
+    const res = await fetch(src, {
+      method: "HEAD",
+      headers: { "user-agent": "eto/0.1 (+local news compositor; front-door reader)" },
+      signal: AbortSignal.timeout(8000),
+      redirect: "follow"
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+// Card metadata from the eto engine's caches, when the story's ref still
+// resolves (a lead on another engine simply gets typographic cards).
+const clusterMeta = db.prepare(
+  "SELECT sides, outlet_count FROM clusters WHERE run_id = ? AND cluster_hash = ?"
+)
+const imageCandidates = db.prepare(
+  `SELECT i.outlet AS outlet, a.og_image AS og, length(a.text) AS len
+   FROM cluster_items ci
+   JOIN items i ON i.id = ci.item_id
+   JOIN articles a ON a.item_id = i.id AND a.status = 'ok'
+   WHERE ci.run_id = ? AND ci.cluster_hash = ? AND a.og_image IS NOT NULL
+   ORDER BY len DESC`
+)
+const leadAssembled = lead?.stories ?? []
+const mainsCount = leadAssembled.filter((a) => a.story.foldReason === null).length
+let mainIdx = 0
+let foldIdx = 0
+const cards: Array<HomeCard> = []
+for (const a of [
+  ...leadAssembled.filter((x) => x.story.foldReason === null),
+  ...leadAssembled.filter((x) => x.story.foldReason !== null)
+]) {
+  const isFold = a.story.foldReason !== null
+  const anchor = isFold ? storyAnchor(mainsCount + ++foldIdx) : storyAnchor(++mainIdx)
+  const meta = clusterMeta.get(latest, a.clusterHash) as
+    | { sides: string; outlet_count: number }
+    | undefined
+  const candidates = imageCandidates.all(latest, a.clusterHash) as Array<{ outlet: string; og: string }>
+  let image: HomeCard["image"] = null
+  for (const c of candidates) {
+    if (await imageAlive(c.og)) {
+      image = { src: c.og, credit: c.outlet }
+      break
+    }
+  }
+  cards.push({
+    title: a.story.headline,
+    href: `${leadHref}#${anchor}`,
+    fold: isFold,
+    outletsLabel: meta
+      ? `${meta.outlet_count} outlet${meta.outlet_count === 1 ? "" : "s"}`
+      : `${a.story.sources.length} source${a.story.sources.length === 1 ? "" : "s"}`,
+    sides: meta ? meta.sides.split("/") : [],
+    image
+  })
+}
 const calendar: Array<CalendarEdition> = editions.map((runId) => {
   const groups = groupsByRun.get(runId) ?? []
   return {
@@ -163,13 +237,15 @@ writeFileSync(
   "site/index.html",
   renderHomePage({
     runId: latest,
-    lead: leadStories,
-    leadEnd: SECTIONED && lead !== undefined ? `${lead.name} ends here.` : "The brief ends here.",
+    cards,
+    leadName: SECTIONED && lead !== undefined ? lead.name : null,
+    leadHref,
     counts: desks
       .filter((d) => d.count > 0)
       .map((d) => `${d.name} ${d.count}`)
       .join(" · "),
-    index: renderIndex(desks),
+    // The skim: each desk's board and first five rows, then "Read all of".
+    index: renderIndex(desks, { rowsPerDesk: 5 }),
     corrections: correctionsPrintedIn(db, latest),
     calendar,
     feeds: SECTIONS.length > 1 ? SECTIONS.map((s) => ({ name: s.name, path: `./${s.slug}/feed.xml` })) : []

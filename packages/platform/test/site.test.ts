@@ -1,8 +1,9 @@
 /**
- * The site (generation 3): the front page is the lead in full plus the
- * index; desks have dated pages with neighbours; the archive is a
- * calendar; the about page names the constitution when the paper does;
- * the spectrum is monochrome. No manifesto on the front page.
+ * The site (generation 3): the front page is the lead as cards, the
+ * sign-up, then the index of the other desks side by side; desks have
+ * dated pages with neighbours; the archive is a calendar; the about page
+ * names the constitution when the paper does; the spectrum is monochrome
+ * except on a card. No manifesto on the front page.
  */
 import { describe, expect, it } from "vitest"
 import { editionStoryFrom } from "../src/edition.js"
@@ -11,7 +12,8 @@ import {
   renderHomePage,
   renderSectionPage,
   renderSourcesPage,
-  sideSpectrum
+  sideSpectrum,
+  type HomeCard
 } from "../src/html.js"
 
 const story = (headline: string) =>
@@ -25,11 +27,26 @@ const story = (headline: string) =>
     linkByOutlet: new Map()
   })
 
+const card = (title: string, n: number, extra: Partial<HomeCard> = {}): HomeCard => ({
+  title,
+  href: `./2026-09-26/brief/#s${n}`,
+  fold: false,
+  outletsLabel: "6 outlets",
+  sides: ["left", "center", "right"],
+  image: null,
+  ...extra
+})
+
 describe("the front page", () => {
   const html = renderHomePage({
     runId: "2026-09-26",
-    lead: [story("The lead"), story("The second")],
-    leadEnd: "Current events brief ends here.",
+    cards: [
+      card("The lead", 1, { image: { src: "https://img.example/a.jpg", credit: "The Hill" } }),
+      card("The second", 2),
+      card("The fold", 3, { fold: true })
+    ],
+    leadName: "Current events brief",
+    leadHref: "./2026-09-26/brief/",
     counts: "Business 4 · Sports 3",
     index: '    <section class="index">the index</section>',
     calendar: [{ runId: "2026-09-26", lead: "The lead", sections: 3 }],
@@ -43,19 +60,32 @@ describe("the front page", () => {
     expect(html).toContain('class="masthead__ear masthead__ear--counts">Business 4 · Sports 3<')
   })
 
-  it("prints the lead in full, then its end line, then the index", () => {
-    const lead = html.indexOf('id="s1"')
-    const end = html.indexOf("Current events brief ends here.")
-    const index = html.indexOf('class="index"')
-    expect(lead).toBeGreaterThan(-1)
-    expect(end).toBeGreaterThan(lead)
-    expect(index).toBeGreaterThan(end)
-    expect(html).toContain('id="s2"')
+  it("prints the lead as cards linking into its desk page, with its image, breadth and spectrum", () => {
+    expect(html).toContain('class="cards"')
+    expect(html.match(/class="card"/g)).toHaveLength(3)
+    expect(html).toContain('href="./2026-09-26/brief/#s1" class="card__link group"')
+    expect(html).toContain("image · The Hill")
+    expect(html).toContain("6 outlets")
+    expect(html).toContain('spectrum__side--on side--left"')
+    expect(html).toContain("Below the fold")
+    expect(html).toContain('href="./2026-09-26/brief/" class="link">Read the current events brief in full')
   })
 
-  it("has no manifesto and no cards", () => {
+  it("never prints the lead's full text on the front page", () => {
+    expect(html).not.toContain("The body.")
+    expect(html).not.toContain('id="s1"')
+  })
+
+  it("puts the sign-up between the lead and the other desks", () => {
+    const cards = html.indexOf('class="cards"')
+    const signup = html.indexOf('class="subscribe"')
+    const index = html.indexOf('class="index"')
+    expect(signup).toBeGreaterThan(cards)
+    expect(index).toBeGreaterThan(signup)
+  })
+
+  it("has no manifesto", () => {
     expect(html).not.toContain("takes a single event")
-    expect(html).not.toContain('class="cards"')
   })
 
   it("lists the feeds and ends", () => {
@@ -64,16 +94,19 @@ describe("the front page", () => {
     expect(html).toContain("That is the paper for today.")
   })
 
-  it("omits the counts ear on a single-section paper", () => {
+  it("on a single-section paper: the date labels the cards, no counts ear, the brief read on its edition page", () => {
     const single = renderHomePage({
       runId: "2026-09-26",
-      lead: [story("Only")],
-      leadEnd: "The brief ends here.",
+      cards: [card("Only", 1, { href: "./2026-09-26.html#s1" })],
+      leadName: null,
+      leadHref: "./2026-09-26.html",
       counts: "",
       calendar: []
     })
+    expect(single).toContain("Today — Saturday, September 26, 2026")
     expect(single).not.toContain("masthead__ear--counts")
-    expect(single).toContain("The brief ends here.")
+    expect(single).toContain('href="./2026-09-26.html" class="link">Read the brief in full')
+    expect(single).not.toContain('class="index"')
   })
 })
 
