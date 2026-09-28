@@ -321,16 +321,56 @@ ${days
 
 // -- The front page -----------------------------------------------------------
 
-/** The front page: the nameplate with its date line and ears, the lead
- * section in full, the index of every other desk, the subscribe form, the
- * calendar of past editions, the feeds. It ends. */
+/** One of the lead section's stories as a front-page card: the skim
+ * surface. Its image is the outlet's own designated preview, hotlinked
+ * with credit; null renders a typographic card. */
+export interface HomeCard {
+  readonly title: string
+  /** Where the story is read in full (the lead's desk page, or the
+   * edition page on a single-section paper). */
+  readonly href: string
+  readonly fold: boolean
+  /** e.g. "6 outlets" — the breadth measurement. */
+  readonly outletsLabel: string
+  /** Masthead side labels present on this story, any order. */
+  readonly sides: ReadonlyArray<string>
+  readonly image: { readonly src: string; readonly credit: string } | null
+}
+
+const homeCard = (h: HomeCard): string => {
+  const image =
+    h.image === null
+      ? ""
+      : `\n          <figure class="card__figure">
+            <img src="${esc(h.image.src)}" alt="" loading="lazy" referrerpolicy="no-referrer" class="card__image">
+            <figcaption class="card__credit instrument">image · ${esc(h.image.credit)}</figcaption>
+          </figure>`
+  return `        <li class="card">
+          <a href="${esc(h.href)}" class="card__link group">${image}
+            <div class="card__body">
+              ${h.fold ? `<p class="card__fold-tag instrument instrument--label accent">Below the fold</p>
+              ` : ""}<h3 class="card__title">${esc(h.title)}</h3>
+              <p class="card__meta instrument">${esc(h.outletsLabel)}<span class="card__meta-sep"> · </span>${sideSpectrum(h.sides)}</p>
+            </div>
+          </a>
+        </li>`
+}
+
+/** The front page: the nameplate with its date line and ears; the lead
+ * section as cards (the skim — every story's headline, breadth and
+ * spectrum at a glance, the full telling one click away); the sign-up;
+ * the index of every other desk, side by side; the calendar of past
+ * editions; the feeds. It ends. */
 export const renderHomePage = (opts: {
   readonly runId: string
-  /** The lead section's stories, in full. */
-  readonly lead: ReadonlyArray<HtmlStory>
-  /** The line under the lead: "The brief ends here." on a single-section
-   * paper, "<Name> ends here." on a sectioned one. */
-  readonly leadEnd: string
+  /** The lead section's stories, as cards, in print order (fold last). */
+  readonly cards: ReadonlyArray<HomeCard>
+  /** The lead's printed name on a sectioned paper ("Current events
+   * brief"); null on a single-section paper, which labels the cards with
+   * the date as generation 2 did. */
+  readonly leadName: string | null
+  /** Where the lead is read in full, whole. */
+  readonly leadHref: string
   /** The other desks' counts for the ear: "Business 4 · Sports 3". Empty
    * on a single-section paper. */
   readonly counts: string
@@ -396,11 +436,14 @@ ${headMeta({
       </div>
     </header>
 ${correctionsSection}
-    <section class="lead">
-${storiesBlock(opts.lead, 1).html}
-      <p class="lead__end instrument instrument--quiet">${esc(opts.leadEnd)}</p>
+    <section class="page-section lead">
+      <h2 class="section-label instrument instrument--label instrument--strong">${esc(opts.leadName === null ? `Today — ${date}` : opts.leadName)}</h2>
+      <ul role="list" class="cards">
+${opts.cards.map(homeCard).join("\n")}
+      </ul>
+      <p class="lead__more instrument instrument--quiet"><a href="${esc(opts.leadHref)}" class="link">Read ${esc(opts.leadName === null ? "the brief" : opts.leadName.toLowerCase().startsWith("the ") ? opts.leadName : `the ${opts.leadName.toLowerCase()}`)} in full →</a></p>
     </section>
-${index}
+
     <section class="page-section page-section--tight">
       <h2 class="section-label instrument instrument--label instrument--strong">The morning edition, by email</h2>
       <form method="POST" action="/subscribe" class="subscribe">
@@ -411,6 +454,7 @@ ${index}
       </form>
       <p class="instrument instrument--quiet">One email each day. It ends. Unsubscribe in every footer.</p>
     </section>
+${index}
 
     <section class="calendar">
       <h2 class="section-label instrument instrument--label instrument--strong">Past editions</h2>

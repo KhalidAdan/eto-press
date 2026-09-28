@@ -1,6 +1,6 @@
 {
   "name": "@eto-press/engine-shelf",
-  "version": "3.20260926.0",
+  "version": "3.20260927.0",
   "license": "AGPL-3.0-only",
   "type": "module",
   "description": "The shelf engine: the writers you follow, one line each. Every new post as a row — the title as the link, a one-line deck that says what it says, the writer's own door.",
@@ -22,7 +22,7 @@
     "@effect/platform": "^0.97.0",
     "@effect/sql": "^0.52.0",
     "effect": "^3.22.0",
-    "@eto-press/platform": "^3.20260926.0"
+    "@eto-press/platform": "^3.20260927.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

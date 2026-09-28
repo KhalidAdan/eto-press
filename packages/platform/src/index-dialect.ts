@@ -168,11 +168,19 @@ const esc = (s: string): string =>
     .replaceAll('"', "&quot;")
 
 /** The index as site markup: semantic anatomy classes only, the skin
- * names appearance (brief.css). */
-export const renderIndex = (desks: ReadonlyArray<IndexDesk>): string => {
+ * names appearance (brief.css). With `rowsPerDesk`, each desk shows its
+ * board and its first rows, then a link to the rest on its own page —
+ * the front page's skim; without it, every row. */
+export const renderIndex = (
+  desks: ReadonlyArray<IndexDesk>,
+  opts: { readonly rowsPerDesk?: number } = {}
+): string => {
   const shown = desks.filter((d) => d.count > 0)
   if (shown.length === 0) return ""
-  const deskHtml = (d: IndexDesk): string => {
+  const deskHtml = (whole: IndexDesk): string => {
+    const cap = opts.rowsPerDesk ?? whole.rows.length
+    const d = { ...whole, rows: whole.rows.slice(0, cap) }
+    const more = whole.rows.length - d.rows.length
     const board =
       d.board.length === 0
         ? ""
@@ -193,7 +201,11 @@ export const renderIndex = (desks: ReadonlyArray<IndexDesk>): string => {
             .join("\n")}\n        </ol>`
     return `      <section class="index__desk">
         <h3 class="index__desk-label instrument instrument--label instrument--strong"><a href="${esc(d.href)}" class="link">${esc(d.name)}</a> <span class="index__count instrument--quiet">${d.count}</span></h3>${board}${rows}
-        <p class="index__desk-end instrument instrument--quiet">${esc(d.name)} ends here.</p>
+        ${
+          more > 0
+            ? `<p class="index__more instrument instrument--quiet"><a href="${esc(d.href)}" class="link">Read all of ${esc(d.name)} →</a></p>`
+            : `<p class="index__desk-end instrument instrument--quiet">${esc(d.name)} ends here.</p>`
+        }
       </section>`
   }
   return `    <section class="index">

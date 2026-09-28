@@ -184,3 +184,25 @@ describe("pickCard", () => {
     expect(stableHash("2026-09-26")).not.toBe(stableHash("2026-09-27"))
   })
 })
+
+describe("renderIndex with rowsPerDesk (the front page's skim)", () => {
+  const many = Array.from({ length: 8 }, (_, i) => prose(`Row ${i + 1}`, "A deck."))
+  const desks = buildIndex([{ slug: "sports", name: "Sports", stories: many }], {
+    editionHref: "./d.html",
+    first: 1,
+    sectionHref: (slug) => `./2026-09-26/${slug}/`
+  })
+
+  it("shows the first rows and links to all of them on the desk's page", () => {
+    const html = renderIndex(desks, { rowsPerDesk: 5 })
+    expect(html.match(/class="index__row"/g)).toHaveLength(5)
+    expect(html).toContain('href="./2026-09-26/sports/" class="link">Read all of Sports →')
+    expect(html).not.toContain("Sports ends here.")
+  })
+
+  it("prints the end line when every row fits", () => {
+    const html = renderIndex(desks, { rowsPerDesk: 20 })
+    expect(html.match(/class="index__row"/g)).toHaveLength(8)
+    expect(html).toContain("Sports ends here.")
+  })
+})

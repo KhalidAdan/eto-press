@@ -58,14 +58,15 @@ themselves.
 
 ## The index
 
-The front page of a sectioned paper carries its first section in full and
-then every other desk compressed to one row per item — the paper's index
-(generation 3). Absent on a single-section paper.
+The front page of a sectioned paper carries its first section as cards,
+the sign-up, and then every other desk compressed to one row per item,
+side by side — the paper's index (generation 3). Absent on a
+single-section paper.
 
 | Class | Element |
 | --- | --- |
-| `index` / `index__label` / `index__desks` | The index block, its "In today's paper" label, and the stack of desks. |
-| `index__desk` / `index__desk-label` / `index__count` / `index__desk-end` | One desk: its linked name and item count, and the line where it ends. |
+| `index` / `index__label` / `index__desks` | The index block, its "In today's paper" label, and the desks side by side. |
+| `index__desk` / `index__desk-label` / `index__count` / `index__desk-end` / `index__more` | One desk: its linked name and item count; the line where it ends, or — when the front page shows only its first rows — the link to all of them on its own page. |
 | `index__board` / `index__figure` / `index__figure-label` / `index__figure-value` / `index__figure-note` | The desk's figures, when it printed any (a board's rows). |
 | `index__rows` / `index__row` / `index__kicker` / `index__headline` / `index__deck` / `index__source` | The rows: an optional kicker, the linked headline, the one-line deck, the source. |
 
@@ -75,12 +76,13 @@ then every other desk compressed to one row per item — the paper's index
 | --- | --- |
 | `about` | The about page's introduction block. |
 | `masthead--front` / `masthead__ears` / `masthead__ear` / `masthead__ear--motto` / `masthead__ear--counts` | The front page's nameplate (generation 3): the date line under the wordmark, then the ears — the motto on one side, the other desks' counts on the other. |
-| `lead` / `lead__end` | The front page's lead section in full, and the line where it ends. |
+| `lead` / `lead__more` | The front page's lead section, and the link to read it in full. |
+| `cards` / `card` / `card__link` / `card__figure` / `card__image` / `card__credit` / `card__body` / `card__fold-tag` / `card__title` / `card__meta` / `card__meta-sep` | The lead's stories as cards — the skim: the outlet's own preview image with its credit, the headline, the breadth, the spectrum. |
 | `calendar` / `calendar__month` / `calendar__month-label` / `calendar__days` / `calendar__day` / `calendar__date` / `calendar__lead` / `calendar__count` | The archive as a calendar of mornings: month by month, each day its lead headline and how many desks printed. |
 | `section-nav` / `section-nav__link` / `section-nav__link--none` / `section-nav__position` | A section page's neighbours: the previous and next desk, and "Section 2 of 4". |
 | `feeds` | The front page's list of feeds — the paper's and each desk's. |
 | `spectrum__side` / `spectrum__side--on` / `spectrum__side--off` / `spectrum__sep` | The side spectrum strip, monochrome since generation 3: every known position in order, filled where a story's coverage reaches and hollow where it does not, with dimmed separators. |
-| `side--left` / `side--lean-left` / `side--center` / `side--lean-right` / `side--right` | The five known side labels, on the spectrum and the about page's rows. Deliberate skin hooks: the default theme gives them no colour, so the accent stays the only colour on the site. |
+| `side--left` / `side--lean-left` / `side--center` / `side--lean-right` / `side--right` | The five known side labels, on the spectrum and the about page's rows. The default theme colours them only inside a card's meta line — blue to red, centre violet — so a grid of cards reads its coverage at a glance; everywhere else they are monochrome skin hooks. |
 | `side-table` / `side-row` / `side-row__label` / `side-row__outlets` | The sources page's rows. |
 | `subscribe` / `subscribe__input` / `subscribe__button` / `honeypot` / `visually-hidden` | The subscribe form. |
 
